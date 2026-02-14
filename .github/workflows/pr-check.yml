@@ -10,8 +10,8 @@ on:
       - main
 
 jobs:
-  biome-front:
-    name: Biome - Frontend
+  biome:
+    name: Biome
     runs-on: ubuntu-latest
 
     steps:
