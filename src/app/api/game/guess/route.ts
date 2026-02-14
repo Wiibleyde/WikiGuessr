@@ -3,15 +3,9 @@ import { checkGuess } from "@/lib/game";
 
 export const dynamic = "force-dynamic";
 
-/**
- * POST /api/game/guess
- * Vérifie un mot deviné contre l'article du jour.
- * Body : { "word": "france" }
- */
 export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
-        const body = await request.json();
-        const word = body?.word;
+        const { word } = await request.json();
 
         if (!word || typeof word !== "string") {
             return NextResponse.json(
@@ -20,19 +14,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             );
         }
 
-        if (word.trim().length === 0 || word.trim().length > 100) {
+        const trimmed = word.trim();
+        if (trimmed.length === 0 || trimmed.length > 100) {
             return NextResponse.json(
                 { error: "Mot invalide" },
                 { status: 400 },
             );
         }
 
-        const result = await checkGuess(word);
+        const result = await checkGuess(trimmed);
         return NextResponse.json(result);
     } catch (error) {
         const message =
             error instanceof Error ? error.message : "Erreur interne";
-        console.error("[api/game/guess] Erreur :", error);
+        console.error("[api/game/guess]", error);
         return NextResponse.json({ error: message }, { status: 500 });
     }
 }

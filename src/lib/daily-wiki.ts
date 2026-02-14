@@ -1,9 +1,13 @@
 import { prisma } from "./prisma";
 import { fetchRandomWikiPage } from "./wiki";
 
-/**
- * Retourne la date du jour à minuit UTC (sans heures/minutes/secondes).
- */
+type DailyWikiPage = Awaited<
+    ReturnType<typeof prisma.dailyWikiPage.findUnique>
+> & {};
+
+let cachedPage: DailyWikiPage | null = null;
+let cachedDate: string | null = null;
+
 function todayUTC(): Date {
     const now = new Date();
     return new Date(
@@ -11,27 +15,37 @@ function todayUTC(): Date {
     );
 }
 
-/**
- * Récupère la page wiki du jour depuis la DB.
- * Si elle n'existe pas encore, en fetch une et la persiste.
- */
-export async function ensureDailyWikiPage() {
+function todayKey(): string {
+    return todayUTC().toISOString();
+}
+
+function getCached(): DailyWikiPage | null {
+    if (cachedPage && cachedDate === todayKey()) return cachedPage;
+    cachedPage = null;
+    cachedDate = null;
+    return null;
+}
+
+function setCache(page: DailyWikiPage) {
+    cachedPage = page;
+    cachedDate = todayKey();
+}
+
+export async function ensureDailyWikiPage(): Promise<DailyWikiPage> {
+    const cached = getCached();
+    if (cached) return cached;
+
     const today = todayUTC();
 
-    // Vérifier si une page existe déjà pour aujourd'hui
     const existing = await prisma.dailyWikiPage.findUnique({
         where: { date: today },
     });
 
     if (existing) {
-        console.log(
-            `[daily-wiki] Page du jour déjà présente : "${existing.title}"`,
-        );
+        setCache(existing);
         return existing;
     }
 
-    // Aucune page pour aujourd'hui → en chercher une
-    console.log("[daily-wiki] Aucune page pour aujourd'hui, fetch en cours…");
     const wikiPage = await fetchRandomWikiPage(1500);
 
     const created = await prisma.dailyWikiPage.create({
@@ -43,35 +57,24 @@ export async function ensureDailyWikiPage() {
         },
     });
 
-    console.log(
-        `[daily-wiki] Page créée : "${created.title}" (id=${created.id})`,
-    );
+    setCache(created);
     return created;
 }
 
-/**
- * Lance un intervalle qui vérifie toutes les minutes si on a changé de jour,
- * et fetch une nouvelle page si nécessaire.
- * Retourne une fonction de cleanup pour arrêter l'intervalle.
- */
 export function startDailyCron(): () => void {
-    let lastCheckedDay = todayUTC().toISOString();
+    let lastCheckedDay = todayKey();
 
     const interval = setInterval(async () => {
-        const currentDay = todayUTC().toISOString();
+        const currentDay = todayKey();
         if (currentDay !== lastCheckedDay) {
-            console.log("[daily-wiki] Nouveau jour détecté, fetch en cours…");
             lastCheckedDay = currentDay;
             try {
                 await ensureDailyWikiPage();
             } catch (error) {
-                console.error(
-                    "[daily-wiki] Erreur lors du fetch quotidien :",
-                    error,
-                );
+                console.error("[daily-wiki] Erreur fetch quotidien :", error);
             }
         }
-    }, 60_000); // Vérification toutes les 60 secondes
+    }, 60_000);
 
     return () => clearInterval(interval);
 }

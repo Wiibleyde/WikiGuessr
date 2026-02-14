@@ -1,54 +1,24 @@
+import type {
+    GuessResult,
+    MaskedArticle,
+    MaskedSection,
+    PunctuationToken,
+    Token,
+    WordPosition,
+    WordToken,
+} from "@/types/game";
 import { ensureDailyWikiPage } from "./daily-wiki";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+export type {
+    Token,
+    WordToken,
+    PunctuationToken,
+    MaskedSection,
+    MaskedArticle,
+    WordPosition,
+    GuessResult,
+};
 
-export interface WordToken {
-    type: "word";
-    id: string;
-    index: number;
-    length: number;
-}
-
-export interface PunctuationToken {
-    type: "punct";
-    id: string;
-    text: string;
-}
-
-export type Token = WordToken | PunctuationToken;
-
-export interface MaskedSection {
-    titleTokens: Token[];
-    contentTokens: Token[];
-}
-
-export interface MaskedArticle {
-    articleTitleTokens: Token[];
-    sections: MaskedSection[];
-    totalWords: number;
-    date: string;
-}
-
-export interface WordPosition {
-    section: number; // -1 = article title
-    part: "title" | "content";
-    wordIndex: number;
-    display: string; // original word (preserving case)
-}
-
-export interface GuessResult {
-    found: boolean;
-    word: string;
-    positions: WordPosition[];
-    occurrences: number;
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-/**
- * Normalise un mot pour la comparaison :
- * minuscule + suppression des accents (NFD + strip combining marks).
- */
 function normalizeWord(word: string): string {
     return word
         .toLowerCase()
@@ -56,10 +26,6 @@ function normalizeWord(word: string): string {
         .replace(/[\u0300-\u036f]/g, "");
 }
 
-/**
- * Tokenise un texte en mots (alpha-numériques) et ponctuation/espaces.
- * Les apostrophes et tirets séparent les mots.
- */
 const TOKEN_REGEX = /([a-zA-ZÀ-ÿ0-9]+)|(\n)|(\s+)|([^\sa-zA-ZÀ-ÿ0-9]+)/g;
 
 interface InternalWord {
@@ -87,7 +53,6 @@ function tokenize(text: string, prefix = ""): TokenizeResult {
         match = regex.exec(text)
     ) {
         if (match[1]) {
-            // Mot
             tokens.push({
                 type: "word",
                 id: `${prefix}w${tokenId++}`,
@@ -101,7 +66,6 @@ function tokenize(text: string, prefix = ""): TokenizeResult {
             });
             wordIndex++;
         } else {
-            // Ponctuation, espace ou saut de ligne
             tokens.push({
                 type: "punct",
                 id: `${prefix}p${tokenId++}`,
@@ -113,13 +77,23 @@ function tokenize(text: string, prefix = ""): TokenizeResult {
     return { tokens, words };
 }
 
-// ─── API publique ────────────────────────────────────────────────────────────
+function findMatchingPositions(
+    text: string,
+    normalizedGuess: string,
+    section: number,
+    part: "title" | "content",
+): WordPosition[] {
+    const { words } = tokenize(text);
+    return words
+        .filter((w) => w.normalized === normalizedGuess)
+        .map((w) => ({
+            section,
+            part,
+            wordIndex: w.index,
+            display: w.display,
+        }));
+}
 
-/**
- * Retourne la structure masquée de l'article du jour.
- * Aucun texte n'est envoyé — uniquement des longueurs de mots
- * et la ponctuation/espaces visibles.
- */
 export async function getMaskedArticle(): Promise<MaskedArticle> {
     const page = await ensureDailyWikiPage();
     const sections = page.sections as { title: string; content: string }[];
@@ -130,10 +104,7 @@ export async function getMaskedArticle(): Promise<MaskedArticle> {
     );
     let totalWords = titleWords.length;
 
-    const maskedSections: MaskedSection[] = [];
-
-    for (let i = 0; i < sections.length; i++) {
-        const section = sections[i];
+    const maskedSections: MaskedSection[] = sections.map((section, i) => {
         const { tokens: titleTokens, words: stw } = tokenize(
             section.title,
             `s${i}t-`,
@@ -143,8 +114,8 @@ export async function getMaskedArticle(): Promise<MaskedArticle> {
             `s${i}c-`,
         );
         totalWords += stw.length + scw.length;
-        maskedSections.push({ titleTokens, contentTokens });
-    }
+        return { titleTokens, contentTokens };
+    });
 
     return {
         articleTitleTokens,
@@ -154,62 +125,27 @@ export async function getMaskedArticle(): Promise<MaskedArticle> {
     };
 }
 
-/**
- * Vérifie un mot deviné contre l'article du jour.
- * Retourne toutes les positions où le mot apparaît (titre de l'article,
- * titres de sections, contenu des sections).
- */
 export async function checkGuess(word: string): Promise<GuessResult> {
     const page = await ensureDailyWikiPage();
     const sections = page.sections as { title: string; content: string }[];
 
     const normalizedGuess = normalizeWord(word.trim());
-
     if (!normalizedGuess) {
         return { found: false, word: "", positions: [], occurrences: 0 };
     }
 
-    const positions: WordPosition[] = [];
-
-    // Vérifier le titre de l'article
-    const { words: titleWords } = tokenize(page.title);
-    for (const w of titleWords) {
-        if (w.normalized === normalizedGuess) {
-            positions.push({
-                section: -1,
-                part: "title",
-                wordIndex: w.index,
-                display: w.display,
-            });
-        }
-    }
-
-    // Vérifier chaque section (titre + contenu)
-    for (let i = 0; i < sections.length; i++) {
-        const { words: sectionTitleWords } = tokenize(sections[i].title);
-        for (const w of sectionTitleWords) {
-            if (w.normalized === normalizedGuess) {
-                positions.push({
-                    section: i,
-                    part: "title",
-                    wordIndex: w.index,
-                    display: w.display,
-                });
-            }
-        }
-
-        const { words: sectionContentWords } = tokenize(sections[i].content);
-        for (const w of sectionContentWords) {
-            if (w.normalized === normalizedGuess) {
-                positions.push({
-                    section: i,
-                    part: "content",
-                    wordIndex: w.index,
-                    display: w.display,
-                });
-            }
-        }
-    }
+    const positions: WordPosition[] = [
+        ...findMatchingPositions(page.title, normalizedGuess, -1, "title"),
+        ...sections.flatMap((sec, i) => [
+            ...findMatchingPositions(sec.title, normalizedGuess, i, "title"),
+            ...findMatchingPositions(
+                sec.content,
+                normalizedGuess,
+                i,
+                "content",
+            ),
+        ]),
+    ];
 
     return {
         found: positions.length > 0,
