@@ -115,6 +115,32 @@ const GENERIC_IMAGE_PATTERNS = [
 ];
 
 /**
+ * Limite le contenu à 500 caractères et 2 paragraphes max sans couper au milieu d'un paragraphe.
+ * On prend des paragraphes entiers jusqu'à dépasser 500 caractères ou atteindre 2 paragraphes,
+ * puis on inclut quand même le paragraphe qui fait dépasser.
+ */
+function limitTo2Paragraphs(text: string): string {
+    const paragraphs = text.split(/\n\n+/).filter((p) => p.trim());
+
+    if (paragraphs.length === 0) return "";
+
+    const result: string[] = [];
+    let totalLength = 0;
+
+    for (const paragraph of paragraphs) {
+        const trimmed = paragraph.trim();
+        result.push(trimmed);
+        totalLength += trimmed.length;
+
+        if (totalLength >= 500 || result.length >= 2) {
+            break;
+        }
+    }
+
+    return result.join("\n\n");
+}
+
+/**
  * Parse le contenu brut Wikipedia en sections de niveau 2.
  */
 function parseWikiSections(content: string): WikiSection[] {
@@ -129,7 +155,10 @@ function parseWikiSections(content: string): WikiSection[] {
     // Contenu avant la première section = introduction
     const introContent = content.substring(0, matches[0].index ?? 0).trim();
     if (introContent) {
-        sections.push({ title: "Introduction", content: introContent });
+        sections.push({
+            title: "Introduction",
+            content: limitTo2Paragraphs(introContent),
+        });
     }
 
     for (let i = 0; i < matches.length; i++) {
@@ -155,7 +184,15 @@ function parseWikiSections(content: string): WikiSection[] {
 
         // Au moins 20 caractères de contenu significatif
         if (sectionContent.replace(/[=\s\n]+/g, "").length >= 20) {
-            sections.push({ title: sectionTitle, content: sectionContent });
+            sections.push({
+                title: sectionTitle,
+                content: limitTo2Paragraphs(sectionContent),
+            });
+        }
+
+        // Limiter à 2 sections maximum (en comptant l'introduction)
+        if (sections.length >= 2) {
+            break;
         }
     }
 

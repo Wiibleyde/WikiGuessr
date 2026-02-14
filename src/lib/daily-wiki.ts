@@ -32,7 +32,7 @@ export async function ensureDailyWikiPage() {
 
     // Aucune page pour aujourd'hui → en chercher une
     console.log("[daily-wiki] Aucune page pour aujourd'hui, fetch en cours…");
-    const wikiPage = await fetchRandomWikiPage(2500);
+    const wikiPage = await fetchRandomWikiPage(1500);
 
     const created = await prisma.dailyWikiPage.create({
         data: {
