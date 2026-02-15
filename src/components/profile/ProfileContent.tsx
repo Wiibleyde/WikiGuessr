@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import type { ProfileStats } from "@/types/auth";
@@ -20,7 +19,7 @@ function StatCard({ label, value }: StatCardProps) {
 }
 
 export default function ProfileContent() {
-    const { user, loading: authLoading, logout } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [stats, setStats] = useState<ProfileStats | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -69,50 +68,6 @@ export default function ProfileContent() {
 
     return (
         <div className="min-h-screen bg-stone-50 text-gray-900">
-            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
-                <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <a
-                            href="/"
-                            className="text-xl font-extrabold tracking-tight text-gray-800 hover:text-gray-600 transition-colors"
-                        >
-                            WikiGuessr
-                        </a>
-                        <span className="text-gray-400">·</span>
-                        <span className="text-sm text-gray-500">Profil</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <a
-                            href="/leaderboard"
-                            className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
-                        >
-                            Classement
-                        </a>
-                        <div className="flex items-center gap-3">
-                            {user.avatar && (
-                                <Image
-                                    src={`https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png?size=32`}
-                                    alt=""
-                                    width={28}
-                                    height={28}
-                                    className="w-7 h-7 rounded-full"
-                                />
-                            )}
-                            <span className="text-sm text-gray-700">
-                                {user.username}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={logout}
-                                className="text-xs text-gray-400 hover:text-red-500 transition-colors"
-                            >
-                                Déconnexion
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
             <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
                 {stats && (
                     <>

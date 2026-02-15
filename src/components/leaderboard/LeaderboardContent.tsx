@@ -64,37 +64,6 @@ export default function LeaderboardContent() {
 
     return (
         <div className="min-h-screen bg-stone-50 text-gray-900">
-            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
-                <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <a
-                            href="/"
-                            className="text-xl font-extrabold tracking-tight text-gray-800 hover:text-gray-600 transition-colors"
-                        >
-                            WikiGuessr
-                        </a>
-                        <span className="text-gray-400">·</span>
-                        <span className="text-sm text-gray-500">
-                            Classement
-                        </span>
-                    </div>
-                    <nav className="flex items-center gap-4 text-sm">
-                        <a
-                            href="/"
-                            className="text-gray-500 hover:text-gray-800 transition-colors"
-                        >
-                            Jouer
-                        </a>
-                        <a
-                            href="/profile"
-                            className="text-gray-500 hover:text-gray-800 transition-colors"
-                        >
-                            Profil
-                        </a>
-                    </nav>
-                </div>
-            </header>
-
             <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
                 <div className="text-center mb-6">
                     <h2 className="text-2xl font-bold text-gray-800">
