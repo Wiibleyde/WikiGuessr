@@ -38,14 +38,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             return NextResponse.redirect(new URL("/", request.url));
         }
 
-        // Verify CSRF state
         const storedState = await getStateCookie();
         if (!storedState || storedState !== state) {
             console.error("[auth/callback] State mismatch");
             return NextResponse.redirect(new URL("/", request.url));
         }
 
-        // Exchange code for token
         const tokenResponse = await fetch(DISCORD_TOKEN_URL, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -68,7 +66,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
         const tokenData = (await tokenResponse.json()) as DiscordTokenResponse;
 
-        // Fetch Discord user
         const userResponse = await fetch(DISCORD_USER_URL, {
             headers: {
                 Authorization: `${tokenData.token_type} ${tokenData.access_token}`,
@@ -85,7 +82,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
         const discordUser = (await userResponse.json()) as DiscordUser;
 
-        // Upsert user in database
         const user = await prisma.user.upsert({
             where: { discordId: discordUser.id },
             update: {
@@ -99,7 +95,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             },
         });
 
-        // Sign JWT and set cookie
         const token = signJWT({ userId: user.id, discordId: user.discordId });
         const response = NextResponse.redirect(new URL("/", request.url));
         setAuthCookie(response, token);

@@ -56,7 +56,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         const dailyPage = await ensureDailyWikiPage();
 
-        // Upsert to ensure idempotency (one result per user per day)
         const result = await prisma.gameResult.upsert({
             where: {
                 userId_dailyWikiPageId: {

@@ -28,7 +28,6 @@ export default function Game() {
         submitGuess,
     } = useGameState();
 
-    // Auto-save win to server when user is authenticated
     const savedRef = useRef(false);
     useEffect(() => {
         if (!won || !user || savedRef.current) return;

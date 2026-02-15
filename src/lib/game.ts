@@ -116,8 +116,6 @@ function tokenize(text: string, prefix = ""): TokenizeResult {
     return { tokens, words };
 }
 
-// ── Tokenization cache ──────────────────────────────────────────
-
 interface ArticleCache {
     maskedArticle: MaskedArticle;
     wordGroups: Map<string, WordPosition[]>;
@@ -163,7 +161,6 @@ function buildArticleCache(
         date,
     };
 
-    // Build word groups (normalized → positions) from all words across the article
     const wordGroups = new Map<string, WordPosition[]>();
 
     for (const w of titleWords) {
@@ -222,8 +219,6 @@ async function getArticleCache(): Promise<ArticleCache> {
     return articleCache;
 }
 
-// ── Public API ──────────────────────────────────────────────────
-
 export async function getMaskedArticle(): Promise<MaskedArticle> {
     const cache = await getArticleCache();
     return cache.maskedArticle;
@@ -244,7 +239,6 @@ export async function checkGuess(word: string): Promise<GuessResult> {
     const cache = await getArticleCache();
     const { wordGroups } = cache;
 
-    // Exact match
     const exactPositions = wordGroups.get(normalizedGuess);
     if (exactPositions && exactPositions.length > 0) {
         return {
@@ -256,7 +250,6 @@ export async function checkGuess(word: string): Promise<GuessResult> {
         };
     }
 
-    // Fuzzy matching (only for words >= MIN_FUZZY_LENGTH)
     let bestSimilarity = 0;
     const fuzzyPositions: WordPosition[] = [];
 
@@ -270,7 +263,6 @@ export async function checkGuess(word: string): Promise<GuessResult> {
                 bestSimilarity = sim;
             }
 
-            // Reveal if high similarity AND first character matches
             if (
                 sim >= REVEAL_THRESHOLD &&
                 normalizedGuess[0] === normalized[0]

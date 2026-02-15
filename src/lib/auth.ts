@@ -6,7 +6,7 @@ import { prisma } from "./prisma";
 
 const AUTH_COOKIE = "wikiguessr-auth";
 const STATE_COOKIE = "wikiguessr-oauth-state";
-const COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
+const COOKIE_MAX_AGE = 30 * 24 * 60 * 60;
 
 export async function getSessionUser(): Promise<AuthUser | null> {
     const cookieStore = await cookies();
