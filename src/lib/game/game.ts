@@ -20,10 +20,11 @@ export type {
     GuessResult,
 };
 
-const TOKEN_REGEX = /([a-zA-ZÀ-ÿ0-9]+)|(\n)|(\s+)|([^\sa-zA-ZÀ-ÿ0-9]+)/g;
+const TOKEN_REGEX = /([\p{L}0-9]+)|(\n)|(\s+)|([^\s\p{L}0-9]+)/gu;
 
-const REVEAL_THRESHOLD = 0.8;
-const MIN_FUZZY_LENGTH = 4;
+const REVEAL_THRESHOLD = 0.85;
+const MIN_FUZZY_LENGTH = 5;
+const MAX_LENGTH_DIFF = 2;
 
 /**
  * Two-row Levenshtein distance — O(min(m,n)) space instead of O(m*n).
@@ -251,33 +252,37 @@ export async function checkGuess(word: string): Promise<GuessResult> {
     }
 
     let bestSimilarity = 0;
-    const fuzzyPositions: WordPosition[] = [];
+    let bestMatch: { normalized: string; positions: WordPosition[] } | null =
+        null;
 
     if (normalizedGuess.length >= MIN_FUZZY_LENGTH) {
         for (const [normalized, positions] of wordGroups) {
             if (normalized.length < MIN_FUZZY_LENGTH) continue;
 
+            const lengthDiff = Math.abs(
+                normalizedGuess.length - normalized.length,
+            );
+            if (lengthDiff > MAX_LENGTH_DIFF) continue;
+
+            if (normalizedGuess[0] !== normalized[0]) continue;
+
             const sim = wordSimilarity(normalizedGuess, normalized);
 
             if (sim > bestSimilarity) {
                 bestSimilarity = sim;
-            }
-
-            if (
-                sim >= REVEAL_THRESHOLD &&
-                normalizedGuess[0] === normalized[0]
-            ) {
-                fuzzyPositions.push(...positions);
+                if (sim >= REVEAL_THRESHOLD) {
+                    bestMatch = { normalized, positions };
+                }
             }
         }
     }
 
-    if (fuzzyPositions.length > 0) {
+    if (bestMatch) {
         return {
             found: true,
             word: normalizedGuess,
-            positions: fuzzyPositions,
-            occurrences: fuzzyPositions.length,
+            positions: bestMatch.positions,
+            occurrences: bestMatch.positions.length,
             similarity: bestSimilarity,
         };
     }
@@ -302,6 +307,8 @@ export async function verifyWin(guessedWords: string[]): Promise<boolean> {
             if (
                 guess.length >= MIN_FUZZY_LENGTH &&
                 titleWord.normalized.length >= MIN_FUZZY_LENGTH &&
+                Math.abs(guess.length - titleWord.normalized.length) <=
+                    MAX_LENGTH_DIFF &&
                 guess[0] === titleWord.normalized[0] &&
                 wordSimilarity(guess, titleWord.normalized) >= REVEAL_THRESHOLD
             ) {
