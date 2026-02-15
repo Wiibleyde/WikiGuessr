@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import ArticleView from "@/components/ArticleView";
+import GameHeader from "@/components/GameHeader";
+import GuessList from "@/components/GuessList";
 import { useAuth } from "@/hooks/useAuth";
 import { useGameState } from "@/hooks/useGameState";
-import ArticleView from "./ArticleView";
-import GameHeader from "./GameHeader";
-import GuessList from "./GuessList";
 
 export default function Game() {
-    const { user, loading: authLoading, login, logout } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const {
         article,
         guesses,
@@ -127,10 +127,6 @@ export default function Game() {
                 lastGuessFound={lastGuessFound}
                 lastGuessSimilarity={lastGuessSimilarity}
                 inputRef={inputRef}
-                user={user}
-                authLoading={authLoading}
-                onLogin={login}
-                onLogout={logout}
                 onInputChange={(value) => {
                     setInput(value);
                     setLastGuessFound(null);
