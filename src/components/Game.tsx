@@ -36,9 +36,12 @@ export default function Game() {
         fetch("/api/game/complete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ guessCount: guesses.length }),
+            body: JSON.stringify({
+                guessCount: guesses.length,
+                guessedWords: guesses.map((g) => g.word),
+            }),
         }).catch((err) => console.error("[game/complete]", err));
-    }, [won, user, guesses.length]);
+    }, [won, user, guesses]);
 
     if (loading) {
         return (

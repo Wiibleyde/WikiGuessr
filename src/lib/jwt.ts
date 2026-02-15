@@ -1,7 +1,15 @@
-import { createHmac, randomBytes } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 const JWT_SECRET = process.env.JWT_SECRET ?? "";
 const JWT_EXPIRATION_DAYS = 30;
+
+function assertSecretConfigured(): void {
+    if (!JWT_SECRET) {
+        throw new Error(
+            "[jwt] JWT_SECRET is not set — authentication cannot operate without a secret",
+        );
+    }
+}
 
 interface JWTPayload {
     userId: number;
@@ -22,6 +30,7 @@ function sign(input: string): string {
 }
 
 export function signJWT(payload: Omit<JWTPayload, "exp">): string {
+    assertSecretConfigured();
     const header = base64UrlEncode(
         JSON.stringify({ alg: "HS256", typ: "JWT" }),
     );
@@ -33,13 +42,22 @@ export function signJWT(payload: Omit<JWTPayload, "exp">): string {
 }
 
 export function verifyJWT(token: string): JWTPayload | null {
+    assertSecretConfigured();
     const parts = token.split(".");
     if (parts.length !== 3) return null;
 
     const [header, payload, signature] = parts;
     const expectedSignature = sign(`${header}.${payload}`);
 
-    if (signature !== expectedSignature) return null;
+    const sigBuffer = Buffer.from(signature, "base64url");
+    const expectedBuffer = Buffer.from(expectedSignature, "base64url");
+
+    if (
+        sigBuffer.length !== expectedBuffer.length ||
+        !timingSafeEqual(sigBuffer, expectedBuffer)
+    ) {
+        return null;
+    }
 
     try {
         const decoded = JSON.parse(base64UrlDecode(payload)) as JWTPayload;
