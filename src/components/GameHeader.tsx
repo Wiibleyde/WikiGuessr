@@ -76,7 +76,7 @@ export default function GameHeader({
                                         ? "border-emerald-300 bg-emerald-50"
                                         : "border-gray-300",
                             ].join(" ")}
-                            disabled={guessing}
+                            readOnly={guessing}
                         />
                         <button
                             type="submit"
