@@ -11,43 +11,46 @@ export function damerauLevenshteinDistance(a: string, b: string): number {
     if (len1 === 0) return len2;
     if (len2 === 0) return len1;
 
-    const H: number[][] = [];
-    const maxdist = len1 + len2;
-    H[-1] = Array(len2 + 2).fill(maxdist);
-    H[-1][-1] = maxdist;
+    // Create a 2D matrix with proper indexing
+    const matrix: number[][] = [];
 
+    // Initialize the matrix
     for (let i = 0; i <= len1; i++) {
-        H[i] = Array(len2 + 2).fill(0);
-        H[i][-1] = maxdist;
-        H[i][0] = i;
+        matrix[i] = Array(len2 + 1).fill(0);
+        matrix[i][0] = i;
     }
 
     for (let j = 0; j <= len2; j++) {
-        H[0][j] = j;
+        matrix[0][j] = j;
     }
 
+    // Calculate distances
     for (let i = 1; i <= len1; i++) {
         for (let j = 1; j <= len2; j++) {
             const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-            H[i][j] = Math.min(
-                H[i - 1][j] + 1, // deletion
-                H[i][j - 1] + 1, // insertion
-                H[i - 1][j - 1] + cost, // substitution
+
+            matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1, // deletion
+                matrix[i][j - 1] + 1, // insertion
+                matrix[i - 1][j - 1] + cost, // substitution
             );
 
-            // transposition
+            // Check for transposition
             if (
                 i > 1 &&
                 j > 1 &&
                 a[i - 1] === b[j - 2] &&
                 a[i - 2] === b[j - 1]
             ) {
-                H[i][j] = Math.min(H[i][j], H[i - 2][j - 2] + cost);
+                matrix[i][j] = Math.min(
+                    matrix[i][j],
+                    matrix[i - 2][j - 2] + cost,
+                );
             }
         }
     }
 
-    return H[len1][len2];
+    return matrix[len1][len2];
 }
 
 /**
@@ -231,8 +234,9 @@ export function getLemmas(word: string): string[] {
     }
 
     // Feminine to masculine
+    // Note: We check for normalized forms, so "ée" becomes "ee" after normalization
     if (normalized.endsWith("ee")) {
-        // -ée → -é (ex: passée → passé)
+        // -ée → -é (ex: passée → passé, both normalized to passee → passe)
         lemmas.push(`${normalized.slice(0, -2)}e`);
     } else if (normalized.endsWith("e") && normalized.length > 2) {
         // -e → remove (ex: grande → grand)
@@ -252,11 +256,6 @@ export function getLemmas(word: string): string[] {
     } else if (normalized.endsWith("ant")) {
         // present participle → infinitive (ex: parlant → parler)
         lemmas.push(`${normalized.slice(0, -3)}er`);
-    }
-
-    // Diminutives and augmentatives
-    if (normalized.endsWith("ette")) {
-        lemmas.push(normalized.slice(0, -4)); // fillette → fill (incomplete but helps)
     }
 
     return [...new Set(lemmas)]; // Remove duplicates

@@ -283,10 +283,10 @@ export async function checkGuess(word: string): Promise<GuessResult> {
 
             // Use improved orthographic similarity
             const orthoSim = combinedSimilarity(normalizedGuess, normalized);
-            // Boost score if first letter matches
+            // Add a small bonus if first letter matches (0.05 instead of multiplying)
             const adjustedSim = firstLetterMatch
-                ? orthoSim * 1.1
-                : orthoSim * 0.95;
+                ? Math.min(orthoSim + 0.05, 1.0)
+                : orthoSim;
 
             if (adjustedSim > bestSimilarity) {
                 bestSimilarity = adjustedSim;
