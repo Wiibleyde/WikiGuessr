@@ -1,4 +1,10 @@
 import { normalizeWord } from "@/lib/game/normalize";
+import {
+    areMorphologicalVariants,
+    areSemanticallySimilar,
+    combinedSimilarity,
+    getLemmas,
+} from "@/lib/game/similarity";
 import type {
     GuessResult,
     MaskedArticle,
@@ -22,50 +28,32 @@ export type {
 
 const TOKEN_REGEX = /([\p{L}0-9]+)|(\n)|(\s+)|([^\s\p{L}0-9]+)/gu;
 
-const REVEAL_THRESHOLD = 0.85;
-const MIN_FUZZY_LENGTH = 5;
-const MAX_LENGTH_DIFF = 2;
+// Thresholds for the improved similarity algorithm
+const REVEAL_THRESHOLD = 0.8; // Slightly lower due to better algorithm
+const SEMANTIC_REVEAL_THRESHOLD = 1.0; // Exact match for semantic
+const MORPHOLOGICAL_REVEAL_THRESHOLD = 0.9; // High confidence for variants
+const MIN_FUZZY_LENGTH = 4; // Lowered from 5 to catch more words
+const MAX_LENGTH_DIFF = 3; // Increased from 2 to be more forgiving
 
 /**
- * Two-row Levenshtein distance — O(min(m,n)) space instead of O(m*n).
+ * Check if a guess matches a word using semantic or morphological analysis.
+ * Returns the similarity score (0-1) if it's a match, or -1 if not a match.
  */
-function levenshteinDistance(a: string, b: string): number {
-    if (a.length < b.length) {
-        const tmp = a;
-        a = b;
-        b = tmp;
+function checkSemanticMatch(
+    guessNormalized: string,
+    wordNormalized: string,
+): number {
+    // Check for semantic similarity (synonyms, related words)
+    if (areSemanticallySimilar(guessNormalized, wordNormalized)) {
+        return SEMANTIC_REVEAL_THRESHOLD;
     }
 
-    const m = a.length;
-    const n = b.length;
-
-    let prev = new Array<number>(n + 1);
-    let curr = new Array<number>(n + 1);
-
-    for (let j = 0; j <= n; j++) prev[j] = j;
-
-    for (let i = 1; i <= m; i++) {
-        curr[0] = i;
-        for (let j = 1; j <= n; j++) {
-            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-            curr[j] = Math.min(
-                prev[j] + 1,
-                curr[j - 1] + 1,
-                prev[j - 1] + cost,
-            );
-        }
-        const swap = prev;
-        prev = curr;
-        curr = swap;
+    // Check for morphological variants (plural, gender, conjugations)
+    if (areMorphologicalVariants(guessNormalized, wordNormalized)) {
+        return MORPHOLOGICAL_REVEAL_THRESHOLD;
     }
 
-    return prev[n];
-}
-
-function wordSimilarity(a: string, b: string): number {
-    const maxLen = Math.max(a.length, b.length);
-    if (maxLen === 0) return 1;
-    return 1 - levenshteinDistance(a, b) / maxLen;
+    return -1; // No semantic/morphological match
 }
 
 interface InternalWord {
@@ -240,6 +228,7 @@ export async function checkGuess(word: string): Promise<GuessResult> {
     const cache = await getArticleCache();
     const { wordGroups } = cache;
 
+    // 1. Check for exact match
     const exactPositions = wordGroups.get(normalizedGuess);
     if (exactPositions && exactPositions.length > 0) {
         return {
@@ -251,6 +240,24 @@ export async function checkGuess(word: string): Promise<GuessResult> {
         };
     }
 
+    // 2. Check lemmas (morphological variants like plural/singular)
+    const guessLemmas = getLemmas(normalizedGuess);
+    for (const lemma of guessLemmas) {
+        if (lemma !== normalizedGuess) {
+            const lemmaPositions = wordGroups.get(lemma);
+            if (lemmaPositions && lemmaPositions.length > 0) {
+                return {
+                    found: true,
+                    word: normalizedGuess,
+                    positions: lemmaPositions,
+                    occurrences: lemmaPositions.length,
+                    similarity: MORPHOLOGICAL_REVEAL_THRESHOLD,
+                };
+            }
+        }
+    }
+
+    // 3. Fuzzy matching with improved algorithms
     let bestSimilarity = 0;
     let bestMatch: { normalized: string; positions: WordPosition[] } | null =
         null;
@@ -264,13 +271,26 @@ export async function checkGuess(word: string): Promise<GuessResult> {
             );
             if (lengthDiff > MAX_LENGTH_DIFF) continue;
 
-            if (normalizedGuess[0] !== normalized[0]) continue;
+            // Still prefer same first letter, but don't enforce it strictly
+            const firstLetterMatch = normalizedGuess[0] === normalized[0];
 
-            const sim = wordSimilarity(normalizedGuess, normalized);
+            // Check semantic/morphological match first
+            const semanticSim = checkSemanticMatch(normalizedGuess, normalized);
+            if (semanticSim > 0 && semanticSim > bestSimilarity) {
+                bestSimilarity = semanticSim;
+                bestMatch = { normalized, positions };
+            }
 
-            if (sim > bestSimilarity) {
-                bestSimilarity = sim;
-                if (sim >= REVEAL_THRESHOLD) {
+            // Use improved orthographic similarity
+            const orthoSim = combinedSimilarity(normalizedGuess, normalized);
+            // Boost score if first letter matches
+            const adjustedSim = firstLetterMatch
+                ? orthoSim * 1.1
+                : orthoSim * 0.95;
+
+            if (adjustedSim > bestSimilarity) {
+                bestSimilarity = adjustedSim;
+                if (adjustedSim >= REVEAL_THRESHOLD) {
                     bestMatch = { normalized, positions };
                 }
             }
@@ -283,7 +303,7 @@ export async function checkGuess(word: string): Promise<GuessResult> {
             word: normalizedGuess,
             positions: bestMatch.positions,
             occurrences: bestMatch.positions.length,
-            similarity: bestSimilarity,
+            similarity: Math.min(bestSimilarity, 1.0), // Cap at 1.0
         };
     }
 
@@ -313,17 +333,34 @@ export async function verifyWin(guessedWords: string[]): Promise<boolean> {
 
     return cache.titleWords.every((titleWord) => {
         for (const guess of normalizedGuesses) {
+            // Exact match
             if (guess === titleWord.normalized) return true;
 
+            // Check lemmas
+            const guessLemmas = getLemmas(guess);
+            const titleLemmas = getLemmas(titleWord.normalized);
+            for (const gl of guessLemmas) {
+                for (const tl of titleLemmas) {
+                    if (gl === tl) return true;
+                }
+            }
+
+            // Semantic match
+            if (areSemanticallySimilar(guess, titleWord.normalized)) {
+                return true;
+            }
+
+            // Orthographic fuzzy match
             if (
                 guess.length >= MIN_FUZZY_LENGTH &&
                 titleWord.normalized.length >= MIN_FUZZY_LENGTH &&
                 Math.abs(guess.length - titleWord.normalized.length) <=
-                    MAX_LENGTH_DIFF &&
-                guess[0] === titleWord.normalized[0] &&
-                wordSimilarity(guess, titleWord.normalized) >= REVEAL_THRESHOLD
+                    MAX_LENGTH_DIFF
             ) {
-                return true;
+                const sim = combinedSimilarity(guess, titleWord.normalized);
+                if (sim >= REVEAL_THRESHOLD) {
+                    return true;
+                }
             }
         }
         return false;
