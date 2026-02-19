@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 import ArticleView from "@/components/ArticleView";
 import GameHeader from "@/components/GameHeader";
 import GuessList from "@/components/GuessList";
-import YesterdayWord from "@/components/YesterdayWord";
 import { useAuth } from "@/hooks/useAuth";
 import { useGameState } from "@/hooks/useGameState";
 
@@ -141,10 +140,7 @@ export default function Game() {
                     revealed={revealed}
                     lastRevealedWord={lastRevealedWord}
                 />
-                <div className="lg:w-72 w-full shrink-0 flex flex-col gap-4">
-                    <YesterdayWord />
-                    <GuessList guesses={guesses} />
-                </div>
+                <GuessList guesses={guesses} />
             </div>
         </div>
     );
