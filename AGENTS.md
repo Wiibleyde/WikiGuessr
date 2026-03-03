@@ -13,8 +13,9 @@ WikiGuessr is a daily word-guessing game built with **Next.js 16** (App Router),
 | Language     | TypeScript 5 (strict mode)          |
 | Styling      | Tailwind CSS 4                      |
 | Database     | PostgreSQL via Prisma 7 (`@prisma/adapter-pg`) |
+| Data Fetching| SWR                                 |
 | Linter       | Biome 2.2                           |
-| Package Mgr  | npm                                 |
+| Package Mgr  | Bun                                 |
 
 ## Repository Structure
 
@@ -24,13 +25,23 @@ src/
 │   ├── layout.tsx          # Root layout (lang="fr")
 │   ├── page.tsx            # Home page — renders <Game />
 │   ├── globals.css         # Global styles (Tailwind)
+│   ├── leaderboard/
+│   │   └── page.tsx        # Leaderboard page
+│   ├── profile/
+│   │   └── page.tsx        # User profile page
 │   └── api/
 │       ├── game/
 │       │   ├── route.ts    # GET  → returns masked article
 │       │   ├── guess/
 │       │   │   └── route.ts # POST → checks a word guess
-│       │   └── complete/
-│       │       └── route.ts # POST → saves game result (auth required)
+│       │   ├── complete/
+│       │   │   └── route.ts # POST → saves game result (auth required)
+│       │   ├── reveal/
+│       │   │   └── route.ts # POST → bulk-reveal a list of words
+│       │   ├── state/
+│       │   │   └── route.ts # GET/POST → persist/restore auth user game state
+│       │   └── yesterday/
+│       │       └── route.ts # GET  → returns yesterday's article title
 │       ├── auth/
 │       │   ├── login/
 │       │   │   └── route.ts # GET  → redirects to Discord OAuth2
@@ -40,34 +51,50 @@ src/
 │       │   │   └── route.ts # GET  → returns current user
 │       │   └── logout/
 │       │       └── route.ts # POST → clears auth cookie
-│       ├── profile/
-│       │   └── stats/
-│       │       └── route.ts # GET  → returns user game stats
-│       └── daily-wiki/
-│           └── route.ts    # GET  → returns the full daily wiki page
+│       ├── leaderboard/
+│       │   └── route.ts    # GET  → returns leaderboard categories & rankings
+│       └── profile/
+│           └── stats/
+│               └── route.ts # GET  → returns user game stats
 ├── components/             # React client components
 │   ├── Game.tsx            # Main game orchestrator
 │   ├── GameHeader.tsx      # Header with input, progress bar, stats
 │   ├── ArticleView.tsx     # Renders masked/revealed article sections
 │   ├── TokenList.tsx       # Renders token sequences (words & punctuation)
-│   └── GuessList.tsx       # Sidebar list of past guesses
+│   ├── GuessList.tsx       # Sidebar list of past guesses
+│   ├── Navbar.tsx          # Top navigation bar (auth, links)
+│   ├── YesterdayWord.tsx   # Displays yesterday's article title
+│   ├── leaderboard/
+│   │   ├── LeaderboardCategory.tsx
+│   │   ├── LeaderboardContent.tsx
+│   │   └── LeaderboardTable.tsx
+│   └── profile/
+│       └── ProfileContent.tsx
 ├── hooks/
 │   ├── useGameState.ts     # Core game state hook (guesses, reveals, cache)
 │   └── useAuth.ts          # Authentication state hook (Discord OAuth2)
 ├── lib/
-│   ├── game.ts             # Server-side game logic (tokenization, guess checking)
-│   ├── wiki.ts             # Wikipedia API integration
-│   ├── daily-wiki.ts       # Daily page selection & caching (DB + in-memory)
+│   ├── fetcher.ts          # Generic SWR/fetch helper
+│   ├── leaderboard.ts      # Leaderboard computation (win-streak, best-guess, most-wins)
 │   ├── prisma.ts           # Prisma client singleton
-│   ├── jwt.ts              # JWT sign/verify (HMAC-SHA256 via node:crypto)
-│   └── auth.ts             # Auth helpers (session, cookies)
+│   ├── auth/
+│   │   ├── auth.ts         # Auth helpers (session, cookies)
+│   │   ├── jwt.ts          # JWT sign/verify (HMAC-SHA256 via node:crypto)
+│   │   └── rate-limit.ts   # In-memory IP rate limiter
+│   └── game/
+│       ├── game.ts         # Server-side game logic (tokenization, guess checking)
+│       ├── daily-wiki.ts   # Daily page selection & caching (DB + in-memory)
+│       ├── normalize.ts    # Word normalization (NFD, diacritics, ligatures)
+│       └── wiki.ts         # Wikipedia API integration
 ├── types/
 │   ├── game.ts             # Shared game type definitions
-│   └── auth.ts             # Auth & profile type definitions
+│   ├── auth.ts             # Auth & profile type definitions
+│   └── leaderboard.ts      # Leaderboard type definitions
 └── instrumentation.ts      # Next.js instrumentation (daily cron bootstrap)
 prisma/
 ├── schema.prisma           # Database schema
 └── migrations/             # Prisma migration files
+prisma.config.ts            # Prisma config (datasource URL, migration path)
 generated/prisma/           # Generated Prisma client (do not edit)
 ```
 
@@ -125,19 +152,20 @@ generated/prisma/           # Generated Prisma client (do not edit)
 ## Database & Prisma
 
 - Schema lives in `prisma/schema.prisma`. Generated client outputs to `generated/prisma/`.
+- Prisma configuration is in `prisma.config.ts` (datasource URL, migration path).
 - **Never edit files in `generated/`** — they are auto-generated.
 - The Prisma client singleton is in `src/lib/prisma.ts` — always import from there, never instantiate directly.
 - In development, the client is cached on `globalThis` to survive HMR.
 - Use the PostgreSQL adapter (`@prisma/adapter-pg`) — the connection string comes from `DATABASE_URL` env var.
 - After schema changes:
-  1. Create a migration: `npx prisma migrate dev --name <description>`
-  2. Regenerate the client: `npx prisma generate`
+  1. Create a migration: `bunx prisma migrate dev --name <description>`
+  2. Regenerate the client: `bunx prisma generate`
 
 ## Linting & Formatting
 
 - **Biome** is the single tool for both linting and formatting.
-- Run `npm run lint` to check for issues.
-- Run `npm run format` to auto-format all files.
+- Run `bun run lint` to check for issues.
+- Run `bun run format` to auto-format all files.
 - Biome rules: recommended rules enabled, plus `next` and `react` domains.
 - `noUnknownAtRules` is disabled (for Tailwind `@apply`, `@theme`, etc.).
 - Always run lint before committing.
@@ -197,14 +225,14 @@ generated/prisma/           # Generated Prisma client (do not edit)
 ## Common Commands
 
 ```bash
-npm run dev        # Start development server
-npm run build      # Production build
-npm run start      # Start production server
-npm run lint       # Check linting (Biome)
-npm run format     # Auto-format (Biome)
-npx prisma migrate dev    # Run migrations
-npx prisma generate       # Regenerate Prisma client
-npx prisma studio         # Open Prisma Studio (DB GUI)
+bun run dev        # Start development server
+bun run build      # Production build
+bun run start      # Start production server
+bun run lint       # Check linting & formatting (Biome)
+bun run format     # Auto-format (Biome)
+bunx prisma migrate dev    # Run migrations
+bunx prisma generate       # Regenerate Prisma client
+bunx prisma studio         # Open Prisma Studio (DB GUI)
 ```
 
 ## Do's and Don'ts
@@ -218,7 +246,7 @@ npx prisma studio         # Open Prisma Studio (DB GUI)
 - Log errors with contextual prefixes (`[module-name]`).
 - Use the `@/*` alias for imports.
 - Keep server logic in `lib/`, UI logic in `components/` and `hooks/`.
-- Run `npm run lint` and `npm run format` before committing.
+- Run `bun run lint` and `bun run format` before committing.
 
 ### Don't
 
