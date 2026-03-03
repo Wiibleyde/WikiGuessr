@@ -225,15 +225,23 @@ export async function getMaskedArticle(): Promise<MaskedArticle> {
     return cache.maskedArticle;
 }
 
+/** Return the current server-side UTC date key (e.g. "2026-03-03"). */
+export async function getCurrentServerDate(): Promise<string> {
+    const cache = await getArticleCache();
+    return cache.date;
+}
+
 export async function checkGuess(word: string): Promise<GuessResult> {
     const normalizedGuess = normalizeWord(word.trim());
     if (!normalizedGuess) {
+        const cache = await getArticleCache();
         return {
             found: false,
             word: "",
             positions: [],
             occurrences: 0,
             similarity: 0,
+            serverDate: cache.date,
         };
     }
 
@@ -248,6 +256,7 @@ export async function checkGuess(word: string): Promise<GuessResult> {
             positions: exactPositions,
             occurrences: exactPositions.length,
             similarity: 1,
+            serverDate: cache.date,
         };
     }
 
@@ -284,6 +293,7 @@ export async function checkGuess(word: string): Promise<GuessResult> {
             positions: bestMatch.positions,
             occurrences: bestMatch.positions.length,
             similarity: bestSimilarity,
+            serverDate: cache.date,
         };
     }
 
@@ -293,6 +303,7 @@ export async function checkGuess(word: string): Promise<GuessResult> {
         positions: [],
         occurrences: 0,
         similarity: bestSimilarity,
+        serverDate: cache.date,
     };
 }
 

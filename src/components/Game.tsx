@@ -30,8 +30,6 @@ export default function Game() {
         markSaved,
         syncWithDatabase,
         syncToDatabase,
-        startPeriodicSync,
-        stopPeriodicSync,
         synced,
     } = useGameState();
 
@@ -46,16 +44,6 @@ export default function Game() {
         syncInitRef.current = true;
         syncWithDatabase();
     }, [authLoading, loading, article, user, syncWithDatabase]);
-
-    // Start/stop periodic sync based on auth state
-    useEffect(() => {
-        if (user && synced) {
-            startPeriodicSync();
-        }
-        return () => {
-            stopPeriodicSync();
-        };
-    }, [user, synced, startPeriodicSync, stopPeriodicSync]);
 
     // Sync to DB after each guess (when logged in and synced)
     const prevGuessCount = useRef(guesses.length);

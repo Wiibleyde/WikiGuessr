@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent, RefObject } from "react";
+import type { RefObject } from "react";
 import YesterdayWord from "@/components/YesterdayWord";
 
 interface GameHeaderProps {
@@ -14,7 +14,7 @@ interface GameHeaderProps {
     lastGuessSimilarity: number;
     inputRef: RefObject<HTMLInputElement | null>;
     onInputChange: (value: string) => void;
-    onSubmit: (e?: FormEvent) => void;
+    onSubmit: (e?: React.FormEvent) => void;
 }
 
 export default function GameHeader({

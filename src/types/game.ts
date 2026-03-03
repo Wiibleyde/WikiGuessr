@@ -38,6 +38,7 @@ export interface GuessResult {
     positions: WordPosition[];
     occurrences: number;
     similarity: number;
+    serverDate: string;
 }
 
 export interface StoredGuess {
