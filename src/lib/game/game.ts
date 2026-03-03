@@ -23,49 +23,159 @@ export type {
 const TOKEN_REGEX = /([\p{L}0-9]+)|(\n)|(\s+)|([^\s\p{L}0-9]+)/gu;
 
 const REVEAL_THRESHOLD = 0.85;
-const MIN_FUZZY_LENGTH = 5;
-const MAX_LENGTH_DIFF = 2;
+const MIN_FUZZY_LENGTH = 4;
+const MAX_LENGTH_RATIO = 1.5;
 
-/**
- * Two-row Levenshtein distance — O(min(m,n)) space instead of O(m*n).
- */
-function levenshteinDistance(a: string, b: string): number {
-    if (a.length < b.length) {
-        const tmp = a;
-        a = b;
-        b = tmp;
-    }
+// ---------------------------------------------------------------------------
+//  Metric 1 — Optimal String Alignment distance (restricted Damerau-Levenshtein)
+//  Handles transpositions on top of insertions, deletions, substitutions.
+// ---------------------------------------------------------------------------
 
+function osaDistance(a: string, b: string): number {
     const m = a.length;
     const n = b.length;
 
-    let prev = new Array<number>(n + 1);
-    let curr = new Array<number>(n + 1);
-
-    for (let j = 0; j <= n; j++) prev[j] = j;
+    const d: number[][] = Array.from({ length: m + 1 }, (_, i) => {
+        const row = new Array<number>(n + 1);
+        row[0] = i;
+        return row;
+    });
+    for (let j = 0; j <= n; j++) d[0][j] = j;
 
     for (let i = 1; i <= m; i++) {
-        curr[0] = i;
         for (let j = 1; j <= n; j++) {
             const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-            curr[j] = Math.min(
-                prev[j] + 1,
-                curr[j - 1] + 1,
-                prev[j - 1] + cost,
+            d[i][j] = Math.min(
+                d[i - 1][j] + 1, // deletion
+                d[i][j - 1] + 1, // insertion
+                d[i - 1][j - 1] + cost, // substitution
             );
+            // transposition
+            if (
+                i > 1 &&
+                j > 1 &&
+                a[i - 1] === b[j - 2] &&
+                a[i - 2] === b[j - 1]
+            ) {
+                d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+            }
         }
-        const swap = prev;
-        prev = curr;
-        curr = swap;
     }
 
-    return prev[n];
+    return d[m][n];
 }
 
-function wordSimilarity(a: string, b: string): number {
+function osaSimilarity(a: string, b: string): number {
     const maxLen = Math.max(a.length, b.length);
     if (maxLen === 0) return 1;
-    return 1 - levenshteinDistance(a, b) / maxLen;
+    return 1 - osaDistance(a, b) / maxLen;
+}
+
+// ---------------------------------------------------------------------------
+//  Metric 2 — Jaro-Winkler similarity
+//  Prefix-weighted metric — great for catching words with a shared root.
+// ---------------------------------------------------------------------------
+
+function jaroSimilarity(a: string, b: string): number {
+    if (a === b) return 1;
+    if (a.length === 0 || b.length === 0) return 0;
+
+    const matchWindow = Math.max(
+        0,
+        Math.floor(Math.max(a.length, b.length) / 2) - 1,
+    );
+
+    const aMatches = new Array<boolean>(a.length).fill(false);
+    const bMatches = new Array<boolean>(b.length).fill(false);
+
+    let matches = 0;
+
+    for (let i = 0; i < a.length; i++) {
+        const start = Math.max(0, i - matchWindow);
+        const end = Math.min(i + matchWindow + 1, b.length);
+        for (let j = start; j < end; j++) {
+            if (bMatches[j] || a[i] !== b[j]) continue;
+            aMatches[i] = true;
+            bMatches[j] = true;
+            matches++;
+            break;
+        }
+    }
+
+    if (matches === 0) return 0;
+
+    let transpositions = 0;
+    let k = 0;
+    for (let i = 0; i < a.length; i++) {
+        if (!aMatches[i]) continue;
+        while (!bMatches[k]) k++;
+        if (a[i] !== b[k]) transpositions++;
+        k++;
+    }
+
+    return (
+        (matches / a.length +
+            matches / b.length +
+            (matches - transpositions / 2) / matches) /
+        3
+    );
+}
+
+function jaroWinklerSimilarity(a: string, b: string): number {
+    const jaro = jaroSimilarity(a, b);
+
+    // Common-prefix bonus (up to 4 characters)
+    let prefix = 0;
+    for (let i = 0; i < Math.min(4, a.length, b.length); i++) {
+        if (a[i] === b[i]) prefix++;
+        else break;
+    }
+
+    return jaro + prefix * 0.1 * (1 - jaro);
+}
+
+// ---------------------------------------------------------------------------
+//  Metric 3 — Bigram Dice coefficient
+//  Structural similarity — resilient to reordering and scattered edits.
+// ---------------------------------------------------------------------------
+
+function bigramDiceCoefficient(a: string, b: string): number {
+    if (a.length < 2 || b.length < 2) return a === b ? 1 : 0;
+
+    const aBigrams = new Map<string, number>();
+    for (let i = 0; i < a.length - 1; i++) {
+        const bg = a.substring(i, i + 2);
+        aBigrams.set(bg, (aBigrams.get(bg) ?? 0) + 1);
+    }
+
+    let intersection = 0;
+    for (let i = 0; i < b.length - 1; i++) {
+        const bg = b.substring(i, i + 2);
+        const count = aBigrams.get(bg) ?? 0;
+        if (count > 0) {
+            intersection++;
+            aBigrams.set(bg, count - 1);
+        }
+    }
+
+    return (2 * intersection) / (a.length - 1 + (b.length - 1));
+}
+
+// ---------------------------------------------------------------------------
+//  Combined similarity — takes the best score across all three metrics so
+//  that different kinds of proximity (typo, prefix, structural) are caught.
+// ---------------------------------------------------------------------------
+
+function wordSimilarity(a: string, b: string): number {
+    if (a === b) return 1;
+    const maxLen = Math.max(a.length, b.length);
+    if (maxLen === 0) return 1;
+
+    const osa = osaSimilarity(a, b);
+    const jw = jaroWinklerSimilarity(a, b);
+    const dice = bigramDiceCoefficient(a, b);
+
+    return Math.max(osa, jw, dice);
 }
 
 interface InternalWord {
@@ -121,6 +231,7 @@ interface ArticleCache {
     maskedArticle: MaskedArticle;
     wordGroups: Map<string, WordPosition[]>;
     titleWords: InternalWord[];
+    images: string[];
     date: string;
 }
 
@@ -160,6 +271,7 @@ function buildArticleCache(
         sections: maskedSections,
         totalWords,
         date,
+        imageCount: 0, // Will be set by caller
     };
 
     const wordGroups = new Map<string, WordPosition[]>();
@@ -204,7 +316,7 @@ function buildArticleCache(
         }
     }
 
-    return { maskedArticle, wordGroups, titleWords, date };
+    return { maskedArticle, wordGroups, titleWords, images: [], date };
 }
 
 async function getArticleCache(): Promise<ArticleCache> {
@@ -217,6 +329,8 @@ async function getArticleCache(): Promise<ArticleCache> {
 
     const sections = page.sections as unknown as WikiSection[];
     articleCache = buildArticleCache(page.title, sections, dateKey);
+    articleCache.images = page.images;
+    articleCache.maskedArticle.imageCount = page.images.length;
     return articleCache;
 }
 
@@ -225,15 +339,23 @@ export async function getMaskedArticle(): Promise<MaskedArticle> {
     return cache.maskedArticle;
 }
 
+/** Return the current server-side UTC date key (e.g. "2026-03-03"). */
+export async function getCurrentServerDate(): Promise<string> {
+    const cache = await getArticleCache();
+    return cache.date;
+}
+
 export async function checkGuess(word: string): Promise<GuessResult> {
     const normalizedGuess = normalizeWord(word.trim());
     if (!normalizedGuess) {
+        const cache = await getArticleCache();
         return {
             found: false,
             word: "",
             positions: [],
             occurrences: 0,
             similarity: 0,
+            serverDate: cache.date,
         };
     }
 
@@ -248,51 +370,38 @@ export async function checkGuess(word: string): Promise<GuessResult> {
             positions: exactPositions,
             occurrences: exactPositions.length,
             similarity: 1,
+            serverDate: cache.date,
         };
     }
 
     let bestSimilarity = 0;
-    let bestMatch: { normalized: string; positions: WordPosition[] } | null =
-        null;
 
     if (normalizedGuess.length >= MIN_FUZZY_LENGTH) {
-        for (const [normalized, positions] of wordGroups) {
+        for (const [normalized] of wordGroups) {
             if (normalized.length < MIN_FUZZY_LENGTH) continue;
 
-            const lengthDiff = Math.abs(
-                normalizedGuess.length - normalized.length,
-            );
-            if (lengthDiff > MAX_LENGTH_DIFF) continue;
-
-            if (normalizedGuess[0] !== normalized[0]) continue;
+            // Proportional length filter — skip pairs with wildly different lengths
+            const longer = Math.max(normalizedGuess.length, normalized.length);
+            const shorter = Math.min(normalizedGuess.length, normalized.length);
+            if (longer / shorter > MAX_LENGTH_RATIO) continue;
 
             const sim = wordSimilarity(normalizedGuess, normalized);
 
             if (sim > bestSimilarity) {
                 bestSimilarity = sim;
-                if (sim >= REVEAL_THRESHOLD) {
-                    bestMatch = { normalized, positions };
-                }
             }
         }
     }
 
-    if (bestMatch) {
-        return {
-            found: true,
-            word: normalizedGuess,
-            positions: bestMatch.positions,
-            occurrences: bestMatch.positions.length,
-            similarity: bestSimilarity,
-        };
-    }
-
+    // Fuzzy matches are never auto-revealed — only the similarity score is
+    // returned so the frontend can display a "close" hint (orange state).
     return {
         found: false,
         word: normalizedGuess,
         positions: [],
         occurrences: 0,
         similarity: bestSimilarity,
+        serverDate: cache.date,
     };
 }
 
@@ -307,6 +416,25 @@ export async function getAllWordPositions(): Promise<WordPosition[]> {
     return allPositions;
 }
 
+export async function getHintImage(hintIndex: number): Promise<{
+    imageUrl: string;
+    hintIndex: number;
+    totalImages: number;
+} | null> {
+    const cache = await getArticleCache();
+    if (hintIndex < 0 || hintIndex >= cache.images.length) return null;
+    return {
+        imageUrl: cache.images[hintIndex],
+        hintIndex,
+        totalImages: cache.images.length,
+    };
+}
+
+export async function getImageCount(): Promise<number> {
+    const cache = await getArticleCache();
+    return cache.images.length;
+}
+
 export async function verifyWin(guessedWords: string[]): Promise<boolean> {
     const cache = await getArticleCache();
     const normalizedGuesses = guessedWords.map(normalizeWord);
@@ -317,13 +445,23 @@ export async function verifyWin(guessedWords: string[]): Promise<boolean> {
 
             if (
                 guess.length >= MIN_FUZZY_LENGTH &&
-                titleWord.normalized.length >= MIN_FUZZY_LENGTH &&
-                Math.abs(guess.length - titleWord.normalized.length) <=
-                    MAX_LENGTH_DIFF &&
-                guess[0] === titleWord.normalized[0] &&
-                wordSimilarity(guess, titleWord.normalized) >= REVEAL_THRESHOLD
+                titleWord.normalized.length >= MIN_FUZZY_LENGTH
             ) {
-                return true;
+                const longer = Math.max(
+                    guess.length,
+                    titleWord.normalized.length,
+                );
+                const shorter = Math.min(
+                    guess.length,
+                    titleWord.normalized.length,
+                );
+                if (
+                    longer / shorter <= MAX_LENGTH_RATIO &&
+                    wordSimilarity(guess, titleWord.normalized) >=
+                        REVEAL_THRESHOLD
+                ) {
+                    return true;
+                }
             }
         }
         return false;

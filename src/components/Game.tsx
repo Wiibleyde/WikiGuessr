@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import ArticleView from "@/components/ArticleView";
 import GameHeader from "@/components/GameHeader";
 import GuessList from "@/components/GuessList";
+import ImageHint from "@/components/ImageHint";
 import { useAuth } from "@/hooks/useAuth";
 import { useGameState } from "@/hooks/useGameState";
 
@@ -30,9 +31,13 @@ export default function Game() {
         markSaved,
         syncWithDatabase,
         syncToDatabase,
-        startPeriodicSync,
-        stopPeriodicSync,
         synced,
+        revealedImages,
+        revealingHint,
+        revealHint,
+        hintsUsed,
+        imageCount,
+        score,
     } = useGameState();
 
     // After auth resolves and game is loaded, sync state with database
@@ -46,16 +51,6 @@ export default function Game() {
         syncInitRef.current = true;
         syncWithDatabase();
     }, [authLoading, loading, article, user, syncWithDatabase]);
-
-    // Start/stop periodic sync based on auth state
-    useEffect(() => {
-        if (user && synced) {
-            startPeriodicSync();
-        }
-        return () => {
-            stopPeriodicSync();
-        };
-    }, [user, synced, startPeriodicSync, stopPeriodicSync]);
 
     // Sync to DB after each guess (when logged in and synced)
     const prevGuessCount = useRef(guesses.length);
@@ -77,6 +72,7 @@ export default function Game() {
             body: JSON.stringify({
                 guessCount: guesses.length,
                 guessedWords: guesses.map((g) => g.word),
+                hintsUsed,
             }),
         })
             .then((res) => {
@@ -93,7 +89,7 @@ export default function Game() {
                 console.error("[game/complete]", err);
                 savingRef.current = false;
             });
-    }, [won, user, saved, guesses, markSaved, syncToDatabase]);
+    }, [won, user, saved, guesses, hintsUsed, markSaved, syncToDatabase]);
 
     if (loading) {
         return (
@@ -126,12 +122,22 @@ export default function Game() {
                 input={input}
                 lastGuessFound={lastGuessFound}
                 lastGuessSimilarity={lastGuessSimilarity}
+                hintsUsed={hintsUsed}
+                score={score}
                 inputRef={inputRef}
                 onInputChange={(value) => {
                     setInput(value);
                     setLastGuessFound(null);
                 }}
                 onSubmit={submitGuess}
+            />
+
+            <ImageHint
+                imageCount={imageCount}
+                revealedImages={revealedImages}
+                revealingHint={revealingHint}
+                won={won}
+                onRevealHint={revealHint}
             />
 
             <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">

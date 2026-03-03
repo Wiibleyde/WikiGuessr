@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent, RefObject } from "react";
+import type { RefObject } from "react";
 import YesterdayWord from "@/components/YesterdayWord";
 
 interface GameHeaderProps {
@@ -12,9 +12,11 @@ interface GameHeaderProps {
     input: string;
     lastGuessFound: boolean | null;
     lastGuessSimilarity: number;
+    hintsUsed: number;
+    score: number;
     inputRef: RefObject<HTMLInputElement | null>;
     onInputChange: (value: string) => void;
-    onSubmit: (e?: FormEvent) => void;
+    onSubmit: (e?: React.FormEvent) => void;
 }
 
 export default function GameHeader({
@@ -26,6 +28,8 @@ export default function GameHeader({
     input,
     lastGuessFound,
     lastGuessSimilarity,
+    hintsUsed,
+    score,
     inputRef,
     onInputChange,
     onSubmit,
@@ -33,14 +37,25 @@ export default function GameHeader({
     return (
         <div className="bg-white border-b border-gray-200">
             <div className="max-w-5xl mx-auto px-4 py-3 space-y-2">
-                <div className="flex items-center gap-3 text-sm text-gray-500 flex-wrap">
+                <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 flex-wrap">
                     <span>{date}</span>
-                    <span>·</span>
+                    <span className="hidden sm:inline">·</span>
                     <span>
                         {guessCount} essai{guessCount !== 1 && "s"}
+                        {hintsUsed > 0 && (
+                            <span className="text-amber-500">
+                                {" "}
+                                (+{hintsUsed} indice{hintsUsed !== 1 && "s"})
+                            </span>
+                        )}
                     </span>
-                    <span>·</span>
+                    <span className="hidden sm:inline">·</span>
                     <span>{percentage}% révélé</span>
+                    <span className="hidden sm:inline">
+                        <YesterdayWord />
+                    </span>
+                </div>
+                <div className="sm:hidden text-xs text-gray-500">
                     <YesterdayWord />
                 </div>
 
@@ -54,8 +69,10 @@ export default function GameHeader({
                 {won ? (
                     <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-3 text-center">
                         <p className="text-emerald-800 font-bold text-lg">
-                            Bravo ! Trouvé en {guessCount} essai
-                            {guessCount !== 1 && "s"} !
+                            Bravo !
+                            {hintsUsed > 0
+                                ? ` Score : ${score} (${guessCount} essai${guessCount !== 1 ? "s" : ""} + ${hintsUsed} indice${hintsUsed !== 1 ? "s" : ""})`
+                                : ` Trouvé en ${guessCount} essai${guessCount !== 1 ? "s" : ""} !`}
                         </p>
                     </div>
                 ) : (
@@ -67,7 +84,7 @@ export default function GameHeader({
                             onChange={(e) => onInputChange(e.target.value)}
                             placeholder="Devinez un mot…"
                             className={[
-                                "flex-1 px-4 py-2 border rounded-lg text-sm transition-colors",
+                                "min-w-0 flex-1 px-3 sm:px-4 py-2 border rounded-lg text-sm transition-colors",
                                 "focus:outline-none focus:ring-2 focus:ring-blue-400",
                                 lastGuessFound === false &&
                                 lastGuessSimilarity >= 0.55
@@ -83,7 +100,7 @@ export default function GameHeader({
                         <button
                             type="submit"
                             disabled={guessing || !input.trim()}
-                            className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="shrink-0 px-4 sm:px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             {guessing ? "…" : "Deviner"}
                         </button>
