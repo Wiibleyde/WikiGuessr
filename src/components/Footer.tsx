@@ -17,10 +17,18 @@ export default function Footer() {
 
                 <nav className="flex items-center gap-4">
                     <Link
+                        target="_blank"
                         href="https://nathan.bonnell.fr"
                         className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
                     >
                         Nathan Bonnell
+                    </Link>
+                    <Link
+                        target="_blank"
+                        href="https://matheolang.fr"
+                        className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+                    >
+                        Mathéo Lang
                     </Link>
                 </nav>
 

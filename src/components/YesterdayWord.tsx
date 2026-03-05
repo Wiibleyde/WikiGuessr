@@ -13,12 +13,9 @@ export default function YesterdayWord() {
     if (!data?.title) return null;
 
     return (
-        <>
-            <span>·</span>
-            <span className="text-sm text-gray-500">
-                Hier :{" "}
-                <span className="font-medium text-gray-700">{data.title}</span>
-            </span>
-        </>
+        <span className="text-sm text-gray-500">
+            Hier :{" "}
+            <span className="font-medium text-gray-700">{data.title}</span>
+        </span>
     );
 }

@@ -7,6 +7,9 @@ import GuessList from "@/components/GuessList";
 import ImageHint from "@/components/ImageHint";
 import { useAuth } from "@/hooks/useAuth";
 import { useGameState } from "@/hooks/useGameState";
+import ErrorMessage from "./ui/Error";
+import Loader from "./ui/Loader";
+import NoDataMessage from "./ui/NoDataMessage";
 
 export default function Game() {
     const { user, loading: authLoading } = useAuth();
@@ -91,25 +94,14 @@ export default function Game() {
             });
     }, [won, user, saved, guesses, hintsUsed, markSaved, syncToDatabase]);
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-stone-50">
-                <p className="text-gray-500 text-lg animate-pulse">
-                    Chargement de l&apos;article du jour…
-                </p>
-            </div>
-        );
-    }
+    if (loading) return <Loader message="Chargement de l'article du jour…" />;
 
-    if (error && !article) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-stone-50">
-                <p className="text-red-500 text-lg">{error}</p>
-            </div>
-        );
-    }
+    if (error && !article) return <ErrorMessage message={error} />;
 
-    if (!article) return null;
+    if (!article)
+        return (
+            <NoDataMessage message="Aucun article disponible pour le moment. Veuillez réessayer plus tard." />
+        );
 
     return (
         <div className="min-h-screen bg-stone-50 text-gray-900">
