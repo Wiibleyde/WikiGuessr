@@ -51,6 +51,7 @@ export default function GameHeader({
                     </span>
                     <span className="hidden sm:inline">·</span>
                     <span>{percentage}% révélé</span>
+                    <span>·</span>
                     <span className="hidden sm:inline">
                         <YesterdayWord />
                     </span>

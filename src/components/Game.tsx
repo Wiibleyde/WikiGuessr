@@ -7,8 +7,8 @@ import GuessList from "@/components/GuessList";
 import ImageHint from "@/components/ImageHint";
 import { useAuth } from "@/hooks/useAuth";
 import { useGameState } from "@/hooks/useGameState";
-import Loader from "./ui/Loader";
 import ErrorMessage from "./ui/Error";
+import Loader from "./ui/Loader";
 import NoDataMessage from "./ui/NoDataMessage";
 
 export default function Game() {
@@ -99,9 +99,7 @@ export default function Game() {
     if (error && !article) return <ErrorMessage message={error} />;
 
     if (!article)
-        return (
-            <NoDataMessage message="Aucun article disponible pour le moment. Veuillez réessayer plus tard." />
-        );
+        return <NoDataMessage message="Aucun article disponible pour le moment. Veuillez réessayer plus tard." />
 
     return (
         <div className="min-h-screen bg-stone-50 text-gray-900">
