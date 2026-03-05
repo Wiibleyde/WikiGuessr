@@ -1,12 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useContext } from "react";
 import NavbarContext from "@/contexts/NavbarContext";
 import { useAuth } from "@/hooks/useAuth";
 import DesktopLink from "./navbar/DesktopLink";
 import MobileLink from "./navbar/MobileLink";
+import NavbarAuth from "./navbar/NavbarAuth";
+import NavbarButton from "./navbar/NavbarButton";
 
 const NAV_LINKS = [
     { href: "/", label: "Jouer" },
@@ -17,7 +18,7 @@ const NAV_LINKS = [
 
 export default function Navbar() {
     const { user, loading, login, logout } = useAuth();
-    const { open, setOpen } = useContext(NavbarContext);
+    const { open } = useContext(NavbarContext);
 
     return (
         <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
@@ -43,69 +44,15 @@ export default function Navbar() {
 
                 {/* Desktop auth */}
                 <div className="hidden sm:flex items-center gap-3">
-                    {loading ? null : user ? (
-                        <div className="flex items-center gap-3">
-                            {user.avatar && (
-                                <Image
-                                    src={`https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png?size=32`}
-                                    alt=""
-                                    width={28}
-                                    height={28}
-                                    className="w-7 h-7 rounded-full"
-                                />
-                            )}
-                            <Link
-                                href="/profile"
-                                className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
-                            >
-                                {user.username}
-                            </Link>
-                            <button
-                                type="button"
-                                onClick={logout}
-                                className="text-xs text-gray-400 hover:text-red-500 transition-colors"
-                            >
-                                Déconnexion
-                            </button>
-                        </div>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={login}
-                            className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-                        >
-                            Connexion Discord
-                        </button>
-                    )}
+                    <NavbarAuth
+                        user={user}
+                        loading={loading}
+                        onLogin={login}
+                        onLogout={logout}
+                    />
                 </div>
 
-                {/* Mobile hamburger */}
-                <button
-                    type="button"
-                    onClick={() => setOpen(!open)}
-                    className="sm:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
-                    aria-label="Menu"
-                    aria-expanded={open}
-                >
-                    <span
-                        className={[
-                            "block h-0.5 w-5 bg-gray-600 rounded transition-all duration-300 origin-center",
-                            open ? "translate-y-2 rotate-45" : "",
-                        ].join(" ")}
-                    />
-                    <span
-                        className={[
-                            "block h-0.5 w-5 bg-gray-600 rounded transition-all duration-300",
-                            open ? "opacity-0 scale-0" : "",
-                        ].join(" ")}
-                    />
-                    <span
-                        className={[
-                            "block h-0.5 w-5 bg-gray-600 rounded transition-all duration-300 origin-center",
-                            open ? "-translate-y-2 -rotate-45" : "",
-                        ].join(" ")}
-                    />
-                </button>
+                <NavbarButton />
             </div>
 
             {/* Mobile menu */}
@@ -121,47 +68,13 @@ export default function Navbar() {
                         ))}
                     </nav>
                     <div className="px-4 py-3 border-t border-gray-100">
-                        {loading ? null : user ? (
-                            <div className="flex items-center gap-3">
-                                {user.avatar && (
-                                    <Image
-                                        src={`https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png?size=32`}
-                                        alt=""
-                                        width={28}
-                                        height={28}
-                                        className="w-7 h-7 rounded-full"
-                                    />
-                                )}
-                                <Link
-                                    href="/profile"
-                                    onClick={() => setOpen(false)}
-                                    className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
-                                >
-                                    {user.username}
-                                </Link>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        logout();
-                                        setOpen(false);
-                                    }}
-                                    className="ml-auto text-xs text-gray-400 hover:text-red-500 transition-colors"
-                                >
-                                    Déconnexion
-                                </button>
-                            </div>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    login();
-                                    setOpen(false);
-                                }}
-                                className="w-full px-3 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-                            >
-                                Connexion Discord
-                            </button>
-                        )}
+                        <NavbarAuth
+                            user={user}
+                            loading={loading}
+                            onLogin={login}
+                            onLogout={logout}
+                            mobile
+                        />
                     </div>
                 </div>
             )}
