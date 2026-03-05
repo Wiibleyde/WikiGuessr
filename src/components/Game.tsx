@@ -99,7 +99,9 @@ export default function Game() {
     if (error && !article) return <ErrorMessage message={error} />;
 
     if (!article)
-        return <NoDataMessage message="Aucun article disponible pour le moment. Veuillez réessayer plus tard." />
+        return (
+            <NoDataMessage message="Aucun article disponible pour le moment. Veuillez réessayer plus tard." />
+        );
 
     return (
         <div className="min-h-screen bg-stone-50 text-gray-900">
