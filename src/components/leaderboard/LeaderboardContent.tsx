@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import type { LeaderboardCategoryData } from "@/types/leaderboard";
+import ErrorMessage from "../ui/Error";
+import Loader from "../ui/Loader";
 import LeaderboardCategory from "./LeaderboardCategory";
 
 export default function LeaderboardContent() {
@@ -40,25 +42,10 @@ export default function LeaderboardContent() {
         });
     }
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-stone-50">
-                <p className="text-gray-500 text-lg animate-pulse">
-                    Chargement du classement…
-                </p>
-            </div>
-        );
-    }
+    if (isLoading) return <Loader message="Chargement du classement…" />;
 
-    if (error) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-stone-50">
-                <p className="text-red-500 text-lg">
-                    Impossible de charger le classement.
-                </p>
-            </div>
-        );
-    }
+    if (error)
+        return <ErrorMessage message="Impossible de charger le classement." />;
 
     return (
         <div className="min-h-screen bg-stone-50 text-gray-900">

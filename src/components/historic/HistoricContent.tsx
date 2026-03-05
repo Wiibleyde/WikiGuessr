@@ -5,6 +5,9 @@ import { useState } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import type { PageEntry } from "@/types/historic";
+import ErrorMessage from "../ui/Error";
+import Loader from "../ui/Loader";
+import NoDataMessage from "../ui/NoDataMessage";
 
 const HistoricContent = () => {
     const [pages, setPages] = useState<PageEntry[]>([]);
@@ -16,33 +19,13 @@ const HistoricContent = () => {
         },
     });
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-stone-50">
-                <p className="text-gray-500 text-lg animate-pulse">
-                    Chargement du classement…
-                </p>
-            </div>
-        );
-    }
+    if (isLoading) return <Loader message="Chargement du classement…" />;
 
-    if (error) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-stone-50">
-                <p className="text-red-500 text-lg">
-                    Impossible de charger le classement.
-                </p>
-            </div>
-        );
-    }
+    if (error)
+        return <ErrorMessage message="Impossible de charger le classement." />;
 
-    if (pages.length === 0 && !isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-stone-50">
-                <p className="text-gray-500 text-sm">Aucune page disponible.</p>
-            </div>
-        );
-    }
+    if (pages.length === 0 && !isLoading)
+        return <NoDataMessage message="Aucune page disponible." />;
 
     return (
         <div className="min-h-screen bg-stone-50 text-gray-900">

@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { useAuth } from "@/hooks/useAuth";
 import { fetcher } from "@/lib/fetcher";
 import type { ProfileStats } from "@/types/auth";
+import Loader from "../ui/Loader";
 
 interface StatCardProps {
     label: string;
@@ -27,15 +28,8 @@ export default function ProfileContent() {
         { revalidateOnFocus: false },
     );
 
-    if (authLoading || statsLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-stone-50">
-                <p className="text-gray-500 text-lg animate-pulse">
-                    Chargement…
-                </p>
-            </div>
-        );
-    }
+    if (authLoading || statsLoading)
+        return <Loader message="Chargement de votre profil…" />;
 
     if (!user) {
         return (
