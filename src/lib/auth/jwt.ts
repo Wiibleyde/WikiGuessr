@@ -1,9 +1,10 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type { JWTPayload } from "@/types/auth";
-import { JWT_EXPIRATION_DAYS, JWT_SECRET } from "../constants/auth";
+import env from "../../../env";
+import { JWT_EXPIRATION_DAYS } from "../constants/auth";
 
 function assertSecretConfigured(): void {
-    if (!JWT_SECRET) {
+    if (!env.JWT_SECRET) {
         throw new Error(
             "[jwt] JWT_SECRET is not set — authentication cannot operate without a secret",
         );
@@ -19,7 +20,7 @@ function base64UrlDecode(data: string): string {
 }
 
 function sign(input: string): string {
-    return createHmac("sha256", JWT_SECRET).update(input).digest("base64url");
+    return createHmac("sha256", env.JWT_SECRET).update(input).digest("base64url");
 }
 
 export function signJWT(payload: Omit<JWTPayload, "exp">): string {
