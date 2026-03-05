@@ -1,7 +1,5 @@
 import HistoricContent from "@/components/historic/HistoricContent";
 
-const HistoricPage = () => {
+export default function HistoricPage() {
     return <HistoricContent />;
-};
-
-export default HistoricPage;
+}
