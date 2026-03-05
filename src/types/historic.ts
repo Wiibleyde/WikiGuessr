@@ -1,4 +1,3 @@
-
 /** Une entrée dans un classement */
 export interface PageEntry {
     id: number;

@@ -253,7 +253,9 @@ export async function fetchRandomWikiPage(
 
             return {
                 title: pageTitle,
-                url: page.fullurl ?? `https://fr.wikipedia.org/wiki/${encodeURIComponent(pageTitle)}`,
+                url:
+                    page.fullurl ??
+                    `https://fr.wikipedia.org/wiki/${encodeURIComponent(pageTitle)}`,
                 images: filterGenericImages(imageUrls),
                 sections: parseWikiSections(content),
             };

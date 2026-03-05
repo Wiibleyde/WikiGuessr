@@ -52,7 +52,8 @@ const HistoricContent = () => {
                         🕒 Historique
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
-                        Découvrez les dernières pages Wikipédia qui ont été devinées dans WikiGuessr. 
+                        Découvrez les dernières pages Wikipédia qui ont été
+                        devinées dans WikiGuessr.
                     </p>
                 </div>
                 {pages.map((page) => (
@@ -62,11 +63,14 @@ const HistoricContent = () => {
                     >
                         <div className="flex flex-col min-w-0">
                             <span className="text-xs text-gray-400">
-                                {new Date(page.date).toLocaleDateString("fr-FR", {
-                                    day: "numeric",
-                                    month: "long",
-                                    year: "numeric",
-                                })}
+                                {new Date(page.date).toLocaleDateString(
+                                    "fr-FR",
+                                    {
+                                        day: "numeric",
+                                        month: "long",
+                                        year: "numeric",
+                                    },
+                                )}
                             </span>
                             <span className="text-sm font-medium text-gray-800 truncate">
                                 {page.title}
