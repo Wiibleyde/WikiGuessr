@@ -1,6 +1,4 @@
-const MAX_REQUESTS = 30;
-const WINDOW_MS = 60_000;
-const CLEANUP_INTERVAL_MS = 120_000;
+import { CLEANUP_INTERVAL_MS, MAX_REQUESTS, WINDOW_MS } from "../constants/rate-limit";
 
 interface RateLimitEntry {
     count: number;

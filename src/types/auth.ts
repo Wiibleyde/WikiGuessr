@@ -23,3 +23,9 @@ export interface ProfileStats {
     averageHints: number;
     results: GameResultData[];
 }
+
+export interface JWTPayload {
+    userId: number;
+    discordId: string;
+    exp: number;
+}

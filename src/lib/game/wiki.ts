@@ -1,113 +1,15 @@
-export interface WikiSection {
-    title: string;
-    content: string;
-}
-
-export interface WikiPage {
-    title: string;
-    url: string;
-    images: string[];
-    sections: WikiSection[];
-}
-
-interface RandomPageResponse {
-    query: {
-        random: { id: number; ns: number; title: string }[];
-    };
-}
-
-interface ImageInfo {
-    url: string;
-}
-
-interface ImagePage {
-    imageinfo?: ImageInfo[];
-}
-
-interface PageData {
-    extract?: string;
-    fullurl?: string;
-    images?: { title: string }[];
-}
-
-interface ArticleApiResponse {
-    query?: {
-        pages: Record<string, PageData>;
-    };
-}
-
-interface ImageApiResponse {
-    query?: {
-        pages: Record<string, ImagePage>;
-    };
-}
-
-const IGNORED_SECTIONS = [
-    "notes et références",
-    "voir aussi",
-    "bibliographie",
-    "liens externes",
-    "articles connexes",
-    "sources",
-    "références",
-    "notes",
-    "annexes",
-    "lien externe",
-    "portail",
-];
-
-const GENERIC_IMAGE_PATTERNS = [
-    /icon/i,
-    /logo/i,
-    /arrow/i,
-    /pencil/i,
-    /flag/i,
-    /symbol/i,
-    /pictogram/i,
-    /disambig/i,
-    /info_simple/i,
-    /circle-icons/i,
-    /wikinews/i,
-    /wikiquote/i,
-    /wikisource/i,
-    /wiktionary/i,
-    /commons-logo/i,
-    /question_book/i,
-    /ambox/i,
-    /merge/i,
-    /split/i,
-    /check/i,
-    /cross/i,
-    /x_mark/i,
-    /green_check/i,
-    /red_x/i,
-    /gnu/i,
-    /creative_commons/i,
-    /cc-/i,
-    /fair_use/i,
-    /pd-icon/i,
-    /copyrighted/i,
-    /magnify/i,
-    /folder/i,
-    /portal/i,
-    /commons_to_/i,
-    /move_to_commons/i,
-    /captain_sports/i,
-    /football_shoe/i,
-    /soccer/i,
-    /soccerball/i,
-    /red_card/i,
-    /yellow_card/i,
-    /sub_off/i,
-    /sub_on/i,
-    /card\.svg/i,
-    /ball.*\.svg/i,
-    /go-next/i,
-    /go-previous/i,
-    /righthand/i,
-    /lefthand/i,
-    /\.svg$/i,
-];
+import type {
+    ArticleApiResponse,
+    ImageApiResponse,
+    RandomPageResponse,
+    WikiPage,
+    WikiSection,
+} from "@/types/wiki";
+import {
+    GENERIC_IMAGE_PATTERNS,
+    IGNORED_SECTIONS,
+    WIKI_API,
+} from "../constants/wiki";
 
 function limitTo2Paragraphs(
     text: string,
@@ -198,8 +100,6 @@ function filterGenericImages(imageUrls: string[]): string[] {
         );
     });
 }
-
-const WIKI_API = "https://fr.wikipedia.org/w/api.php";
 
 async function fetchJson<T>(url: string): Promise<T> {
     const res = await fetch(url);

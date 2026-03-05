@@ -1,7 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-
-const JWT_SECRET = process.env.JWT_SECRET ?? "";
-const JWT_EXPIRATION_DAYS = 30;
+import type { JWTPayload } from "@/types/auth";
+import { JWT_EXPIRATION_DAYS, JWT_SECRET } from "../constants/auth";
 
 function assertSecretConfigured(): void {
     if (!JWT_SECRET) {
@@ -9,12 +8,6 @@ function assertSecretConfigured(): void {
             "[jwt] JWT_SECRET is not set — authentication cannot operate without a secret",
         );
     }
-}
-
-interface JWTPayload {
-    userId: number;
-    discordId: string;
-    exp: number;
 }
 
 function base64UrlEncode(data: string): string {
