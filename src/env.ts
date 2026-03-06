@@ -9,6 +9,7 @@ const envSchema = z.object({
         .url()
         .default("https://discord.com/api/oauth2/authorize"),
     JWT_SECRET: z.string(),
+    GAME_TIMEZONE: z.string().default("Europe/Paris"),
 });
 
 const env = envSchema.parse({
@@ -18,6 +19,7 @@ const env = envSchema.parse({
     DISCORD_REDIRECT_URI: process.env.DISCORD_REDIRECT_URI,
     DISCORD_AUTHORIZE_URL: process.env.DISCORD_AUTHORIZE_URL,
     JWT_SECRET: process.env.JWT_SECRET,
+    GAME_TIMEZONE: process.env.GAME_TIMEZONE,
 });
 
 export default env;

@@ -1,4 +1,6 @@
-const GAME_TZ = process.env.GAME_TIMEZONE || "Europe/Paris";
+import env from "@/env";
+
+const GAME_TZ = env.GAME_TIMEZONE || "Europe/Paris";
 
 const dateFormatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: GAME_TZ,
