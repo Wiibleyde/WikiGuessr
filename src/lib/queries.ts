@@ -1,5 +1,10 @@
 import axios from "axios";
-import type { GuessResult, HintResponse, MaskedArticle, RevealResponse } from "@/types/game";
+import type {
+    GuessResult,
+    HintResponse,
+    MaskedArticle,
+    RevealResponse,
+} from "@/types/game";
 
 export const fetchImageHint = async (
     hintIndex: number,
@@ -18,7 +23,9 @@ export const fetchImageHint = async (
     }
 };
 
-export const fetchGameReveal = async (words: string[]): Promise<RevealResponse | undefined> => {
+export const fetchGameReveal = async (
+    words: string[],
+): Promise<RevealResponse | undefined> => {
     try {
         const response = await axios.post<RevealResponse>(
             "/api/game/reveal",
@@ -32,9 +39,11 @@ export const fetchGameReveal = async (words: string[]): Promise<RevealResponse |
     }
 };
 
-export const checkGameGuess = async (word: string, revealedWords: string[]): Promise<GuessResult | undefined> => {
+export const checkGameGuess = async (
+    word: string,
+    revealedWords: string[],
+): Promise<GuessResult | undefined> => {
     try {
-
         const response = await axios.post<GuessResult>(
             "/api/game/guess",
             {

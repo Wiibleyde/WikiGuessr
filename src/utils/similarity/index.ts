@@ -7,7 +7,6 @@ export { diagnoseProximity } from "./diagnose";
 export { jaroWinklerSimilarity } from "./jaro";
 export { osaDistance, osaSimilarity } from "./osa";
 
-
 export function wordSimilarity(a: string, b: string): number {
     if (a === b) return 1;
     const maxLen = Math.max(a.length, b.length);

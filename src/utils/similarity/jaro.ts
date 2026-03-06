@@ -3,7 +3,6 @@
 //  Prefix-weighted metric — great for catching words with a shared root.
 // ---------------------------------------------------------------------------
 
-
 export function jaroSimilarity(a: string, b: string): number {
     if (a === b) return 1;
     if (a.length === 0 || b.length === 0) return 0;

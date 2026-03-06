@@ -3,7 +3,6 @@
 //  Structural similarity — resilient to reordering and scattered edits.
 // ---------------------------------------------------------------------------
 
-
 export function bigramDiceCoefficient(a: string, b: string): number {
     if (a.length < 2 || b.length < 2) return a === b ? 1 : 0;
 

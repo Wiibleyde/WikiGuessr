@@ -45,20 +45,26 @@ function parseWikiSections(content: string): WikiSection[] {
 
     const intro = parts[0].trim();
     if (intro) {
-        sections.push({ title: "Introduction", content: limitTo2Paragraphs(intro) });
+        sections.push({
+            title: "Introduction",
+            content: limitTo2Paragraphs(intro),
+        });
     }
 
     for (let i = 1; i < parts.length - 1 && sections.length < 2; i += 2) {
         const title = parts[i].trim();
         const body = parts[i + 1].replace(/^=+[^=]+=+$/gm, "").trim();
 
-        if (IGNORED_SECTIONS.some((s) => title.toLowerCase().includes(s))) continue;
+        if (IGNORED_SECTIONS.some((s) => title.toLowerCase().includes(s)))
+            continue;
         if (body.replace(/\s/g, "").length < 20) continue;
 
         sections.push({ title, content: limitTo2Paragraphs(body) });
     }
 
-    return sections.length > 0 ? sections : [{ title: "Introduction", content: content.trim() }];
+    return sections.length > 0
+        ? sections
+        : [{ title: "Introduction", content: content.trim() }];
 }
 
 /**

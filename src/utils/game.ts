@@ -1,7 +1,4 @@
-import type {
-    MaskedArticle,
-    RevealedMap, WordToken
-} from "@/types/game";
+import type { MaskedArticle, RevealedMap, WordToken } from "@/types/game";
 import { posKey } from "./helper";
 
 export function checkWinCondition(

@@ -19,7 +19,8 @@ import {
     CLOSE_THRESHOLD,
     MAX_LENGTH_RATIO,
     MIN_FUZZY_LENGTH,
-    REVEAL_THRESHOLD, TOKEN_REGEX
+    REVEAL_THRESHOLD,
+    TOKEN_REGEX,
 } from "../constants/game";
 import { ensureDailyWikiPage } from "./daily-wiki";
 
@@ -66,7 +67,11 @@ function tokenize(text: string, prefix = ""): TokenizeResult {
     return { tokens, words };
 }
 
-export const addToWordsGroup = (group: Map<string, WordPosition[]>, key: string, value: WordPosition) => {
+export const addToWordsGroup = (
+    group: Map<string, WordPosition[]>,
+    key: string,
+    value: WordPosition,
+) => {
     const existing = group.get(key);
     if (existing) existing.push(value);
     else group.set(key, [value]);

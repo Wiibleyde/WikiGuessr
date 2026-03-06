@@ -4,11 +4,18 @@ import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { HINT_PENALTY } from "@/lib/constants/game";
 import { normalizeWord } from "@/lib/game/normalize";
-import { checkGameGuess, fetchGame, fetchGameReveal, fetchImageHint } from "@/lib/queries";
+import {
+    checkGameGuess,
+    fetchGame,
+    fetchGameReveal,
+    fetchImageHint,
+} from "@/lib/queries";
 import type {
     DateResponse,
-    GameCache, MaskedArticle,
-    RevealedMap, StoredGuess
+    GameCache,
+    MaskedArticle,
+    RevealedMap,
+    StoredGuess,
 } from "@/types/game";
 import { clearOldCaches, loadCache, saveCache } from "@/utils/cache";
 import { checkWinCondition } from "@/utils/game";
