@@ -4,15 +4,12 @@ import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { HINT_PENALTY } from "@/lib/constants/game";
 import { normalizeWord } from "@/lib/game/normalize";
+import { checkGameGuess, fetchGame, fetchGameReveal, fetchImageHint } from "@/lib/queries";
 import type {
     DateResponse,
-    GameCache,
-    GuessResult,
-    HintResponse,
+    GameCache, HintResponse,
     MaskedArticle,
-    RevealedMap,
-    RevealResponse,
-    StoredGuess,
+    RevealedMap, StoredGuess
 } from "@/types/game";
 import { clearOldCaches, loadCache, saveCache } from "@/utils/cache";
 import { checkWinCondition } from "@/utils/game";
@@ -57,18 +54,8 @@ export function useGameState() {
         if (total === 0) return;
         const allImages: string[] = [];
         for (let i = 0; i < total; i++) {
-            try {
-                const response = await axios.post(
-                    "/api/game/hint",
-                    { hintIndex: i },
-                    { validateStatus: () => true },
-                );
-                if (response.status < 200 || response.status >= 300) continue;
-                const data = response.data as HintResponse;
-                allImages.push(data.imageUrl);
-            } catch {
-                // skip failed image
-            }
+            const hint = await fetchImageHint(i);
+            if (hint) allImages.push(hint.imageUrl);
         }
         setWinImages(allImages);
     }, []);
@@ -81,23 +68,16 @@ export function useGameState() {
             currentGuesses: StoredGuess[],
             currentRevealed: RevealedMap,
         ) => {
-            try {
-                const response = await axios.post(
-                    "/api/game/reveal",
-                    { words },
-                    { validateStatus: () => true },
-                );
-                if (response.status < 200 || response.status >= 300) return;
-                const data = response.data as RevealResponse;
+            const reveal = await fetchGameReveal(words);
+            if (reveal) {
                 const fullRevealed = { ...currentRevealed };
-                for (const pos of data.positions) {
+                for (const pos of reveal.positions) {
                     fullRevealed[posKey(pos.section, pos.part, pos.wordIndex)] =
                         pos.display;
                 }
                 setRevealed(fullRevealed);
                 saveCache(art.date, currentGuesses, fullRevealed);
-            } catch {
-                console.error("[reveal] failed to reveal all words");
+                return;
             }
         },
         [],
@@ -116,10 +96,14 @@ export function useGameState() {
         setRevealedImages([]);
         setWinImages([]);
 
-        axios
-            .get<MaskedArticle>("/api/game")
-            .then((response) => {
-                const data = response.data;
+        const gameData = fetchGame();
+        gameData
+            .then((data) => {
+                if (!data) {
+                    setError("Impossible de charger l'article du jour");
+                    setLoading(false);
+                    return;
+                }
                 setArticle(data);
                 clearOldCaches(data.date);
 
@@ -174,10 +158,14 @@ export function useGameState() {
     }, [article, reloadArticle]);
 
     useEffect(() => {
-        axios
-            .get<MaskedArticle>("/api/game")
-            .then((response) => {
-                const data = response.data;
+        const gameData = fetchGame();
+        gameData
+            .then((data) => {
+                if (!data) {
+                    setError("Impossible de charger l'article du jour");
+                    setLoading(false);
+                    return;
+                }
                 setArticle(data);
                 clearOldCaches(data.date);
 
@@ -289,49 +277,40 @@ export function useGameState() {
                     .filter((g) => g.found)
                     .map((g) => g.word);
 
-                const response = await axios.post(
-                    "/api/game/guess",
-                    {
-                        word: raw,
-                        revealedWords: foundWords,
-                    },
-                    { validateStatus: () => true },
-                );
+                const guessResult = await checkGameGuess(raw, foundWords);
 
-                if (response.status < 200 || response.status >= 300) {
-                    throw new Error("Erreur serveur");
+                if (!guessResult) {
+                    throw new Error("Erreur lors de la vérification du mot");
                 }
 
-                const result = response.data as GuessResult;
-
                 // Detect server day change — discard this guess & reload
-                if (result.serverDate !== article.date) {
+                if (guessResult.serverDate !== article.date) {
                     reloadArticle();
                     return;
                 }
 
                 const newGuess: StoredGuess = {
-                    word: result.word,
-                    found: result.found,
-                    occurrences: result.occurrences,
-                    similarity: result.similarity,
-                    proximityReason: result.proximityReason,
+                    word: guessResult.word,
+                    found: guessResult.found,
+                    occurrences: guessResult.occurrences,
+                    similarity: guessResult.similarity,
+                    proximityReason: guessResult.proximityReason,
                 };
 
                 const newGuesses = [newGuess, ...guesses];
                 const newRevealed = { ...revealed };
-                for (const pos of result.positions) {
+                for (const pos of guessResult.positions) {
                     newRevealed[posKey(pos.section, pos.part, pos.wordIndex)] =
                         pos.display;
                 }
 
                 setGuesses(newGuesses);
                 setRevealed(newRevealed);
-                setLastGuessFound(result.found);
-                setLastGuessSimilarity(result.similarity);
+                setLastGuessFound(guessResult.found);
+                setLastGuessSimilarity(guessResult.similarity);
 
-                if (result.found && result.similarity === 1) {
-                    setLastRevealedWord(result.word);
+                if (guessResult.found && guessResult.similarity === 1) {
+                    setLastRevealedWord(guessResult.word);
                     setTimeout(() => setLastRevealedWord(null), 1500);
                 }
 
