@@ -1,37 +1,41 @@
 "use client";
 
+import { useAtom, useAtomValue } from "jotai";
+import { guessesAtom, inputAtom, lastGuessFoundAtom } from "@/atom/game";
 import YesterdayWord from "@/components/YesterdayWord";
 import { plural } from "@/utils/helper";
 
 interface GameHeaderProps {
     date: string;
-    guessCount: number;
     percentage: number;
     won: boolean;
     guessing: boolean;
-    input: string;
-    lastGuessFound: boolean | null;
     lastGuessSimilarity: number;
     hintsUsed: number;
     score: number;
-    onInputChange: (value: string) => void;
     onSubmit: (e?: React.FormEvent) => void;
 }
 
 export default function GameHeader({
     date,
-    guessCount,
     percentage,
     won,
     guessing,
-    input,
-    lastGuessFound,
     lastGuessSimilarity,
     hintsUsed,
     score,
-    onInputChange,
     onSubmit,
 }: GameHeaderProps) {
+
+    const [input, setInput] = useAtom(inputAtom);
+    const [lastGuessFound, setLastGuessFound] = useAtom(lastGuessFoundAtom);
+    const guesses = useAtomValue(guessesAtom);
+
+    const onInputChange = (value: string) => {
+        setInput(value);
+        setLastGuessFound(null);
+    };
+
     return (
         <div className="bg-white border-b border-gray-200">
             <div className="max-w-5xl mx-auto px-4 py-3 space-y-2">
@@ -39,7 +43,7 @@ export default function GameHeader({
                     <span>{date}</span>
                     <span className="hidden sm:inline">·</span>
                     <span>
-                        {plural(guessCount, "essai", "essais")}
+                        {plural(guesses.length, "essai", "essais")}
                         {hintsUsed > 0 && (
                             <span className="text-amber-500">
                                 {" "}
@@ -70,8 +74,8 @@ export default function GameHeader({
                         <p className="text-emerald-800 font-bold text-lg">
                             Bravo !
                             {hintsUsed > 0
-                                ? ` Score : ${score} (${plural(guessCount, "essai", "essais")} + ${plural(hintsUsed, "indice", "indices")})`
-                                : ` Trouvé en ${plural(guessCount, "essai", "essais")} !`}
+                                ? ` Score : ${score} (${plural(guesses.length, "essai", "essais")} + ${plural(hintsUsed, "indice", "indices")})`
+                                : ` Trouvé en ${plural(guesses.length, "essai", "essais")} !`}
                         </p>
                     </div>
                 ) : (

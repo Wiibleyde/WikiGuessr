@@ -1,7 +1,9 @@
 "use client";
 
+import { useAtomValue } from "jotai";
 import Image from "next/image";
 import { useState } from "react";
+import { guessesAtom } from "@/atom/game";
 import { HINT_PENALTY, MIN_GUESSES_FOR_HINT } from "@/lib/constants/game";
 
 interface ImageHintProps {
@@ -9,7 +11,6 @@ interface ImageHintProps {
     revealedImages: string[];
     revealingHint: boolean;
     won: boolean;
-    guessCount: number;
     onRevealHint: () => void;
 }
 
@@ -18,16 +19,16 @@ export default function ImageHint({
     revealedImages,
     revealingHint,
     won,
-    guessCount,
     onRevealHint,
 }: ImageHintProps) {
+    const guesses = useAtomValue(guessesAtom);
     const [expanded, setExpanded] = useState(true);
 
     if (imageCount === 0) return null;
 
     const hintsUsed = revealedImages.length;
     const allRevealed = hintsUsed >= imageCount;
-    const hintUnlocked = guessCount >= MIN_GUESSES_FOR_HINT;
+    const hintUnlocked = guesses.length >= MIN_GUESSES_FOR_HINT;
     const canReveal = !allRevealed && !won && !revealingHint && hintUnlocked;
 
     return (
@@ -47,7 +48,7 @@ export default function ImageHint({
                         {!hintUnlocked && !won && (
                             <span className="text-xs text-gray-400">
                                 Disponible après {MIN_GUESSES_FOR_HINT} essais (
-                                {guessCount}/{MIN_GUESSES_FOR_HINT})
+                                {guesses.length}/{MIN_GUESSES_FOR_HINT})
                             </span>
                         )}
                         {canReveal && (

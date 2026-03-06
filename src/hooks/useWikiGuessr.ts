@@ -11,19 +11,15 @@ import useDb from "./useDb";
 import useGame from "./useGame";
 import useGuess from "./useGuess";
 
-export function useGameState() {
+export function useWikiGuessr() {
     const [article, setArticle] = useAtom(atomGame.articleAtom);
     const [guesses, setGuesses] = useAtom(atomGame.guessesAtom);
     const [revealed, setRevealed] = useAtom(atomGame.revealedAtom);
-    const [input, setInput] = useAtom(atomGame.inputAtom);
     const [loading, setLoading] = useAtom(atomGame.loadingAtom);
     const guessing = useAtomValue(atomGame.guessingAtom);
     const [won, setWon] = useAtom(atomGame.wonAtom);
     const [saved, setSaved] = useAtom(atomGame.savedAtom);
     const [error, setError] = useAtom(atomGame.errorAtom);
-    const [lastGuessFound, setLastGuessFound] = useAtom(
-        atomGame.lastGuessFoundAtom,
-    );
     const lastGuessSimilarity = useAtomValue(atomGame.lastGuessSimilarityAtom);
     const lastRevealedWord = useAtomValue(atomGame.lastRevealedWordAtom);
 
@@ -103,17 +99,13 @@ export function useGameState() {
         article,
         guesses,
         revealed,
-        input,
-        setInput,
         loading,
         guessing,
         won,
         saved,
         error,
-        lastGuessFound,
         lastGuessSimilarity,
         lastRevealedWord,
-        setLastGuessFound,
         percentage,
         submitGuess,
         revealedImages: displayImages,

@@ -4,7 +4,7 @@ import ArticleView from "@/components/ArticleView";
 import GameHeader from "@/components/GameHeader";
 import GuessList from "@/components/GuessList";
 import ImageHint from "@/components/ImageHint";
-import { useGameState } from "@/hooks/useGameState";
+import { useWikiGuessr } from "@/hooks/useWikiGuessr";
 import ErrorMessage from "./ui/Error";
 import Loader from "./ui/Loader";
 import NoDataMessage from "./ui/NoDataMessage";
@@ -14,16 +14,12 @@ export default function Game() {
         article,
         guesses,
         revealed,
-        input,
-        setInput,
         loading,
         guessing,
         won,
         error,
-        lastGuessFound,
         lastGuessSimilarity,
         lastRevealedWord,
-        setLastGuessFound,
         percentage,
         submitGuess,
         revealedImages,
@@ -32,7 +28,7 @@ export default function Game() {
         hintsUsed,
         imageCount,
         score,
-    } = useGameState();
+    } = useWikiGuessr();
 
     if (loading) return <Loader message="Chargement de l'article du jour…" />;
 
@@ -47,19 +43,12 @@ export default function Game() {
         <div className="min-h-screen bg-stone-50 text-gray-900">
             <GameHeader
                 date={article.date}
-                guessCount={guesses.length}
                 percentage={percentage}
                 won={won}
                 guessing={guessing}
-                input={input}
-                lastGuessFound={lastGuessFound}
                 lastGuessSimilarity={lastGuessSimilarity}
                 hintsUsed={hintsUsed}
                 score={score}
-                onInputChange={(value) => {
-                    setInput(value);
-                    setLastGuessFound(null);
-                }}
                 onSubmit={submitGuess}
             />
 
@@ -68,7 +57,6 @@ export default function Game() {
                 revealedImages={revealedImages}
                 revealingHint={revealingHint}
                 won={won}
-                guessCount={guesses.length}
                 onRevealHint={revealHint}
             />
 
