@@ -2,55 +2,37 @@
 
 import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useEffect } from "react";
-import {
-    articleAtom,
-    errorAtom,
-    guessesAtom,
-    guessingAtom,
-    inputAtom,
-    lastGuessFoundAtom,
-    lastGuessSimilarityAtom,
-    lastRevealedWordAtom,
-    loadingAtom,
-    revealedAtom,
-    revealedImagesAtom,
-    revealingHintAtom,
-    savedAtom,
-    syncedAtom,
-    winImagesAtom,
-    wonAtom,
-} from "@/atom/game";
-import { HINT_PENALTY, MIN_GUESSES_FOR_HINT } from "@/lib/constants/game";
-import {
-    fetchGame, fetchImageHint
-} from "@/lib/queries";
-import type {
-    GameCache
-} from "@/types/game";
+import * as atomGame from "@/atom/game";
+import { HINT_PENALTY } from "@/lib/constants/game";
+import { fetchGame } from "@/lib/queries";
 import { clearOldCaches, loadCache, saveCache } from "@/utils/cache";
 import { checkWinCondition } from "@/utils/game";
-import { fetchStateFromServer, pushStateToServer } from "@/utils/server";
+import useDb from "./useDb";
 import useGame from "./useGame";
 import useGuess from "./useGuess";
 
 export function useGameState() {
-    const [article, setArticle] = useAtom(articleAtom);
-    const [guesses, setGuesses] = useAtom(guessesAtom);
-    const [revealed, setRevealed] = useAtom(revealedAtom);
-    const [input, setInput] = useAtom(inputAtom);
-    const [loading, setLoading] = useAtom(loadingAtom);
-    const guessing = useAtomValue(guessingAtom);
-    const [won, setWon] = useAtom(wonAtom);
-    const [saved, setSaved] = useAtom(savedAtom);
-    const [error, setError] = useAtom(errorAtom);
-    const [lastGuessFound, setLastGuessFound] = useAtom(lastGuessFoundAtom);
-    const lastGuessSimilarity = useAtomValue(lastGuessSimilarityAtom);
-    const lastRevealedWord = useAtomValue(lastRevealedWordAtom);
+    const [article, setArticle] = useAtom(atomGame.articleAtom);
+    const [guesses, setGuesses] = useAtom(atomGame.guessesAtom);
+    const [revealed, setRevealed] = useAtom(atomGame.revealedAtom);
+    const [input, setInput] = useAtom(atomGame.inputAtom);
+    const [loading, setLoading] = useAtom(atomGame.loadingAtom);
+    const guessing = useAtomValue(atomGame.guessingAtom);
+    const [won, setWon] = useAtom(atomGame.wonAtom);
+    const [saved, setSaved] = useAtom(atomGame.savedAtom);
+    const [error, setError] = useAtom(atomGame.errorAtom);
+    const [lastGuessFound, setLastGuessFound] = useAtom(
+        atomGame.lastGuessFoundAtom,
+    );
+    const lastGuessSimilarity = useAtomValue(atomGame.lastGuessSimilarityAtom);
+    const lastRevealedWord = useAtomValue(atomGame.lastRevealedWordAtom);
 
-    const [synced, setSynced] = useAtom(syncedAtom);
-    const [revealedImages, setRevealedImages] = useAtom(revealedImagesAtom);
-    const winImages = useAtomValue(winImagesAtom);
-    const [revealingHint, setRevealingHint] = useAtom(revealingHintAtom);
+    const synced = useAtomValue(atomGame.syncedAtom);
+    const [revealedImages, setRevealedImages] = useAtom(
+        atomGame.revealedImagesAtom,
+    );
+    const winImages = useAtomValue(atomGame.winImagesAtom);
+    const revealingHint = useAtomValue(atomGame.revealingHintAtom);
 
     const revealedCount = Object.keys(revealed).length;
     const totalWords = article?.totalWords ?? 0;
@@ -62,14 +44,9 @@ export function useGameState() {
     const displayImages =
         won && winImages.length > 0 ? winImages : revealedImages;
 
-    /** Fetch all images for the article (used after winning). */
-
-
-    /** Fetch all word positions from the server and reveal every word. */
-
-    const { revealAllWords, revealAllImages } = useGame();
+    const { revealAllWords, revealAllImages, revealHint } = useGame();
     const { submitGuess } = useGuess();
-
+    const { syncToDatabase, syncWithDatabase } = useDb();
 
     useEffect(() => {
         const gameData = fetchGame();
@@ -110,93 +87,26 @@ export function useGameState() {
                 setError("Impossible de charger l'article du jour");
                 setLoading(false);
             });
-    }, [revealAllWords, revealAllImages, setArticle, setGuesses, setRevealed, setWon, setSaved, setError, setRevealedImages, setLoading]);
+    }, [
+        revealAllWords,
+        revealAllImages,
+        setArticle,
+        setGuesses,
+        setRevealed,
+        setWon,
+        setSaved,
+        setError,
+        setRevealedImages,
+        setLoading,
+    ]);
 
-    /**
-     * Synchronize state with the database after login.
-     * - If DB has state → replace localStorage & React state with DB values.
-     * - If DB is empty but localStorage has data → push localStorage to DB.
-     * - If both empty → do nothing.
-     */
-    const syncWithDatabase = useCallback(async () => {
-        if (!article || synced) return;
-
-        const dbState = await fetchStateFromServer();
-        const localCache = loadCache(article.date);
-
-        const dbCount = dbState?.guesses?.length ?? 0;
-        const localCount = localCache?.guesses?.length ?? 0;
-
-        if (dbState && dbCount > 0 && dbCount >= localCount) {
-            // DB has equal or more progress — use it
-            setGuesses(dbState.guesses);
-            setRevealed(dbState.revealed);
-            setRevealedImages(dbState.revealedImages ?? []);
-            if (dbState.saved) {
-                setSaved(true);
-            }
-            const isWon = checkWinCondition(article, dbState.revealed);
-            if (isWon) {
-                setWon(true);
-                const words = dbState.guesses.map((g) => g.word);
-                revealAllWords(
-                    article,
-                    words,
-                    dbState.guesses,
-                    dbState.revealed,
-                );
-                revealAllImages(article, dbState.guesses);
-            }
-            saveCache(
-                article.date,
-                dbState.guesses,
-                dbState.revealed,
-                dbState.saved,
-                dbState.revealedImages,
-            );
-        } else if (localCache && localCount > 0) {
-            // Local has more progress — push it to DB
-            await pushStateToServer(localCache);
-        }
-
-        setSynced(true);
-    }, [article, synced, revealAllWords, revealAllImages, setGuesses, setRevealed, setRevealedImages, setSaved, setWon, setSynced]);
-
-    /** Push current state to the DB (called on each guess when logged in). */
-    const syncToDatabase = useCallback(async () => {
-        if (!article) return;
-        const cache: GameCache = { guesses, revealed, saved, revealedImages };
-        await pushStateToServer(cache);
-    }, [article, guesses, revealed, saved, revealedImages]);
-
-
+    
 
     const markSaved = useCallback(() => {
         if (!article) return;
         setSaved(true);
         saveCache(article.date, guesses, revealed, true, revealedImages);
     }, [article, guesses, revealed, revealedImages, setSaved]);
-
-    const revealHint = useCallback(async () => {
-        if (!article || won || revealingHint) return;
-        if (guesses.length < MIN_GUESSES_FOR_HINT) return;
-        const nextIndex = revealedImages.length;
-        if (nextIndex >= (article.imageCount ?? 0)) return;
-
-        setRevealingHint(true);
-        const hint = await fetchImageHint(
-            nextIndex,
-            guesses.map((g) => g.word),
-        );
-        if (hint) {
-            const newImages = [...revealedImages, hint.imageUrl];
-            setRevealedImages(newImages);
-            saveCache(article.date, guesses, revealed, saved, newImages);
-        } else {
-            console.error("[hint] failed to reveal hint");
-        }
-        setRevealingHint(false);
-    }, [article, won, revealingHint, revealedImages, guesses, revealed, saved, setRevealedImages, setRevealingHint]);
 
     return {
         article,

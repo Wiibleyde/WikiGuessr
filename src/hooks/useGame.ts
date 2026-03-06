@@ -1,8 +1,7 @@
-import { useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback } from "react";
-import {
-    revealedAtom, winImagesAtom
-} from "@/atom/game";
+import { articleAtom, guessesAtom, revealedAtom, revealedImagesAtom, revealingHintAtom, savedAtom, winImagesAtom, wonAtom } from "@/atom/game";
+import { MIN_GUESSES_FOR_HINT } from "@/lib/constants/game";
 import { fetchGameReveal, fetchImageHint } from "@/lib/queries";
 import type { MaskedArticle, RevealedMap, StoredGuess } from "@/types/game";
 import { saveCache } from "@/utils/cache";
@@ -10,7 +9,13 @@ import { posKey } from "@/utils/helper";
 
 const useGame = () => {
     const setWinImages = useSetAtom(winImagesAtom);
-    const setRevealed = useSetAtom(revealedAtom);
+    const [revealingHint, setRevealingHint] = useAtom(revealingHintAtom);
+    const [revealedImages, setRevealedImages] = useAtom(revealedImagesAtom);
+    const article = useAtomValue(articleAtom);
+    const won = useAtomValue(wonAtom);
+    const guesses = useAtomValue(guessesAtom);
+    const [revealed, setRevealed] = useAtom(revealedAtom);
+    const saved = useAtomValue(savedAtom);
 
     const revealAllWords = useCallback(
         async (
@@ -49,7 +54,38 @@ const useGame = () => {
         [setWinImages],
     );
 
-    return { revealAllWords, revealAllImages };
+    const revealHint = useCallback(async () => {
+        if (!article || won || revealingHint) return;
+        if (guesses.length < MIN_GUESSES_FOR_HINT) return;
+        const nextIndex = revealedImages.length;
+        if (nextIndex >= (article.imageCount ?? 0)) return;
+
+        setRevealingHint(true);
+        const hint = await fetchImageHint(
+            nextIndex,
+            guesses.map((g) => g.word),
+        );
+        if (hint) {
+            const newImages = [...revealedImages, hint.imageUrl];
+            setRevealedImages(newImages);
+            saveCache(article.date, guesses, revealed, saved, newImages);
+        } else {
+            console.error("[hint] failed to reveal hint");
+        }
+        setRevealingHint(false);
+    }, [
+        article,
+        won,
+        revealingHint,
+        revealedImages,
+        guesses,
+        revealed,
+        saved,
+        setRevealedImages,
+        setRevealingHint,
+    ]);
+
+    return { revealAllWords, revealAllImages, revealHint };
 };
 
 export default useGame;
