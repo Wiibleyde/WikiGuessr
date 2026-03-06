@@ -1,4 +1,8 @@
-import { CLEANUP_INTERVAL_MS, MAX_REQUESTS, WINDOW_MS } from "../constants/rate-limit";
+import {
+    CLEANUP_INTERVAL_MS,
+    MAX_REQUESTS,
+    WINDOW_MS,
+} from "@/lib/constants/rate-limit";
 
 interface RateLimitEntry {
     count: number;

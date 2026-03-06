@@ -2,14 +2,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useContext } from "react";
 import NavbarContext from "@/contexts/NavbarContext";
-import { cn } from "../../../utils/cn";
+import { cn } from "@/utils/cn";
 
 interface MobileLinkProps {
     href: string;
     label: string;
 }
 
-const MobileLink = ({ href, label }: MobileLinkProps) => {
+export default function MobileLink({ href, label }: MobileLinkProps) {
     const { setOpen } = useContext(NavbarContext);
 
     const pathname = usePathname();
@@ -29,6 +29,4 @@ const MobileLink = ({ href, label }: MobileLinkProps) => {
             {label}
         </Link>
     );
-};
-
-export default MobileLink;
+}

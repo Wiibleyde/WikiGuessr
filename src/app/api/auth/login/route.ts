@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
+import env from "@/env";
 import { setStateCookie } from "@/lib/auth/auth";
 import { generateState } from "@/lib/auth/jwt";
-import env from "../../../../../env";
 
 export const dynamic = "force-dynamic";
-
 
 export async function GET(): Promise<NextResponse> {
     if (!env.DISCORD_CLIENT_ID || !env.DISCORD_REDIRECT_URI) {

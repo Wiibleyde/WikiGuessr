@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext } from "react";
 
 interface NavbarContextValue {
     open: boolean;
@@ -7,7 +7,7 @@ interface NavbarContextValue {
 
 const NavbarContext = createContext<NavbarContextValue>({
     open: false,
-    setOpen: () => { }
+    setOpen: () => {},
 });
 
 export default NavbarContext;

@@ -1,13 +1,12 @@
 "use client";
-import type React from "react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import NavbarContext from "@/contexts/NavbarContext";
 
 interface NavbarProviderProps {
-    children: React.ReactNode;
+    children: ReactNode;
 }
 
-const NavbarProvider = ({ children }: NavbarProviderProps) => {
+export default function NavbarProvider({ children }: NavbarProviderProps) {
     const [open, setOpen] = useState<boolean>(false);
 
     return (
@@ -15,6 +14,4 @@ const NavbarProvider = ({ children }: NavbarProviderProps) => {
             {children}
         </NavbarContext.Provider>
     );
-};
-
-export default NavbarProvider;
+}

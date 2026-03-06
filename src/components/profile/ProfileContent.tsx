@@ -1,10 +1,10 @@
 "use client";
 
 import useSWR from "swr";
+import Loader from "@/components/ui/Loader";
 import { useAuth } from "@/hooks/useAuth";
 import { fetcher } from "@/lib/fetcher";
 import type { ProfileStats } from "@/types/auth";
-import Loader from "../ui/Loader";
 
 interface StatCardProps {
     label: string;

@@ -1,8 +1,12 @@
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
+import {
+    AUTH_COOKIE,
+    COOKIE_MAX_AGE,
+    STATE_COOKIE,
+} from "@/lib/constants/auth";
+import { prisma } from "@/lib/prisma";
 import type { AuthUser } from "@/types/auth";
-import { AUTH_COOKIE, COOKIE_MAX_AGE, STATE_COOKIE } from "../constants/auth";
-import { prisma } from "../prisma";
 import { verifyJWT } from "./jwt";
 
 export async function getSessionUser(): Promise<AuthUser | null> {

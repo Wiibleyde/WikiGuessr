@@ -1,3 +1,8 @@
+import {
+    GENERIC_IMAGE_PATTERNS,
+    IGNORED_SECTIONS,
+    WIKI_API,
+} from "@/lib/constants/wiki";
 import type {
     ArticleApiResponse,
     ImageApiResponse,
@@ -5,11 +10,6 @@ import type {
     WikiPage,
     WikiSection,
 } from "@/types/wiki";
-import {
-    GENERIC_IMAGE_PATTERNS,
-    IGNORED_SECTIONS,
-    WIKI_API,
-} from "../constants/wiki";
 
 function limitTo2Paragraphs(
     text: string,

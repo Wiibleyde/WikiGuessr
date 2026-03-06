@@ -1,5 +1,5 @@
-import { prisma } from "../prisma";
-import { fetchRandomWikiPage } from "./wiki";
+import { fetchRandomWikiPage } from "@/lib/game/wiki";
+import { prisma } from "@/lib/prisma";
 
 type DailyWikiPage = Awaited<
     ReturnType<typeof prisma.dailyWikiPage.findUnique>

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import env from "@/env";
 import {
     clearStateCookie,
     getStateCookie,
@@ -6,7 +7,6 @@ import {
 } from "@/lib/auth/auth";
 import { signJWT } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/prisma";
-import env from "../../../../../env";
 
 export const dynamic = "force-dynamic";
 

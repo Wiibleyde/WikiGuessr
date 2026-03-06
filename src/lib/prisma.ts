@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import env from "../../env";
+import env from "@/env";
 import { PrismaClient } from "../../generated/prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
@@ -10,7 +10,7 @@ const globalForPrisma = globalThis as unknown as {
 const AMBIGUOUS_SSL_MODES = /\bsslmode=(prefer|require|verify-ca)\b/i;
 
 function buildConnectionString(): string {
-    const raw = env.DATABASE_URL
+    const raw = env.DATABASE_URL;
     // Explicitly set verify-full to silence the pg deprecation warning
     if (AMBIGUOUS_SSL_MODES.test(raw)) {
         return raw.replace(AMBIGUOUS_SSL_MODES, "sslmode=verify-full");

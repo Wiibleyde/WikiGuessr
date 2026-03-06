@@ -1,11 +1,14 @@
-import z from 'zod';
+import z from "zod";
 
 const envSchema = z.object({
     DATABASE_URL: z.string().url(),
     DISCORD_CLIENT_ID: z.string(),
     DISCORD_CLIENT_SECRET: z.string(),
     DISCORD_REDIRECT_URI: z.string().url(),
-    DISCORD_AUTHORIZE_URL: z.string().url().default("https://discord.com/api/oauth2/authorize"),
+    DISCORD_AUTHORIZE_URL: z
+        .string()
+        .url()
+        .default("https://discord.com/api/oauth2/authorize"),
     JWT_SECRET: z.string(),
 });
 

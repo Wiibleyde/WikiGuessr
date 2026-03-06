@@ -10,7 +10,11 @@ interface UserMenuProps {
     onNavigate?: () => void;
 }
 
-export default function UserMenu({ user, onLogout, onNavigate }: UserMenuProps) {
+export default function UserMenu({
+    user,
+    onLogout,
+    onNavigate,
+}: UserMenuProps) {
     return (
         <div className="flex items-center gap-3">
             {user.avatar && (

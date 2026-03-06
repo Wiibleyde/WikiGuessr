@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "../../../utils/cn";
+import { cn } from "@/utils/cn";
 
 interface DesktopLinkProps {
     href: string;
@@ -8,7 +8,6 @@ interface DesktopLinkProps {
 }
 
 export default function DesktopLink({ href, label }: DesktopLinkProps) {
-
     const pathname = usePathname();
 
     const isActive = pathname === href;
