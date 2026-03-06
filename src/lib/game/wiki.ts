@@ -39,56 +39,26 @@ function limitTo2Paragraphs(
 }
 
 function parseWikiSections(content: string): WikiSection[] {
+    // split avec groupe capturant → [intro, titre1, corps1, titre2, corps2, ...]
+    const parts = content.split(/^==\s*([^=]+?)\s*==\s*$/gm);
     const sections: WikiSection[] = [];
-    const sectionRegex = /^==\s*([^=]+?)\s*==\s*$/gm;
-    const matches = [...content.matchAll(sectionRegex)];
 
-    if (matches.length === 0) {
-        return [{ title: "Introduction", content: content.trim() }];
+    const intro = parts[0].trim();
+    if (intro) {
+        sections.push({ title: "Introduction", content: limitTo2Paragraphs(intro) });
     }
 
-    const introContent = content.substring(0, matches[0].index ?? 0).trim();
-    if (introContent) {
-        sections.push({
-            title: "Introduction",
-            content: limitTo2Paragraphs(introContent),
-        });
+    for (let i = 1; i < parts.length - 1 && sections.length < 2; i += 2) {
+        const title = parts[i].trim();
+        const body = parts[i + 1].replace(/^=+[^=]+=+$/gm, "").trim();
+
+        if (IGNORED_SECTIONS.some((s) => title.toLowerCase().includes(s))) continue;
+        if (body.replace(/\s/g, "").length < 20) continue;
+
+        sections.push({ title, content: limitTo2Paragraphs(body) });
     }
 
-    for (let i = 0; i < matches.length; i++) {
-        const match = matches[i];
-        const sectionTitle = match[1].trim();
-
-        if (!sectionTitle || /^[=\s]+$/.test(sectionTitle)) continue;
-        if (
-            IGNORED_SECTIONS.some((s) => sectionTitle.toLowerCase().includes(s))
-        )
-            continue;
-
-        const startIndex = (match.index ?? 0) + match[0].length;
-        const endIndex =
-            i < matches.length - 1
-                ? (matches[i + 1].index ?? content.length)
-                : content.length;
-
-        let sectionContent = content.substring(startIndex, endIndex).trim();
-        sectionContent = sectionContent
-            .replace(/^=+\s*[^=]*?\s*=+$/gm, "")
-            .trim();
-
-        if (sectionContent.replace(/[=\s\n]+/g, "").length >= 20) {
-            sections.push({
-                title: sectionTitle,
-                content: limitTo2Paragraphs(sectionContent),
-            });
-        }
-
-        if (sections.length >= 2) {
-            break;
-        }
-    }
-
-    return sections;
+    return sections.length > 0 ? sections : [{ title: "Introduction", content: content.trim() }];
 }
 
 /**
