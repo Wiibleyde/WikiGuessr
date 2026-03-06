@@ -104,7 +104,11 @@ function filterGenericImages(imageUrls: string[]): string[] {
 
 async function fetchJson<T>(url: string): Promise<T> {
     try {
-        const response = await axios.get<T>(url);
+        const response = await axios.get<T>(url, {
+            headers: {
+                "User-Agent": "WikiGuessr/1.0 (https://wikiguessr.com)",
+            },
+        });
         return response.data;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
