@@ -5,3 +5,5 @@ export const REVEAL_THRESHOLD = 0.85;
 export const MIN_FUZZY_LENGTH = 4;
 export const MAX_LENGTH_RATIO = 1.5;
 export const CLOSE_THRESHOLD = 0.65;
+
+export const HINT_PENALTY = 20;

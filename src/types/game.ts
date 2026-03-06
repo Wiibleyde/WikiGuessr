@@ -72,8 +72,6 @@ export interface GameCache {
     revealedImages?: string[];
 }
 
-export const HINT_PENALTY = 5;
-
 export interface InternalWord {
     normalized: string;
     display: string;
