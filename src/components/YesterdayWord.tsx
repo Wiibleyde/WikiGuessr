@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+import { fetcher } from "@/utils/fetcher";
 
 export default function YesterdayWord() {
     const { data } = useSWR<{ title: string | null }>(

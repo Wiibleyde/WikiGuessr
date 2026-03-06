@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
     GENERIC_IMAGE_PATTERNS,
     IGNORED_SECTIONS,
@@ -7,10 +6,12 @@ import {
 import type {
     ArticleApiResponse,
     ImageApiResponse,
+    PageData,
     RandomPageResponse,
     WikiPage,
     WikiSection,
 } from "@/types/wiki";
+import { fetchWikiPagePart } from "@/utils/fetcher";
 
 function limitTo2Paragraphs(
     text: string,
@@ -102,22 +103,30 @@ function filterGenericImages(imageUrls: string[]): string[] {
     });
 }
 
-async function fetchJson<T>(url: string): Promise<T> {
-    try {
-        const response = await axios.get<T>(url, {
-            headers: {
-                "User-Agent": "WikiGuessr/1.0 (https://wikiguessr.com)",
-            },
-        });
-        return response.data;
-    } catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-            throw new Error(
-                `[wiki] HTTP ${error.response.status} fetching ${url}`,
-            );
-        }
-        throw error;
-    }
+async function fetchRandomTitle(): Promise<string | undefined> {
+    const data = await fetchWikiPagePart<RandomPageResponse>(
+        `${WIKI_API}?action=query&format=json&list=random&rnnamespace=0&rnlimit=1`,
+    );
+    return data.query?.random?.[0]?.title;
+}
+
+async function fetchPageData(title: string): Promise<PageData | undefined> {
+    const data = await fetchWikiPagePart<ArticleApiResponse>(
+        `${WIKI_API}?action=query&format=json&titles=${encodeURIComponent(title)}&prop=extracts|images|info&inprop=url&explaintext=true&imlimit=500`,
+    );
+    const pages = data.query?.pages;
+    if (!pages) return undefined;
+    return Object.values(pages)[0];
+}
+
+async function fetchImageUrls(imageTitles: string[]): Promise<string[]> {
+    if (imageTitles.length === 0) return [];
+    const data = await fetchWikiPagePart<ImageApiResponse>(
+        `${WIKI_API}?action=query&format=json&titles=${encodeURIComponent(imageTitles.join("|"))}&prop=imageinfo&iiprop=url`,
+    );
+    return Object.values(data.query?.pages ?? {})
+        .map((p) => p.imageinfo?.[0]?.url)
+        .filter((url): url is string => !!url);
 }
 
 export async function fetchRandomWikiPage(
@@ -126,47 +135,19 @@ export async function fetchRandomWikiPage(
 ): Promise<WikiPage> {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-            const randomData = await fetchJson<RandomPageResponse>(
-                `${WIKI_API}?action=query&format=json&list=random&rnnamespace=0&rnlimit=1`,
-            );
+            const title = await fetchRandomTitle();
+            if (!title) continue;
 
-            const pageTitle = randomData.query?.random?.[0]?.title;
-            if (!pageTitle) continue;
+            const page = await fetchPageData(title);
+            const content = page?.extract ?? "";
+            if (!page || content.length < minContentLength) continue;
 
-            const pageData = await fetchJson<ArticleApiResponse>(
-                `${WIKI_API}?action=query&format=json&titles=${encodeURIComponent(pageTitle)}&prop=extracts|images|info&inprop=url&explaintext=true&imlimit=500`,
-            );
-
-            const pages = pageData.query?.pages;
-            if (!pages) continue;
-
-            const page = Object.values(pages)[0];
-            const content = page.extract ?? "";
-
-            if (content.length < minContentLength) continue;
-
-            const imageUrls: string[] = [];
-            if (page.images?.length) {
-                const imageTitles = page.images
-                    .map((img) => img.title)
-                    .join("|");
-                const imgData = await fetchJson<ImageApiResponse>(
-                    `${WIKI_API}?action=query&format=json&titles=${encodeURIComponent(imageTitles)}&prop=imageinfo&iiprop=url`,
-                );
-
-                for (const imgPage of Object.values(
-                    imgData.query?.pages ?? {},
-                )) {
-                    const info = imgPage.imageinfo?.[0];
-                    if (info?.url) imageUrls.push(info.url);
-                }
-            }
+            const imageTitles = page.images?.map((img: { title: string }) => img.title) ?? [];
+            const imageUrls = await fetchImageUrls(imageTitles);
 
             return {
-                title: pageTitle,
-                url:
-                    page.fullurl ??
-                    `https://fr.wikipedia.org/wiki/${encodeURIComponent(pageTitle)}`,
+                title,
+                url: page.fullurl ?? `https://fr.wikipedia.org/wiki/${encodeURIComponent(title)}`,
                 images: filterGenericImages(imageUrls),
                 sections: parseWikiSections(content),
             };

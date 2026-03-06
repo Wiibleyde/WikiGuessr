@@ -5,8 +5,8 @@ import useSWR from "swr";
 import LeaderboardCategory from "@/components/leaderboard/LeaderboardCategory";
 import ErrorMessage from "@/components/ui/Error";
 import Loader from "@/components/ui/Loader";
-import { fetcher } from "@/lib/fetcher";
 import type { LeaderboardCategoryData } from "@/types/leaderboard";
+import { fetcher } from "@/utils/fetcher";
 
 export default function LeaderboardContent() {
     const initializedRef = useRef(false);

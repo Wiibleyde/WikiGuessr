@@ -3,8 +3,8 @@
 import useSWR from "swr";
 import Loader from "@/components/ui/Loader";
 import { useAuth } from "@/hooks/useAuth";
-import { fetcher } from "@/lib/fetcher";
 import type { ProfileStats } from "@/types/auth";
+import { fetcher } from "@/utils/fetcher";
 
 interface StatCardProps {
     label: string;

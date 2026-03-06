@@ -6,8 +6,8 @@ import useSWR from "swr";
 import ErrorMessage from "@/components/ui/Error";
 import Loader from "@/components/ui/Loader";
 import NoDataMessage from "@/components/ui/NoDataMessage";
-import { fetcher } from "@/lib/fetcher";
 import type { PageEntry } from "@/types/historic";
+import { fetcher } from "@/utils/fetcher";
 
 export default function HistoricContent() {
     const [pages, setPages] = useState<PageEntry[]>([]);
