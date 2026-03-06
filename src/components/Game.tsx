@@ -13,7 +13,7 @@ import Loader from "./ui/Loader";
 import NoDataMessage from "./ui/NoDataMessage";
 
 export default function Game() {
-    const { user, loading: authLoading } = useAuth();
+    const { user } = useAuth();
     const {
         article,
         guesses,
@@ -32,9 +32,7 @@ export default function Game() {
         percentage,
         submitGuess,
         markSaved,
-        syncWithDatabase,
         syncToDatabase,
-        synced,
         revealedImages,
         revealingHint,
         revealHint,
@@ -42,28 +40,6 @@ export default function Game() {
         imageCount,
         score,
     } = useGameState();
-
-    // After auth resolves and game is loaded, sync state with database
-    const syncInitRef = useRef(false);
-    useEffect(() => {
-        if (authLoading || loading || !article || syncInitRef.current) return;
-        if (!user) {
-            syncInitRef.current = true;
-            return;
-        }
-        syncInitRef.current = true;
-        syncWithDatabase();
-    }, [authLoading, loading, article, user, syncWithDatabase]);
-
-    // Sync to DB after each guess (when logged in and synced)
-    const prevGuessCount = useRef(guesses.length);
-    useEffect(() => {
-        if (!user || !synced) return;
-        if (guesses.length > prevGuessCount.current) {
-            syncToDatabase();
-        }
-        prevGuessCount.current = guesses.length;
-    }, [guesses.length, user, synced, syncToDatabase]);
 
     const savingRef = useRef(false);
     useEffect(() => {

@@ -27,7 +27,6 @@ export function useGameState() {
     const lastGuessSimilarity = useAtomValue(atomGame.lastGuessSimilarityAtom);
     const lastRevealedWord = useAtomValue(atomGame.lastRevealedWordAtom);
 
-    const synced = useAtomValue(atomGame.syncedAtom);
     const [revealedImages, setRevealedImages] = useAtom(
         atomGame.revealedImagesAtom,
     );
@@ -46,7 +45,7 @@ export function useGameState() {
 
     const { revealAllWords, revealAllImages, revealHint } = useGame();
     const { submitGuess } = useGuess();
-    const { syncToDatabase, syncWithDatabase } = useDb();
+    const { syncToDatabase } = useDb();
 
     useEffect(() => {
         const gameData = fetchGame();
@@ -126,9 +125,7 @@ export function useGameState() {
         percentage,
         submitGuess,
         markSaved,
-        syncWithDatabase,
         syncToDatabase,
-        synced,
         revealedImages: displayImages,
         revealingHint,
         revealHint,

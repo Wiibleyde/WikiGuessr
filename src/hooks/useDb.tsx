@@ -1,15 +1,18 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import * as atomGame from "@/atom/game";
 import type { GameCache } from "@/types/game";
 import { loadCache, saveCache } from "@/utils/cache";
 import { checkWinCondition } from "@/utils/game";
 import { fetchStateFromServer, pushStateToServer } from "@/utils/server";
+import { useAuth } from "./useAuth";
 import useGame from "./useGame";
 
 const useDb = () => {
+    const { user, loading: authLoading } = useAuth();
     const { revealAllWords, revealAllImages } = useGame();
     const article = useAtomValue(atomGame.articleAtom);
+    const loading = useAtomValue(atomGame.loadingAtom);
     const [guesses, setGuesses] = useAtom(atomGame.guessesAtom);
     const [revealed, setRevealed] = useAtom(atomGame.revealedAtom);
     const [saved, setSaved] = useAtom(atomGame.savedAtom);
@@ -86,7 +89,19 @@ const useDb = () => {
         setSynced,
     ]);
 
-    return { syncToDatabase, syncWithDatabase };
+    // Sync once after auth and game are both ready
+    useEffect(() => {
+        if (authLoading || loading || !article || !user) return;
+        syncWithDatabase();
+    }, [authLoading, loading, article, user, syncWithDatabase]);
+
+    // Sync to DB after each new guess (guesses only grow, so any length change = new guess)
+    useEffect(() => {
+        if (!user || !synced || guesses.length === 0) return;
+        syncToDatabase();
+    }, [guesses.length, user, synced, syncToDatabase]);
+
+    return { syncToDatabase };
 };
 
 export default useDb;
