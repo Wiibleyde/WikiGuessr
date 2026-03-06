@@ -1,5 +1,10 @@
-export const fetcher = (url: string) =>
-    fetch(url).then((res) => {
-        if (!res.ok) throw new Error("Erreur serveur");
-        return res.json();
-    });
+import axios from "axios";
+
+export async function fetcher<T>(url: string): Promise<T> {
+    try {
+        const response = await axios.get<T>(url);
+        return response.data;
+    } catch {
+        throw new Error("Erreur serveur");
+    }
+}

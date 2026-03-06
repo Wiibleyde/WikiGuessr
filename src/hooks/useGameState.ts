@@ -1,5 +1,6 @@
 "use client";
 
+import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { normalizeWord } from "@/lib/game/normalize";
 import type {
@@ -16,6 +17,24 @@ import { clearOldCaches, loadCache, saveCache } from "@/utils/cache";
 import { posKey } from "@/utils/helper";
 
 const DATE_CHECK_INTERVAL_MS = 60_000;
+
+interface GameStateResponse {
+    state: GameCache | null;
+}
+
+interface RevealResponse {
+    positions: WordPosition[];
+}
+
+interface HintResponse {
+    imageUrl: string;
+    hintIndex: number;
+    totalImages: number;
+}
+
+interface DateResponse {
+    date: string;
+}
 
 function checkWinCondition(
     article: MaskedArticle,
@@ -35,12 +54,10 @@ function checkWinCondition(
 /** Push current game state to the server (fire-and-forget). */
 async function pushStateToServer(cache: GameCache): Promise<boolean> {
     try {
-        const res = await fetch("/api/game/state", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(cache),
+        const response = await axios.put("/api/game/state", cache, {
+            validateStatus: () => true,
         });
-        return res.ok;
+        return response.status >= 200 && response.status < 300;
     } catch {
         console.error("[sync] failed to push state to server");
         return false;
@@ -50,10 +67,11 @@ async function pushStateToServer(cache: GameCache): Promise<boolean> {
 /** Fetch the saved game state from the server. */
 async function fetchStateFromServer(): Promise<GameCache | null> {
     try {
-        const res = await fetch("/api/game/state");
-        if (!res.ok) return null;
-        const data = (await res.json()) as { state: GameCache | null };
-        return data.state;
+        const response = await axios.get<GameStateResponse>("/api/game/state", {
+            validateStatus: () => true,
+        });
+        if (response.status < 200 || response.status >= 300) return null;
+        return response.data.state;
     } catch {
         console.error("[sync] failed to fetch state from server");
         return null;
@@ -97,15 +115,13 @@ export function useGameState() {
         const allImages: string[] = [];
         for (let i = 0; i < total; i++) {
             try {
-                const res = await fetch("/api/game/hint", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ hintIndex: i }),
-                });
-                if (!res.ok) continue;
-                const data = (await res.json()) as {
-                    imageUrl: string;
-                };
+                const response = await axios.post(
+                    "/api/game/hint",
+                    { hintIndex: i },
+                    { validateStatus: () => true },
+                );
+                if (response.status < 200 || response.status >= 300) continue;
+                const data = response.data as HintResponse;
                 allImages.push(data.imageUrl);
             } catch {
                 // skip failed image
@@ -123,15 +139,13 @@ export function useGameState() {
             currentRevealed: RevealedMap,
         ) => {
             try {
-                const res = await fetch("/api/game/reveal", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ words }),
-                });
-                if (!res.ok) return;
-                const data = (await res.json()) as {
-                    positions: WordPosition[];
-                };
+                const response = await axios.post(
+                    "/api/game/reveal",
+                    { words },
+                    { validateStatus: () => true },
+                );
+                if (response.status < 200 || response.status >= 300) return;
+                const data = response.data as RevealResponse;
                 const fullRevealed = { ...currentRevealed };
                 for (const pos of data.positions) {
                     fullRevealed[posKey(pos.section, pos.part, pos.wordIndex)] =
@@ -159,12 +173,10 @@ export function useGameState() {
         setRevealedImages([]);
         setWinImages([]);
 
-        fetch("/api/game")
-            .then((res) => {
-                if (!res.ok) throw new Error("Erreur serveur");
-                return res.json();
-            })
-            .then((data: MaskedArticle) => {
+        axios
+            .get<MaskedArticle>("/api/game")
+            .then((response) => {
+                const data = response.data;
                 setArticle(data);
                 clearOldCaches(data.date);
 
@@ -202,10 +214,12 @@ export function useGameState() {
 
         const timer = setInterval(async () => {
             try {
-                const res = await fetch("/api/game/date");
-                if (!res.ok) return;
-                const data = (await res.json()) as { date: string };
-                if (data.date !== article.date) {
+                const response = await axios.get<DateResponse>(
+                    "/api/game/date",
+                    { validateStatus: () => true },
+                );
+                if (response.status < 200 || response.status >= 300) return;
+                if (response.data.date !== article.date) {
                     reloadArticle();
                 }
             } catch {
@@ -217,12 +231,10 @@ export function useGameState() {
     }, [article, reloadArticle]);
 
     useEffect(() => {
-        fetch("/api/game")
-            .then((res) => {
-                if (!res.ok) throw new Error("Erreur serveur");
-                return res.json();
-            })
-            .then((data: MaskedArticle) => {
+        axios
+            .get<MaskedArticle>("/api/game")
+            .then((response) => {
+                const data = response.data;
                 setArticle(data);
                 clearOldCaches(data.date);
 
@@ -334,18 +346,20 @@ export function useGameState() {
                     .filter((g) => g.found)
                     .map((g) => g.word);
 
-                const res = await fetch("/api/game/guess", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
+                const response = await axios.post(
+                    "/api/game/guess",
+                    {
                         word: raw,
                         revealedWords: foundWords,
-                    }),
-                });
+                    },
+                    { validateStatus: () => true },
+                );
 
-                if (!res.ok) throw new Error("Erreur serveur");
+                if (response.status < 200 || response.status >= 300) {
+                    throw new Error("Erreur serveur");
+                }
 
-                const result: GuessResult = await res.json();
+                const result = response.data as GuessResult;
 
                 // Detect server day change — discard this guess & reload
                 if (result.serverDate !== article.date) {
@@ -426,17 +440,13 @@ export function useGameState() {
 
         setRevealingHint(true);
         try {
-            const res = await fetch("/api/game/hint", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ hintIndex: nextIndex }),
-            });
-            if (!res.ok) return;
-            const data = (await res.json()) as {
-                imageUrl: string;
-                hintIndex: number;
-                totalImages: number;
-            };
+            const response = await axios.post(
+                "/api/game/hint",
+                { hintIndex: nextIndex },
+                { validateStatus: () => true },
+            );
+            if (response.status < 200 || response.status >= 300) return;
+            const data = response.data as HintResponse;
             const newImages = [...revealedImages, data.imageUrl];
             setRevealedImages(newImages);
             saveCache(article.date, guesses, revealed, saved, newImages);

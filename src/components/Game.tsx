@@ -1,5 +1,6 @@
 "use client";
 
+import axios from "axios";
 import { useEffect, useRef } from "react";
 import ArticleView from "@/components/ArticleView";
 import GameHeader from "@/components/GameHeader";
@@ -68,26 +69,24 @@ export default function Game() {
     useEffect(() => {
         if (!won || !user || saved || savingRef.current) return;
         savingRef.current = true;
-        fetch("/api/game/complete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+        axios
+            .post("/api/game/complete", {
                 guessCount: guesses.length,
                 guessedWords: guesses.map((g) => g.word),
                 hintsUsed,
-            }),
-        })
-            .then((res) => {
-                if (res.ok) {
-                    markSaved();
-                    // Also sync the final state (with saved=true) to DB
-                    syncToDatabase();
-                } else {
-                    console.error("[game/complete] server error:", res.status);
-                    savingRef.current = false;
-                }
+            })
+            .then(() => {
+                markSaved();
+                // Also sync the final state (with saved=true) to DB
+                syncToDatabase();
             })
             .catch((err) => {
+                if (axios.isAxiosError(err) && err.response) {
+                    console.error(
+                        "[game/complete] server error:",
+                        err.response.status,
+                    );
+                }
                 console.error("[game/complete]", err);
                 savingRef.current = false;
             });

@@ -1,14 +1,18 @@
 "use client";
 
+import axios from "axios";
 import { useCallback } from "react";
 import useSWR from "swr";
 import type { AuthUser } from "@/types/auth";
 
-const authFetcher = (url: string) =>
-    fetch(url).then((res) => {
-        if (!res.ok) return { user: null };
-        return res.json();
-    });
+const authFetcher = async (url: string): Promise<{ user: AuthUser | null }> => {
+    try {
+        const response = await axios.get<{ user: AuthUser | null }>(url);
+        return response.data;
+    } catch {
+        return { user: null };
+    }
+};
 
 export function useAuth() {
     const { data, isLoading, mutate } = useSWR<{ user: AuthUser | null }>(
@@ -24,7 +28,7 @@ export function useAuth() {
     }, []);
 
     const logout = useCallback(async () => {
-        await fetch("/api/auth/logout", { method: "POST" });
+        await axios.post("/api/auth/logout");
         mutate({ user: null }, { revalidate: false });
     }, [mutate]);
 

@@ -1,3 +1,4 @@
+import axios from "axios";
 import {
     GENERIC_IMAGE_PATTERNS,
     IGNORED_SECTIONS,
@@ -102,11 +103,17 @@ function filterGenericImages(imageUrls: string[]): string[] {
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
-    const res = await fetch(url);
-    if (!res.ok) {
-        throw new Error(`[wiki] HTTP ${res.status} fetching ${url}`);
+    try {
+        const response = await axios.get<T>(url);
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            throw new Error(
+                `[wiki] HTTP ${error.response.status} fetching ${url}`,
+            );
+        }
+        throw error;
     }
-    return res.json() as Promise<T>;
 }
 
 export async function fetchRandomWikiPage(
