@@ -112,12 +112,15 @@ export async function fetchRandomWikiPage(
             const content = page?.extract ?? "";
             if (!page || content.length < minContentLength) continue;
 
-            const imageTitles = page.images?.map((img: { title: string }) => img.title) ?? [];
+            const imageTitles =
+                page.images?.map((img: { title: string }) => img.title) ?? [];
             const imageUrls = await fetchImageUrls(imageTitles);
 
             return {
                 title,
-                url: page.fullurl ?? `https://fr.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+                url:
+                    page.fullurl ??
+                    `https://fr.wikipedia.org/wiki/${encodeURIComponent(title)}`,
                 images: filterGenericImages(imageUrls),
                 sections: parseWikiSections(content),
             };

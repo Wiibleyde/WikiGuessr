@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useContext } from "react";
 import NavbarContext from "@/contexts/NavbarContext";
@@ -24,6 +25,12 @@ export default function Navbar() {
         <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
             <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-6">
+                    <Image
+                        src="/logo-wikiguessr.svg"
+                        alt="WikiGuessr logo"
+                        width={32}
+                        height={32}
+                    />
                     <Link
                         href="/"
                         className="text-xl font-extrabold tracking-tight text-gray-800 hover:text-gray-600 transition-colors"
