@@ -1,19 +1,15 @@
 "use client";
 
-import axios from "axios";
-import { useEffect, useRef } from "react";
 import ArticleView from "@/components/ArticleView";
 import GameHeader from "@/components/GameHeader";
 import GuessList from "@/components/GuessList";
 import ImageHint from "@/components/ImageHint";
-import { useAuth } from "@/hooks/useAuth";
 import { useGameState } from "@/hooks/useGameState";
 import ErrorMessage from "./ui/Error";
 import Loader from "./ui/Loader";
 import NoDataMessage from "./ui/NoDataMessage";
 
 export default function Game() {
-    const { user } = useAuth();
     const {
         article,
         guesses,
@@ -23,7 +19,6 @@ export default function Game() {
         loading,
         guessing,
         won,
-        saved,
         error,
         lastGuessFound,
         lastGuessSimilarity,
@@ -31,8 +26,6 @@ export default function Game() {
         setLastGuessFound,
         percentage,
         submitGuess,
-        markSaved,
-        syncToDatabase,
         revealedImages,
         revealingHint,
         revealHint,
@@ -40,33 +33,6 @@ export default function Game() {
         imageCount,
         score,
     } = useGameState();
-
-    const savingRef = useRef(false);
-    useEffect(() => {
-        if (!won || !user || saved || savingRef.current) return;
-        savingRef.current = true;
-        axios
-            .post("/api/game/complete", {
-                guessCount: guesses.length,
-                guessedWords: guesses.map((g) => g.word),
-                hintsUsed,
-            })
-            .then(() => {
-                markSaved();
-                // Also sync the final state (with saved=true) to DB
-                syncToDatabase();
-            })
-            .catch((err) => {
-                if (axios.isAxiosError(err) && err.response) {
-                    console.error(
-                        "[game/complete] server error:",
-                        err.response.status,
-                    );
-                }
-                console.error("[game/complete]", err);
-                savingRef.current = false;
-            });
-    }, [won, user, saved, guesses, hintsUsed, markSaved, syncToDatabase]);
 
     if (loading) return <Loader message="Chargement de l'article du jour…" />;
 

@@ -1,5 +1,6 @@
+import axios from "axios";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import * as atomGame from "@/atom/game";
 import type { GameCache } from "@/types/game";
 import { loadCache, saveCache } from "@/utils/cache";
@@ -15,6 +16,7 @@ const useDb = () => {
     const loading = useAtomValue(atomGame.loadingAtom);
     const [guesses, setGuesses] = useAtom(atomGame.guessesAtom);
     const [revealed, setRevealed] = useAtom(atomGame.revealedAtom);
+    const won = useAtomValue(atomGame.wonAtom);
     const [saved, setSaved] = useAtom(atomGame.savedAtom);
     const revealedImages = useAtomValue(atomGame.revealedImagesAtom);
     const setWon = useSetAtom(atomGame.wonAtom);
@@ -100,6 +102,35 @@ const useDb = () => {
         if (!user || !synced || guesses.length === 0) return;
         syncToDatabase();
     }, [guesses.length, user, synced, syncToDatabase]);
+
+    // Save game result when the user wins
+    const savingRef = useRef(false);
+    useEffect(() => {
+        if (!won || !user || saved || savingRef.current || !article) return;
+        savingRef.current = true;
+        const hintsUsed = revealedImages.length;
+        axios
+            .post("/api/game/complete", {
+                guessCount: guesses.length,
+                guessedWords: guesses.map((g) => g.word),
+                hintsUsed,
+            })
+            .then(() => {
+                setSaved(true);
+                saveCache(article.date, guesses, revealed, true, revealedImages);
+                syncToDatabase();
+            })
+            .catch((err) => {
+                if (axios.isAxiosError(err) && err.response) {
+                    console.error(
+                        "[game/complete] server error:",
+                        err.response.status,
+                    );
+                }
+                console.error("[game/complete]", err);
+                savingRef.current = false;
+            });
+    }, [won, user, saved, article, guesses, revealed, revealedImages, setSaved, syncToDatabase]);
 
     return { syncToDatabase };
 };

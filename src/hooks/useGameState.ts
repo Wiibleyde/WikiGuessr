@@ -7,7 +7,6 @@ import { HINT_PENALTY } from "@/lib/constants/game";
 import { fetchGame } from "@/lib/queries";
 import { clearOldCaches, loadCache } from "@/utils/cache";
 import { checkWinCondition } from "@/utils/game";
-import useCache from "./useCache";
 import useDb from "./useDb";
 import useGame from "./useGame";
 import useGuess from "./useGuess";
@@ -46,8 +45,7 @@ export function useGameState() {
 
     const { revealAllWords, revealAllImages, revealHint } = useGame();
     const { submitGuess } = useGuess();
-    const { syncToDatabase } = useDb();
-    const { markSaved } = useCache();
+    useDb();
 
     useEffect(() => {
         const gameData = fetchGame();
@@ -118,8 +116,6 @@ export function useGameState() {
         setLastGuessFound,
         percentage,
         submitGuess,
-        markSaved,
-        syncToDatabase,
         revealedImages: displayImages,
         revealingHint,
         revealHint,
