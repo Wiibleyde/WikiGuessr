@@ -1,25 +1,16 @@
 import { normalizeWord } from "@/lib/game/normalize";
 import type {
+    ArticleCache,
     GuessResult,
+    InternalWord,
     MaskedArticle,
     MaskedSection,
-    ProximityReason,
-    PunctuationToken,
-    Token,
-    WordPosition,
-    WordToken,
+    ProximityReason, Token,
+    TokenizeResult,
+    WordPosition
 } from "@/types/game";
+import type { WikiSection } from "@/types/wiki";
 import { ensureDailyWikiPage } from "./daily-wiki";
-
-export type {
-    Token,
-    WordToken,
-    PunctuationToken,
-    MaskedSection,
-    MaskedArticle,
-    WordPosition,
-    GuessResult,
-};
 
 const TOKEN_REGEX = /([\p{L}0-9]+)|(\n)|(\s+)|([^\s\p{L}0-9]+)/gu;
 
@@ -253,17 +244,6 @@ function diagnoseProximity(guess: string, target: string): ProximityReason {
     return { type: "mixed", description: "Mot très proche" };
 }
 
-interface InternalWord {
-    normalized: string;
-    display: string;
-    index: number;
-}
-
-interface TokenizeResult {
-    tokens: Token[];
-    words: InternalWord[];
-}
-
 function tokenize(text: string, prefix = ""): TokenizeResult {
     const tokens: Token[] = [];
     const words: InternalWord[] = [];
@@ -302,20 +282,7 @@ function tokenize(text: string, prefix = ""): TokenizeResult {
     return { tokens, words };
 }
 
-interface ArticleCache {
-    maskedArticle: MaskedArticle;
-    wordGroups: Map<string, WordPosition[]>;
-    titleWords: InternalWord[];
-    images: string[];
-    date: string;
-}
-
 let articleCache: ArticleCache | null = null;
-
-interface WikiSection {
-    title: string;
-    content: string;
-}
 
 function buildArticleCache(
     title: string,

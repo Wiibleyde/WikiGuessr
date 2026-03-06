@@ -73,3 +73,22 @@ export interface GameCache {
 }
 
 export const HINT_PENALTY = 5;
+
+export interface InternalWord {
+    normalized: string;
+    display: string;
+    index: number;
+}
+
+export interface TokenizeResult {
+    tokens: Token[];
+    words: InternalWord[];
+}
+
+export interface ArticleCache {
+    maskedArticle: MaskedArticle;
+    wordGroups: Map<string, WordPosition[]>;
+    titleWords: InternalWord[];
+    images: string[];
+    date: string;
+}
