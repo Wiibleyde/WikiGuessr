@@ -1,6 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useAtom } from "jotai";
+import { useCallback, useEffect } from "react";
+import {
+    articleAtom,
+    errorAtom,
+    guessesAtom,
+    guessingAtom,
+    inputAtom,
+    lastGuessFoundAtom,
+    lastGuessSimilarityAtom,
+    lastRevealedWordAtom,
+    loadingAtom,
+    revealedAtom,
+    revealedImagesAtom,
+    revealingHintAtom,
+    savedAtom,
+    syncedAtom,
+    winImagesAtom,
+    wonAtom,
+} from "@/atom/game";
 import { HINT_PENALTY, MIN_GUESSES_FOR_HINT } from "@/lib/constants/game";
 import { normalizeWord } from "@/lib/game/normalize";
 import {
@@ -21,24 +40,26 @@ import { posKey } from "@/utils/helper";
 import { fetchStateFromServer, pushStateToServer } from "@/utils/server";
 
 export function useGameState() {
-    const [article, setArticle] = useState<MaskedArticle | null>(null);
-    const [guesses, setGuesses] = useState<StoredGuess[]>([]);
-    const [revealed, setRevealed] = useState<RevealedMap>({});
-    const [input, setInput] = useState("");
-    const [loading, setLoading] = useState(true);
-    const [guessing, setGuessing] = useState(false);
-    const [won, setWon] = useState(false);
-    const [saved, setSaved] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [lastGuessFound, setLastGuessFound] = useState<boolean | null>(null);
-    const [lastGuessSimilarity, setLastGuessSimilarity] = useState<number>(0);
-    const [lastRevealedWord, setLastRevealedWord] = useState<string | null>(
-        null,
+    const [article, setArticle] = useAtom(articleAtom);
+    const [guesses, setGuesses] = useAtom(guessesAtom);
+    const [revealed, setRevealed] = useAtom(revealedAtom);
+    const [input, setInput] = useAtom(inputAtom);
+    const [loading, setLoading] = useAtom(loadingAtom);
+    const [guessing, setGuessing] = useAtom(guessingAtom);
+    const [won, setWon] = useAtom(wonAtom);
+    const [saved, setSaved] = useAtom(savedAtom);
+    const [error, setError] = useAtom(errorAtom);
+    const [lastGuessFound, setLastGuessFound] = useAtom(lastGuessFoundAtom);
+    const [lastGuessSimilarity, setLastGuessSimilarity] = useAtom(
+        lastGuessSimilarityAtom,
     );
-    const [synced, setSynced] = useState(false);
-    const [revealedImages, setRevealedImages] = useState<string[]>([]);
-    const [winImages, setWinImages] = useState<string[]>([]);
-    const [revealingHint, setRevealingHint] = useState(false);
+    const [lastRevealedWord, setLastRevealedWord] =
+        useAtom(lastRevealedWordAtom);
+
+    const [synced, setSynced] = useAtom(syncedAtom);
+    const [revealedImages, setRevealedImages] = useAtom(revealedImagesAtom);
+    const [winImages, setWinImages] = useAtom(winImagesAtom);
+    const [revealingHint, setRevealingHint] = useAtom(revealingHintAtom);
 
     const revealedCount = Object.keys(revealed).length;
     const totalWords = article?.totalWords ?? 0;
@@ -63,7 +84,7 @@ export function useGameState() {
             }
             setWinImages(allImages);
         },
-        [],
+        [setWinImages],
     );
 
     /** Fetch all word positions from the server and reveal every word. */
@@ -86,7 +107,7 @@ export function useGameState() {
                 return;
             }
         },
-        [],
+        [setRevealed],
     );
 
     /** Reload the article from the server (used on day change). */
@@ -140,7 +161,7 @@ export function useGameState() {
                 setError("Impossible de charger l'article du jour");
                 setLoading(false);
             });
-    }, [revealAllWords, revealAllImages]);
+    }, [revealAllWords, revealAllImages, setArticle, setGuesses, setRevealed, setWon, setSaved, setSynced, setError, setInput, setRevealedImages, setWinImages, setLoading]);
 
     useEffect(() => {
         const gameData = fetchGame();
@@ -181,7 +202,7 @@ export function useGameState() {
                 setError("Impossible de charger l'article du jour");
                 setLoading(false);
             });
-    }, [revealAllWords, revealAllImages]);
+    }, [revealAllWords, revealAllImages, setArticle, setGuesses, setRevealed, setWon, setSaved, setError, setRevealedImages, setLoading]);
 
     /**
      * Synchronize state with the database after login.
@@ -231,7 +252,7 @@ export function useGameState() {
         }
 
         setSynced(true);
-    }, [article, synced, revealAllWords, revealAllImages]);
+    }, [article, synced, revealAllWords, revealAllImages, setGuesses, setRevealed, setRevealedImages, setSaved, setWon, setSynced]);
 
     /** Push current state to the DB (called on each guess when logged in). */
     const syncToDatabase = useCallback(async () => {
@@ -332,6 +353,12 @@ export function useGameState() {
             revealAllWords,
             revealAllImages,
             reloadArticle,
+            setGuesses, setRevealed, setLastGuessFound,
+            setLastGuessSimilarity,
+            setLastRevealedWord,
+            setError,
+            setInput, setWon,
+            setGuessing
         ],
     );
 
@@ -339,7 +366,7 @@ export function useGameState() {
         if (!article) return;
         setSaved(true);
         saveCache(article.date, guesses, revealed, true, revealedImages);
-    }, [article, guesses, revealed, revealedImages]);
+    }, [article, guesses, revealed, revealedImages, setSaved]);
 
     const revealHint = useCallback(async () => {
         if (!article || won || revealingHint) return;
@@ -360,7 +387,7 @@ export function useGameState() {
             console.error("[hint] failed to reveal hint");
         }
         setRevealingHint(false);
-    }, [article, won, revealingHint, revealedImages, guesses, revealed, saved]);
+    }, [article, won, revealingHint, revealedImages, guesses, revealed, saved, setRevealedImages, setRevealingHint]);
 
     return {
         article,
