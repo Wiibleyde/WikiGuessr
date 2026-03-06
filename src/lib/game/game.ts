@@ -66,6 +66,28 @@ function tokenize(text: string, prefix = ""): TokenizeResult {
     return { tokens, words };
 }
 
+export const addToWordsGroup = (group: Map<string, WordPosition[]>, key: string, value: WordPosition) => {
+    const existing = group.get(key);
+    if (existing) existing.push(value);
+    else group.set(key, [value]);
+};
+
+function indexWords(
+    wordGroups: Map<string, WordPosition[]>,
+    words: InternalWord[],
+    section: number,
+    part: "title" | "content",
+): void {
+    for (const w of words) {
+        addToWordsGroup(wordGroups, w.normalized, {
+            section,
+            part,
+            wordIndex: w.index,
+            display: w.display,
+        });
+    }
+}
+
 let articleCache: ArticleCache | null = null;
 
 function buildArticleCache(
@@ -102,44 +124,13 @@ function buildArticleCache(
 
     const wordGroups = new Map<string, WordPosition[]>();
 
-    for (const w of titleWords) {
-        const pos: WordPosition = {
-            section: -1,
-            part: "title",
-            wordIndex: w.index,
-            display: w.display,
-        };
-        const existing = wordGroups.get(w.normalized);
-        if (existing) existing.push(pos);
-        else wordGroups.set(w.normalized, [pos]);
-    }
+    indexWords(wordGroups, titleWords, -1, "title");
 
     for (let i = 0; i < sections.length; i++) {
         const { words: stw } = tokenize(sections[i].title, `s${i}t-`);
-        for (const w of stw) {
-            const pos: WordPosition = {
-                section: i,
-                part: "title",
-                wordIndex: w.index,
-                display: w.display,
-            };
-            const existing = wordGroups.get(w.normalized);
-            if (existing) existing.push(pos);
-            else wordGroups.set(w.normalized, [pos]);
-        }
-
+        indexWords(wordGroups, stw, i, "title");
         const { words: scw } = tokenize(sections[i].content, `s${i}c-`);
-        for (const w of scw) {
-            const pos: WordPosition = {
-                section: i,
-                part: "content",
-                wordIndex: w.index,
-                display: w.display,
-            };
-            const existing = wordGroups.get(w.normalized);
-            if (existing) existing.push(pos);
-            else wordGroups.set(w.normalized, [pos]);
-        }
+        indexWords(wordGroups, scw, i, "content");
     }
 
     return { maskedArticle, wordGroups, titleWords, images: [], date };
@@ -176,8 +167,9 @@ export async function checkGuess(
     revealedWords?: string[],
 ): Promise<GuessResult> {
     const normalizedGuess = normalizeWord(word.trim());
+    const cache = await getArticleCache();
+
     if (!normalizedGuess) {
-        const cache = await getArticleCache();
         return {
             found: false,
             word: "",
@@ -188,7 +180,6 @@ export async function checkGuess(
         };
     }
 
-    const cache = await getArticleCache();
     const { wordGroups } = cache;
     const revealedSet = revealedWords ? new Set(revealedWords) : null;
 
