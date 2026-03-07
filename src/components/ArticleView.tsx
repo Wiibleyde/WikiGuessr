@@ -1,6 +1,7 @@
 "use client";
 
 import type { MaskedArticle, RevealedMap } from "@/types/game";
+import Section from "./article/Section";
 import TokenList from "./TokenList";
 
 interface ArticleViewProps {
@@ -8,10 +9,7 @@ interface ArticleViewProps {
     revealed: RevealedMap;
 }
 
-export default function ArticleView({
-    article,
-    revealed,
-}: ArticleViewProps) {
+export default function ArticleView({ article, revealed }: ArticleViewProps) {
     return (
         <main className="flex-1 min-w-0 space-y-4">
             <div className="p-5 bg-white rounded-xl shadow-sm border border-gray-100">
@@ -26,32 +24,14 @@ export default function ArticleView({
             </div>
 
             {article.sections.map((sec, index) => {
-                const sectionKey =
-                    sec.titleTokens[0]?.id ??
-                    sec.contentTokens[0]?.id ??
-                    `section-${index}`;
                 return (
-                    <section
-                        key={sectionKey}
-                        className="p-5 bg-white rounded-xl shadow-sm border border-gray-100"
-                    >
-                        <h3 className="text-lg font-semibold mb-2 leading-[2.2]">
-                            <TokenList
-                                tokens={sec.titleTokens}
-                                section={index}
-                                part="title"
-                                revealed={revealed}
-                            />
-                        </h3>
-                        <div className="text-sm leading-[2.2]">
-                            <TokenList
-                                tokens={sec.contentTokens}
-                                section={index}
-                                part="content"
-                                revealed={revealed}
-                            />
-                        </div>
-                    </section>
+                    <Section
+                        key={sec.contentTokens[0].id}
+                        sectionIndex={index}
+                        titleTokens={sec.titleTokens}
+                        contentTokens={sec.contentTokens}
+                        revealed={revealed}
+                    />
                 );
             })}
         </main>
