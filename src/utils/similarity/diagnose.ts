@@ -4,13 +4,13 @@
 // ---------------------------------------------------------------------------
 
 import type { ProximityReason } from "@/types/game";
-import { osaDistance } from "./osa";
+import { levenshteinDistance } from "./index";
 
 export function diagnoseProximity(
     guess: string,
     target: string,
 ): ProximityReason {
-    const dist = osaDistance(guess, target);
+    const dist = levenshteinDistance(guess, target);
     const lenDiff = target.length - guess.length;
 
     // Single-edit cases: provide precise feedback

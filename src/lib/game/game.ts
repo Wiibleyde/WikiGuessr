@@ -12,8 +12,8 @@ import type {
 import type { WikiSection } from "@/types/wiki";
 import {
     diagnoseProximity,
-    osaDistance,
-    wordSimilarity,
+    levenshteinDistance,
+    levenshteinSimilarity,
 } from "@/utils/similarity";
 import {
     CLOSE_THRESHOLD,
@@ -216,7 +216,7 @@ export async function checkGuess(
             const shorter = Math.min(normalizedGuess.length, normalized.length);
             if (longer / shorter > MAX_LENGTH_RATIO) continue;
 
-            const dist = osaDistance(normalizedGuess, normalized);
+            const dist = levenshteinDistance(normalizedGuess, normalized);
 
             // Auto-reveal at distance 1
             if (dist === 1 && positions.length > autoRevealOccurrences) {
@@ -225,7 +225,7 @@ export async function checkGuess(
                 bestMatchWord = normalized;
             }
 
-            const sim = wordSimilarity(normalizedGuess, normalized);
+            const sim = levenshteinSimilarity(normalizedGuess, normalized);
             if (sim > bestSimilarity) {
                 bestSimilarity = sim;
                 if (dist !== 1) {
@@ -316,7 +316,7 @@ export async function verifyWin(guessedWords: string[]): Promise<boolean> {
                 );
                 if (
                     longer / shorter <= MAX_LENGTH_RATIO &&
-                    wordSimilarity(guess, titleWord.normalized) >=
+                    levenshteinSimilarity(guess, titleWord.normalized) >=
                         REVEAL_THRESHOLD
                 ) {
                     return true;
