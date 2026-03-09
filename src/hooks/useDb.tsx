@@ -117,7 +117,13 @@ const useDb = () => {
             })
             .then(() => {
                 setSaved(true);
-                saveCache(article.date, guesses, revealed, true, revealedImages);
+                saveCache(
+                    article.date,
+                    guesses,
+                    revealed,
+                    true,
+                    revealedImages,
+                );
                 syncToDatabase();
             })
             .catch((err) => {
@@ -130,7 +136,17 @@ const useDb = () => {
                 console.error("[game/complete]", err);
                 savingRef.current = false;
             });
-    }, [won, user, saved, article, guesses, revealed, revealedImages, setSaved, syncToDatabase]);
+    }, [
+        won,
+        user,
+        saved,
+        article,
+        guesses,
+        revealed,
+        revealedImages,
+        setSaved,
+        syncToDatabase,
+    ]);
 
     return { syncToDatabase };
 };

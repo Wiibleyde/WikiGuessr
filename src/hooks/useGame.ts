@@ -1,6 +1,15 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback } from "react";
-import { articleAtom, guessesAtom, revealedAtom, revealedImagesAtom, revealingHintAtom, savedAtom, winImagesAtom, wonAtom } from "@/atom/game";
+import {
+    articleAtom,
+    guessesAtom,
+    revealedAtom,
+    revealedImagesAtom,
+    revealingHintAtom,
+    savedAtom,
+    winImagesAtom,
+    wonAtom,
+} from "@/atom/game";
 import { MIN_GUESSES_FOR_HINT } from "@/lib/constants/game";
 import { fetchGameReveal, fetchImageHint } from "@/lib/queries";
 import type { MaskedArticle, RevealedMap, StoredGuess } from "@/types/game";

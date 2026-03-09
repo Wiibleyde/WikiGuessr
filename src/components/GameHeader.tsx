@@ -24,7 +24,6 @@ export default function GameHeader({
     score,
     onSubmit,
 }: GameHeaderProps) {
-
     const [input, setInput] = useAtom(inputAtom);
     const setLastGuessFound = useSetAtom(lastGuessFoundAtom);
     const guesses = useAtomValue(guessesAtom);
@@ -83,7 +82,9 @@ export default function GameHeader({
                             value={input}
                             onChange={(e) => onInputChange(e.target.value)}
                             placeholder="Devinez un mot…"
-                            className={"min-w-0 flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"}
+                            className={
+                                "min-w-0 flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            }
                             readOnly={guessing}
                         />
                         <button

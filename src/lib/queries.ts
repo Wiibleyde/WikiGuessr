@@ -83,10 +83,12 @@ export const fetchGame = async (): Promise<MaskedArticle | null> => {
 
 export const fetchYesterdayWord = async (): Promise<string | null> => {
     try {
-        const data = await fetcher<{ title: string | null }>("/api/game/yesterday");
+        const data = await fetcher<{ title: string | null }>(
+            "/api/game/yesterday",
+        );
         return data.title;
     } catch (err) {
         console.error("[fetchYesterdayWord]", err);
         return null;
     }
-}
+};

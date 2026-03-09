@@ -58,10 +58,7 @@ export default function Game() {
             />
 
             <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
-                <ArticleView
-                    article={article}
-                    revealed={revealed}
-                />
+                <ArticleView article={article} revealed={revealed} />
                 <GuessList guesses={guesses} />
             </div>
         </div>

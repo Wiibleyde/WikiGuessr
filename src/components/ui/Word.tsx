@@ -17,11 +17,7 @@ interface WordProps {
     variant?: WordVariant;
 }
 
-const Word = ({
-    length,
-    text,
-    variant = "default"
-}: WordProps) => {
+const Word = ({ length, text, variant = "default" }: WordProps) => {
     const [animate, setAnimate] = useState(false);
 
     useEffect(() => {

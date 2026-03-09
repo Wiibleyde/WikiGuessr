@@ -9,7 +9,7 @@ import {
     lastGuessFoundAtom,
     revealedAtom,
     revealedImagesAtom,
-    wonAtom
+    wonAtom,
 } from "@/atom/game";
 import { normalizeWord } from "@/lib/game/normalize";
 import { checkGameGuess } from "@/lib/queries";
