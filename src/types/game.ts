@@ -19,7 +19,6 @@ export interface MaskedSection {
 }
 
 export interface MaskedArticle {
-    articleTitleTokens: Token[];
     sections: MaskedSection[];
     totalWords: number;
     date: string;
@@ -72,4 +71,35 @@ export interface GameCache {
     revealedImages?: string[];
 }
 
-export const HINT_PENALTY = 5;
+export interface InternalWord {
+    normalized: string;
+    display: string;
+    index: number;
+}
+
+export interface TokenizeResult {
+    tokens: Token[];
+    words: InternalWord[];
+}
+
+export interface ArticleCache {
+    maskedArticle: MaskedArticle;
+    wordGroups: Map<string, WordPosition[]>;
+    titleWords: InternalWord[];
+    images: string[];
+    date: string;
+}
+
+export interface GameStateResponse {
+    state: GameCache | null;
+}
+
+export interface RevealResponse {
+    positions: WordPosition[];
+}
+
+export interface HintResponse {
+    imageUrl: string;
+    hintIndex: number;
+    totalImages: number;
+}

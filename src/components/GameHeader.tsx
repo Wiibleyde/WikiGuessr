@@ -1,39 +1,35 @@
 "use client";
 
-import type { RefObject } from "react";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { guessesAtom, inputAtom, lastGuessFoundAtom } from "@/atom/game";
 import YesterdayWord from "@/components/YesterdayWord";
+import { plural } from "@/utils/helper";
+import Input from "./ui/Input";
 
 interface GameHeaderProps {
     date: string;
-    guessCount: number;
     percentage: number;
     won: boolean;
-    guessing: boolean;
-    input: string;
-    lastGuessFound: boolean | null;
-    lastGuessSimilarity: number;
     hintsUsed: number;
-    score: number;
-    inputRef: RefObject<HTMLInputElement | null>;
-    onInputChange: (value: string) => void;
     onSubmit: (e?: React.FormEvent) => void;
 }
 
 export default function GameHeader({
     date,
-    guessCount,
     percentage,
     won,
-    guessing,
-    input,
-    lastGuessFound,
-    lastGuessSimilarity,
     hintsUsed,
-    score,
-    inputRef,
-    onInputChange,
     onSubmit,
 }: GameHeaderProps) {
+    const [input, setInput] = useAtom(inputAtom);
+    const setLastGuessFound = useSetAtom(lastGuessFoundAtom);
+    const guesses = useAtomValue(guessesAtom);
+
+    const onInputChange = (value: string) => {
+        setInput(value);
+        setLastGuessFound(null);
+    };
+
     return (
         <div className="bg-white border-b border-gray-200">
             <div className="max-w-5xl mx-auto px-4 py-3 space-y-2">
@@ -41,11 +37,11 @@ export default function GameHeader({
                     <span>{date}</span>
                     <span className="hidden sm:inline">·</span>
                     <span>
-                        {guessCount} essai{guessCount !== 1 && "s"}
+                        {plural(guesses.length, "essai", "essais")}
                         {hintsUsed > 0 && (
                             <span className="text-amber-500">
                                 {" "}
-                                (+{hintsUsed} indice{hintsUsed !== 1 && "s"})
+                                {plural(hintsUsed, "indice", "indices")}
                             </span>
                         )}
                     </span>
@@ -68,44 +64,18 @@ export default function GameHeader({
                 </div>
 
                 {won ? (
-                    <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-3 text-center">
+                    <div className="bg-emerald-50 border  border-emerald-300 rounded-lg p-3 text-center">
                         <p className="text-emerald-800 font-bold text-lg">
                             Bravo !
-                            {hintsUsed > 0
-                                ? ` Score : ${score} (${guessCount} essai${guessCount !== 1 ? "s" : ""} + ${hintsUsed} indice${hintsUsed !== 1 ? "s" : ""})`
-                                : ` Trouvé en ${guessCount} essai${guessCount !== 1 ? "s" : ""} !`}
+                            {` Trouvé en ${plural(guesses.length, "essai", "essais")}${hintsUsed > 0 ? ` avec ${plural(hintsUsed, "indice", "indices")}` : ""} !`}
                         </p>
                     </div>
                 ) : (
-                    <form onSubmit={onSubmit} className="flex gap-2">
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            value={input}
-                            onChange={(e) => onInputChange(e.target.value)}
-                            placeholder="Devinez un mot…"
-                            className={[
-                                "min-w-0 flex-1 px-3 sm:px-4 py-2 border rounded-lg text-sm transition-colors",
-                                "focus:outline-none focus:ring-2 focus:ring-blue-400",
-                                lastGuessFound === false &&
-                                lastGuessSimilarity >= 0.65
-                                    ? "border-amber-400 bg-amber-50"
-                                    : lastGuessFound === false
-                                      ? "border-red-300 bg-red-50"
-                                      : lastGuessFound === true
-                                        ? "border-emerald-300 bg-emerald-50"
-                                        : "border-gray-300",
-                            ].join(" ")}
-                            readOnly={guessing}
-                        />
-                        <button
-                            type="submit"
-                            disabled={guessing || !input.trim()}
-                            className="shrink-0 px-4 sm:px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            {guessing ? "…" : "Deviner"}
-                        </button>
-                    </form>
+                    <Input
+                        input={input}
+                        onInputChange={onInputChange}
+                        onSubmit={onSubmit}
+                    />
                 )}
             </div>
         </div>

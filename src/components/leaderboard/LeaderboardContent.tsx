@@ -2,11 +2,11 @@
 
 import { useRef, useState } from "react";
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+import LeaderboardCategory from "@/components/leaderboard/LeaderboardCategory";
+import ErrorMessage from "@/components/ui/Error";
+import Loader from "@/components/ui/Loader";
 import type { LeaderboardCategoryData } from "@/types/leaderboard";
-import ErrorMessage from "../ui/Error";
-import Loader from "../ui/Loader";
-import LeaderboardCategory from "./LeaderboardCategory";
+import { fetcher } from "@/utils/fetcher";
 
 export default function LeaderboardContent() {
     const initializedRef = useRef(false);

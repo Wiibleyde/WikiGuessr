@@ -1,12 +1,13 @@
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
+import {
+    AUTH_COOKIE,
+    COOKIE_MAX_AGE,
+    STATE_COOKIE,
+} from "@/lib/constants/auth";
+import { prisma } from "@/lib/prisma";
 import type { AuthUser } from "@/types/auth";
-import { prisma } from "../prisma";
 import { verifyJWT } from "./jwt";
-
-const AUTH_COOKIE = "wikiguessr-auth";
-const STATE_COOKIE = "wikiguessr-oauth-state";
-const COOKIE_MAX_AGE = 30 * 24 * 60 * 60;
 
 export async function getSessionUser(): Promise<AuthUser | null> {
     const cookieStore = await cookies();

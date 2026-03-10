@@ -1,4 +1,6 @@
+import axios from "axios";
 import { type NextRequest, NextResponse } from "next/server";
+import env from "@/env";
 import {
     clearStateCookie,
     getStateCookie,
@@ -9,9 +11,6 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID ?? "";
-const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET ?? "";
-const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI ?? "";
 const DISCORD_TOKEN_URL = "https://discord.com/api/oauth2/token";
 const DISCORD_USER_URL = "https://discord.com/api/users/@me";
 
@@ -24,6 +23,10 @@ interface DiscordUser {
     id: string;
     username: string;
     avatar: string | null;
+}
+
+function serializeAxiosData(data: unknown): string {
+    return typeof data === "string" ? data : JSON.stringify(data);
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -48,43 +51,48 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             return NextResponse.redirect(new URL("/", request.url));
         }
 
-        const tokenResponse = await fetch(DISCORD_TOKEN_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                client_id: DISCORD_CLIENT_ID,
-                client_secret: DISCORD_CLIENT_SECRET,
+        const tokenResponse = await axios.post<DiscordTokenResponse>(
+            DISCORD_TOKEN_URL,
+            new URLSearchParams({
+                client_id: env.DISCORD_CLIENT_ID,
+                client_secret: env.DISCORD_CLIENT_SECRET,
                 grant_type: "authorization_code",
                 code,
-                redirect_uri: DISCORD_REDIRECT_URI,
+                redirect_uri: env.DISCORD_REDIRECT_URI,
             }),
-        });
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                validateStatus: () => true,
+            },
+        );
 
-        if (!tokenResponse.ok) {
+        if (tokenResponse.status < 200 || tokenResponse.status >= 300) {
             console.error(
                 "[auth/callback] Token exchange failed:",
-                await tokenResponse.text(),
+                serializeAxiosData(tokenResponse.data),
             );
             return NextResponse.redirect(new URL("/", request.url));
         }
 
-        const tokenData = (await tokenResponse.json()) as DiscordTokenResponse;
+        const tokenData = tokenResponse.data;
 
-        const userResponse = await fetch(DISCORD_USER_URL, {
+        const userResponse = await axios.get<DiscordUser>(DISCORD_USER_URL, {
             headers: {
                 Authorization: `${tokenData.token_type} ${tokenData.access_token}`,
             },
+            validateStatus: () => true,
         });
 
-        if (!userResponse.ok) {
+        if (userResponse.status < 200 || userResponse.status >= 300) {
             console.error(
                 "[auth/callback] User fetch failed:",
-                await userResponse.text(),
+                serializeAxiosData(userResponse.data),
             );
             return NextResponse.redirect(new URL("/", request.url));
         }
-
-        const discordUser = (await userResponse.json()) as DiscordUser;
+        const discordUser = userResponse.data;
 
         const user = await prisma.user.upsert({
             where: { discordId: discordUser.id },

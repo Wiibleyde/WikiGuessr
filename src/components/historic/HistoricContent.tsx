@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+import ErrorMessage from "@/components/ui/Error";
+import Loader from "@/components/ui/Loader";
+import NoDataMessage from "@/components/ui/NoDataMessage";
 import type { PageEntry } from "@/types/historic";
-import ErrorMessage from "../ui/Error";
-import Loader from "../ui/Loader";
-import NoDataMessage from "../ui/NoDataMessage";
+import { fetcher } from "@/utils/fetcher";
 
-const HistoricContent = () => {
+export default function HistoricContent() {
     const [pages, setPages] = useState<PageEntry[]>([]);
 
     const { error, isLoading } = useSWR<PageEntry[]>("/api/historic", fetcher, {
@@ -72,6 +72,4 @@ const HistoricContent = () => {
             </main>
         </div>
     );
-};
-
-export default HistoricContent;
+}

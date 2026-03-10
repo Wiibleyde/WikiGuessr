@@ -1,113 +1,17 @@
-export interface WikiSection {
-    title: string;
-    content: string;
-}
-
-export interface WikiPage {
-    title: string;
-    url: string;
-    images: string[];
-    sections: WikiSection[];
-}
-
-interface RandomPageResponse {
-    query: {
-        random: { id: number; ns: number; title: string }[];
-    };
-}
-
-interface ImageInfo {
-    url: string;
-}
-
-interface ImagePage {
-    imageinfo?: ImageInfo[];
-}
-
-interface PageData {
-    extract?: string;
-    fullurl?: string;
-    images?: { title: string }[];
-}
-
-interface ArticleApiResponse {
-    query?: {
-        pages: Record<string, PageData>;
-    };
-}
-
-interface ImageApiResponse {
-    query?: {
-        pages: Record<string, ImagePage>;
-    };
-}
-
-const IGNORED_SECTIONS = [
-    "notes et références",
-    "voir aussi",
-    "bibliographie",
-    "liens externes",
-    "articles connexes",
-    "sources",
-    "références",
-    "notes",
-    "annexes",
-    "lien externe",
-    "portail",
-];
-
-const GENERIC_IMAGE_PATTERNS = [
-    /icon/i,
-    /logo/i,
-    /arrow/i,
-    /pencil/i,
-    /flag/i,
-    /symbol/i,
-    /pictogram/i,
-    /disambig/i,
-    /info_simple/i,
-    /circle-icons/i,
-    /wikinews/i,
-    /wikiquote/i,
-    /wikisource/i,
-    /wiktionary/i,
-    /commons-logo/i,
-    /question_book/i,
-    /ambox/i,
-    /merge/i,
-    /split/i,
-    /check/i,
-    /cross/i,
-    /x_mark/i,
-    /green_check/i,
-    /red_x/i,
-    /gnu/i,
-    /creative_commons/i,
-    /cc-/i,
-    /fair_use/i,
-    /pd-icon/i,
-    /copyrighted/i,
-    /magnify/i,
-    /folder/i,
-    /portal/i,
-    /commons_to_/i,
-    /move_to_commons/i,
-    /captain_sports/i,
-    /football_shoe/i,
-    /soccer/i,
-    /soccerball/i,
-    /red_card/i,
-    /yellow_card/i,
-    /sub_off/i,
-    /sub_on/i,
-    /card\.svg/i,
-    /ball.*\.svg/i,
-    /go-next/i,
-    /go-previous/i,
-    /righthand/i,
-    /lefthand/i,
-    /\.svg$/i,
-];
+import {
+    GENERIC_IMAGE_PATTERNS,
+    IGNORED_SECTIONS,
+    WIKI_API,
+} from "@/lib/constants/wiki";
+import type {
+    ArticleApiResponse,
+    ImageApiResponse,
+    PageData,
+    RandomPageResponse,
+    WikiPage,
+    WikiSection,
+} from "@/types/wiki";
+import { fetchWikiPagePart } from "@/utils/fetcher";
 
 function limitTo2Paragraphs(
     text: string,
@@ -134,57 +38,33 @@ function limitTo2Paragraphs(
     return result.join("\n\n");
 }
 
-function parseWikiSections(content: string): WikiSection[] {
+function parseWikiSections(content: string, title: string): WikiSection[] {
+    // split avec groupe capturant → [intro, titre1, corps1, titre2, corps2, ...]
+    const parts = content.split(/^==\s*([^=]+?)\s*==\s*$/gm);
     const sections: WikiSection[] = [];
-    const sectionRegex = /^==\s*([^=]+?)\s*==\s*$/gm;
-    const matches = [...content.matchAll(sectionRegex)];
 
-    if (matches.length === 0) {
-        return [{ title: "Introduction", content: content.trim() }];
-    }
-
-    const introContent = content.substring(0, matches[0].index ?? 0).trim();
-    if (introContent) {
+    const intro = parts[0].trim();
+    if (intro) {
         sections.push({
-            title: "Introduction",
-            content: limitTo2Paragraphs(introContent),
+            title: title,
+            content: limitTo2Paragraphs(intro),
         });
     }
 
-    for (let i = 0; i < matches.length; i++) {
-        const match = matches[i];
-        const sectionTitle = match[1].trim();
+    for (let i = 1; i < parts.length - 1 && sections.length < 2; i += 2) {
+        const title = parts[i].trim();
+        const body = parts[i + 1].replace(/^=+[^=]+=+$/gm, "").trim();
 
-        if (!sectionTitle || /^[=\s]+$/.test(sectionTitle)) continue;
-        if (
-            IGNORED_SECTIONS.some((s) => sectionTitle.toLowerCase().includes(s))
-        )
+        if (IGNORED_SECTIONS.some((s) => title.toLowerCase().includes(s)))
             continue;
+        if (body.replace(/\s/g, "").length < 20) continue;
 
-        const startIndex = (match.index ?? 0) + match[0].length;
-        const endIndex =
-            i < matches.length - 1
-                ? (matches[i + 1].index ?? content.length)
-                : content.length;
-
-        let sectionContent = content.substring(startIndex, endIndex).trim();
-        sectionContent = sectionContent
-            .replace(/^=+\s*[^=]*?\s*=+$/gm, "")
-            .trim();
-
-        if (sectionContent.replace(/[=\s\n]+/g, "").length >= 20) {
-            sections.push({
-                title: sectionTitle,
-                content: limitTo2Paragraphs(sectionContent),
-            });
-        }
-
-        if (sections.length >= 2) {
-            break;
-        }
+        sections.push({ title, content: limitTo2Paragraphs(body) });
     }
 
-    return sections;
+    return sections.length > 0
+        ? sections
+        : [{ title: title, content: content.trim() }];
 }
 
 /**
@@ -199,14 +79,30 @@ function filterGenericImages(imageUrls: string[]): string[] {
     });
 }
 
-const WIKI_API = "https://fr.wikipedia.org/w/api.php";
+async function fetchRandomTitle(): Promise<string | undefined> {
+    const data = await fetchWikiPagePart<RandomPageResponse>(
+        `${WIKI_API}?action=query&format=json&list=random&rnnamespace=0&rnlimit=1`,
+    );
+    return data.query?.random?.[0]?.title;
+}
 
-async function fetchJson<T>(url: string): Promise<T> {
-    const res = await fetch(url);
-    if (!res.ok) {
-        throw new Error(`[wiki] HTTP ${res.status} fetching ${url}`);
-    }
-    return res.json() as Promise<T>;
+async function fetchPageData(title: string): Promise<PageData | undefined> {
+    const data = await fetchWikiPagePart<ArticleApiResponse>(
+        `${WIKI_API}?action=query&format=json&titles=${encodeURIComponent(title)}&prop=extracts|images|info&inprop=url&explaintext=true&imlimit=500`,
+    );
+    const pages = data.query?.pages;
+    if (!pages) return undefined;
+    return Object.values(pages)[0];
+}
+
+async function fetchImageUrls(imageTitles: string[]): Promise<string[]> {
+    if (imageTitles.length === 0) return [];
+    const data = await fetchWikiPagePart<ImageApiResponse>(
+        `${WIKI_API}?action=query&format=json&titles=${encodeURIComponent(imageTitles.join("|"))}&prop=imageinfo&iiprop=url`,
+    );
+    return Object.values(data.query?.pages ?? {})
+        .map((p) => p.imageinfo?.[0]?.url)
+        .filter((url): url is string => !!url);
 }
 
 export async function fetchRandomWikiPage(
@@ -215,49 +111,24 @@ export async function fetchRandomWikiPage(
 ): Promise<WikiPage> {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-            const randomData = await fetchJson<RandomPageResponse>(
-                `${WIKI_API}?action=query&format=json&list=random&rnnamespace=0&rnlimit=1`,
-            );
+            const title = await fetchRandomTitle();
+            if (!title) continue;
 
-            const pageTitle = randomData.query?.random?.[0]?.title;
-            if (!pageTitle) continue;
+            const page = await fetchPageData(title);
+            const content = page?.extract ?? "";
+            if (!page || content.length < minContentLength) continue;
 
-            const pageData = await fetchJson<ArticleApiResponse>(
-                `${WIKI_API}?action=query&format=json&titles=${encodeURIComponent(pageTitle)}&prop=extracts|images|info&inprop=url&explaintext=true&imlimit=500`,
-            );
-
-            const pages = pageData.query?.pages;
-            if (!pages) continue;
-
-            const page = Object.values(pages)[0];
-            const content = page.extract ?? "";
-
-            if (content.length < minContentLength) continue;
-
-            const imageUrls: string[] = [];
-            if (page.images?.length) {
-                const imageTitles = page.images
-                    .map((img) => img.title)
-                    .join("|");
-                const imgData = await fetchJson<ImageApiResponse>(
-                    `${WIKI_API}?action=query&format=json&titles=${encodeURIComponent(imageTitles)}&prop=imageinfo&iiprop=url`,
-                );
-
-                for (const imgPage of Object.values(
-                    imgData.query?.pages ?? {},
-                )) {
-                    const info = imgPage.imageinfo?.[0];
-                    if (info?.url) imageUrls.push(info.url);
-                }
-            }
+            const imageTitles =
+                page.images?.map((img: { title: string }) => img.title) ?? [];
+            const imageUrls = await fetchImageUrls(imageTitles);
 
             return {
-                title: pageTitle,
+                title,
                 url:
                     page.fullurl ??
-                    `https://fr.wikipedia.org/wiki/${encodeURIComponent(pageTitle)}`,
+                    `https://fr.wikipedia.org/wiki/${encodeURIComponent(title)}`,
                 images: filterGenericImages(imageUrls),
-                sections: parseWikiSections(content),
+                sections: parseWikiSections(content, title),
             };
         } catch (error) {
             console.error(`[wiki] Tentative ${attempt}/${maxAttempts}:`, error);
