@@ -59,14 +59,16 @@ export default function HistoricContent() {
                                 {page.title}
                             </span>
                         </div>
-                        <Link
-                            href={page.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="shrink-0 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            Voir l'article
-                        </Link>
+                        {page.url !== "" && (
+                            <Link
+                                href={page.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="shrink-0 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                Voir l'article
+                            </Link>
+                        )}
                     </div>
                 ))}
             </main>
