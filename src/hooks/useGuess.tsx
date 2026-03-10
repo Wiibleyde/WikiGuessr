@@ -3,13 +3,11 @@ import { useCallback } from "react";
 import {
     articleAtom,
     errorAtom,
-    guessesAtom,
-    guessingAtom,
-    inputAtom,
+    guessesAtom, inputAtom,
     lastGuessFoundAtom,
     revealedAtom,
     revealedImagesAtom,
-    wonAtom,
+    wonAtom
 } from "@/atom/game";
 import { normalizeWord } from "@/lib/game/normalize";
 import { checkGameGuess } from "@/lib/queries";
@@ -24,7 +22,6 @@ const useGuess = () => {
     const { reloadArticle } = useArticle();
     const [input, setInput] = useAtom(inputAtom);
     const article = useAtomValue(articleAtom);
-    const [guessing, setGuessing] = useAtom(guessingAtom);
     const setLastGuessFound = useSetAtom(lastGuessFoundAtom);
     const [revealed, setRevealed] = useAtom(revealedAtom);
     const [guesses, setGuesses] = useAtom(guessesAtom);
@@ -36,7 +33,7 @@ const useGuess = () => {
     const submitGuess = useCallback<(e?: React.FormEvent) => Promise<void>>(
         async (e?: React.FormEvent) => {
             e?.preventDefault();
-            if (!input.trim() || !article || guessing || won) return;
+            if (!input.trim() || !article || won) return;
 
             const raw = input.trim();
             const normalized = normalizeWord(raw);
@@ -45,8 +42,6 @@ const useGuess = () => {
                 setInput("");
                 return;
             }
-
-            setGuessing(true);
             setLastGuessFound(null);
 
             try {
@@ -102,14 +97,12 @@ const useGuess = () => {
             } catch {
                 setError("Erreur lors de la soumission");
             } finally {
-                setGuessing(false);
                 setInput("");
             }
         },
         [
             input,
             article,
-            guessing,
             won,
             guesses,
             revealed,
@@ -123,7 +116,6 @@ const useGuess = () => {
             setError,
             setInput,
             setWon,
-            setGuessing,
         ],
     );
 

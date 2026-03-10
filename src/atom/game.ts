@@ -6,7 +6,6 @@ export const guessesAtom = atom<StoredGuess[]>([]);
 export const revealedAtom = atom<RevealedMap>({});
 export const inputAtom = atom<string>("");
 export const loadingAtom = atom<boolean>(false);
-export const guessingAtom = atom<boolean>(false);
 export const wonAtom = atom<boolean>(false);
 export const savedAtom = atom<boolean>(false);
 export const errorAtom = atom<string | null>(null);

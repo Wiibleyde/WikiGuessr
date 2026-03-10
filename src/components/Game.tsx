@@ -15,7 +15,6 @@ export default function Game() {
         guesses,
         revealed,
         loading,
-        guessing,
         won,
         error,
         percentage,
@@ -25,7 +24,6 @@ export default function Game() {
         revealHint,
         hintsUsed,
         imageCount,
-        score,
     } = useWikiGuessr();
 
     if (loading) return <Loader message="Chargement de l'article du jour…" />;
@@ -43,9 +41,7 @@ export default function Game() {
                 date={article.date}
                 percentage={percentage}
                 won={won}
-                guessing={guessing}
                 hintsUsed={hintsUsed}
-                score={score}
                 onSubmit={submitGuess}
             />
 
