@@ -87,7 +87,8 @@ export default function ImageHint({
                                     alt={`Indice ${i + 1}`}
                                     width={300}
                                     height={192}
-                                    className="max-h-48 w-auto rounded-lg object-contain"
+                                    className="max-h-48 w-auto rounded-lg object-contain pointer-events-none select-none"
+                                    draggable={false}
                                     unoptimized
                                 />
                             </div>

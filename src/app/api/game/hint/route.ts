@@ -71,7 +71,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             );
         }
 
-        return NextResponse.json(result);
+        return NextResponse.json({
+            imageUrl: `/api/game/hint/image?index=${hintIndex}`,
+            hintIndex: result.hintIndex,
+            totalImages: result.totalImages,
+        });
     } catch (error) {
         console.error("[api/game/hint]", error);
         return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
