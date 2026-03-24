@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/auth/auth";
 import { ensureDailyWikiPage } from "@/lib/game/daily-wiki";
 import { getHintImage } from "@/lib/game/game";
 import { getGameStateByUserAndDailyPage } from "@/lib/repositories/gameStateRepository";
+import { buildHintImageUrl } from "@/utils/hintImage";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
 
         return NextResponse.json({
-            imageUrl: `/api/game/hint/image?index=${hintIndex}`,
+            imageUrl: buildHintImageUrl(hintIndex),
             hintIndex: result.hintIndex,
             totalImages: result.totalImages,
         });
