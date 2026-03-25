@@ -6,6 +6,7 @@ import Loader from "@/components/ui/Loader";
 import NoDataMessage from "@/components/ui/NoDataMessage";
 import type { PageEntry } from "@/types/historic";
 import { fetcher } from "@/utils/fetcher";
+import Layout from "../ui/Layout";
 import PageHistoric from "./PageHistoric";
 
 export default function HistoricContent() {
@@ -26,24 +27,13 @@ export default function HistoricContent() {
         return <NoDataMessage message="Aucune page disponible." />;
 
     return (
-        <div className="min-h-screen bg-stone-50 text-gray-900">
-            <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
-                <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">
-                        🕒 Historique
-                    </h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                        Découvrez les dernières pages Wikipédia qui ont été
-                        devinées dans WikiGuessr.
-                    </p>
-                </div>
-                {pages?.map((page) => (
-                    <PageHistoric
-                        page={page}
-                        key={page.id}
-                    />
-                ))}
-            </main>
-        </div>
+        <Layout
+            title="🕒 Historique"
+            subtitle="Découvrez les dernières pages Wikipédia qui ont été devinées dans WikiGuessr."
+        >
+            {pages?.map((page) => (
+                <PageHistoric page={page} key={page.id} />
+            ))}
+        </Layout>
     );
 }

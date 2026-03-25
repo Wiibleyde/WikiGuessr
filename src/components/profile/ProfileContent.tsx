@@ -5,6 +5,7 @@ import Loader from "@/components/ui/Loader";
 import { useAuth } from "@/hooks/useAuth";
 import type { ProfileStats } from "@/types/auth";
 import { fetcher } from "@/utils/fetcher";
+import Layout from "../ui/Layout";
 import NoDataMessage from "../ui/NoDataMessage";
 import ProfileResult from "./ProfileResult";
 import ProfileStatsRender from "./ProfileStatsRender";
@@ -38,51 +39,52 @@ export default function ProfileContent() {
     }
 
     return (
-        <div className="min-h-screen bg-stone-50 text-gray-900">
-            <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
-                {stats && (
-                    <>
-                        <ProfileStatsRender
-                            stats={[
-                                { label: "Parties", value: stats.totalGames },
-                                { label: "Victoires", value: stats.totalWins },
-                                {
-                                    label: "Taux de victoire",
-                                    value: `${stats.winRate}%`,
-                                },
-                                {
-                                    label: "Moy. essais",
-                                    value: stats.averageGuesses,
-                                },
-                                {
-                                    label: "Moy. indices",
-                                    value: stats.averageHints,
-                                },
-                            ]}
-                        />
+        <Layout
+            title={`👤 Profil de: ${user.name}`}
+            subtitle="Consultez vos statistiques et votre historique de parties"
+        >
+            {stats && (
+                <>
+                    <ProfileStatsRender
+                        stats={[
+                            { label: "Parties", value: stats.totalGames },
+                            { label: "Victoires", value: stats.totalWins },
+                            {
+                                label: "Taux de victoire",
+                                value: `${stats.winRate}%`,
+                            },
+                            {
+                                label: "Moy. essais",
+                                value: stats.averageGuesses,
+                            },
+                            {
+                                label: "Moy. indices",
+                                value: stats.averageHints,
+                            },
+                        ]}
+                    />
 
-                        {stats.results.length > 0 ? (
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                <div className="px-4 py-3 border-b border-gray-100">
-                                    <h2 className="font-semibold text-gray-800">
-                                        Historique
-                                    </h2>
-                                </div>
-                                <div className="divide-y divide-gray-100">
-                                    {stats.results.map((result) => (
-                                        <ProfileResult
-                                            result={result}
-                                            key={result.id}
-                                        />
-                                    ))}
-                                </div>
+                    {stats.results.length > 0 ? (
+                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                            <div className="px-4 py-3 border-b border-gray-100">
+                                <h2 className="font-semibold text-gray-800">
+                                    Historique
+                                </h2>
                             </div>
-                        ) : (
-                            <NoDataMessage message="Aucune partie enregistrée." />
-                        )}
-                    </>
-                )}
-            </main>
-        </div>
+                            <div className="divide-y divide-gray-100">
+                                {stats.results.map((result) => (
+                                    <ProfileResult
+                                        result={result}
+                                        key={result.id}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <NoDataMessage message="Aucune partie enregistrée." />
+                    )}
+                </>
+            )}
+        </Layout>
     );
 }

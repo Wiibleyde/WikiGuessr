@@ -7,6 +7,7 @@ import ErrorMessage from "@/components/ui/Error";
 import Loader from "@/components/ui/Loader";
 import type { LeaderboardCategoryData } from "@/types/leaderboard";
 import { fetcher } from "@/utils/fetcher";
+import Layout from "../ui/Layout";
 
 export default function LeaderboardContent() {
     const initializedRef = useRef(false);
@@ -48,32 +49,24 @@ export default function LeaderboardContent() {
         return <ErrorMessage message="Impossible de charger le classement." />;
 
     return (
-        <div className="min-h-screen bg-stone-50 text-gray-900">
-            <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
-                <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">
-                        🏅 Classement
-                    </h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                        Les meilleurs joueurs de WikiGuessr
-                    </p>
-                </div>
-
-                {categories.length === 0 ? (
-                    <p className="text-center text-gray-400 text-sm">
-                        Aucun classement disponible pour le moment.
-                    </p>
-                ) : (
-                    categories.map((cat) => (
-                        <LeaderboardCategory
-                            key={cat.meta.id}
-                            data={cat}
-                            isOpen={openCategories.has(cat.meta.id)}
-                            onToggle={() => toggleCategory(cat.meta.id)}
-                        />
-                    ))
-                )}
-            </main>
-        </div>
+        <Layout
+            title="🏅 Classement"
+            subtitle="Les meilleurs joueurs de WikiGuessr"
+        >
+            {categories.length === 0 ? (
+                <p className="text-center text-gray-400 text-sm">
+                    Aucun classement disponible pour le moment.
+                </p>
+            ) : (
+                categories.map((cat) => (
+                    <LeaderboardCategory
+                        key={cat.meta.id}
+                        data={cat}
+                        isOpen={openCategories.has(cat.meta.id)}
+                        onToggle={() => toggleCategory(cat.meta.id)}
+                    />
+                ))
+            )}
+        </Layout>
     );
 }
