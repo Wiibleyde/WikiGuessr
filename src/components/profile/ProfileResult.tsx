@@ -1,5 +1,6 @@
 import type { GameResultData } from "@/types/auth";
 import { formatDateWithMonthName } from "@/utils/date";
+import Badge from "../ui/Badge";
 
 export default function ProfileResult({ result }: { result: GameResultData }) {
     return (
@@ -11,16 +12,9 @@ export default function ProfileResult({ result }: { result: GameResultData }) {
                 <p className="text-xs text-gray-400">{formatDateWithMonthName(result.date)}</p>
             </div>
             <div className="flex items-center gap-2">
-                <span
-                    className={[
-                        "text-xs font-medium px-2 py-0.5 rounded-full",
-                        result.won
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-red-100 text-red-700",
-                    ].join(" ")}
-                >
-                    {result.won ? "Gagné" : "Perdu"}
-                </span>
+                <Badge color={result.won ? "green" : "red"}>
+                    {result.won ? "Deviné" : "Echoué"}
+                </Badge>
                 <span className="text-sm text-gray-600">
                     {result.guessCount} essai
                     {result.guessCount !== 1 && "s"}

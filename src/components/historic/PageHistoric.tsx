@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { PageEntry } from "@/types/historic";
 import { formatDateWithMonthName } from "@/utils/date";
+import Button from "../ui/Button";
 
 export default function PageHistoric({ page }: { page: PageEntry }) {
 
@@ -14,16 +15,18 @@ export default function PageHistoric({ page }: { page: PageEntry }) {
                     {page.title}
                 </span>
             </div>
-            {page.url !== "" && (
-                <Link
-                    href={page.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="shrink-0 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+            <Link
+                href={page.url}
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <Button
+                    variant="primary"
+                    disabled={page.url === ""}
                 >
-                    Voir l'article
-                </Link>
-            )}
+                    Lien de l'article
+                </Button>
+            </Link>
         </div>
     );
 }
