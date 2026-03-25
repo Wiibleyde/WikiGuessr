@@ -19,7 +19,6 @@ export default function NavbarAuth({
     open,
     setOpen,
 }: NavbarAuthProps) {
-
     if (loading) return null;
 
     if (user) {

@@ -9,7 +9,9 @@ export default function ProfileResult({ result }: { result: GameResultData }) {
                 <p className="text-sm font-medium text-gray-800">
                     {result.articleTitle}
                 </p>
-                <p className="text-xs text-gray-400">{formatDateWithMonthName(result.date)}</p>
+                <p className="text-xs text-gray-400">
+                    {formatDateWithMonthName(result.date)}
+                </p>
             </div>
             <div className="flex items-center gap-2">
                 <Badge color={result.won ? "green" : "red"}>

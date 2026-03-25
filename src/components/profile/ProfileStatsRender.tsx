@@ -7,10 +7,7 @@ interface ProfileStatsProps {
     }[];
 }
 
-
-export default function ProfileStatsRender({
-    stats
-}: ProfileStatsProps) {
+export default function ProfileStatsRender({ stats }: ProfileStatsProps) {
     return (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
             {stats.map((stat) => (
@@ -21,5 +18,5 @@ export default function ProfileStatsRender({
                 />
             ))}
         </div>
-    )
+    );
 }

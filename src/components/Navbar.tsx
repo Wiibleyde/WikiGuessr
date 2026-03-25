@@ -40,7 +40,11 @@ export default function Navbar() {
 
                     <nav className="hidden sm:flex items-center gap-1">
                         {NAV_LINKS.map((link) => (
-                            <Link key={link.href} href={link.href} onClick={() => setOpen(false)}>
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                onClick={() => setOpen(false)}
+                            >
                                 <Button
                                     className={
                                         pathname === link.href
@@ -67,10 +71,7 @@ export default function Navbar() {
                     />
                 </div>
 
-                <NavbarButton
-                    open={open}
-                    setOpen={setOpen}
-                />
+                <NavbarButton open={open} setOpen={setOpen} />
             </div>
 
             {/* Mobile menu */}
@@ -83,10 +84,10 @@ export default function Navbar() {
                                 href={link.href}
                                 onClick={() => setOpen(false)}
                             >
-
                                 <Button
                                     className={`text-left w-full ${pathname === link.href ? "bg-gray-100 text-gray-900" : ""}`}
-                                    variant="navbar">
+                                    variant="navbar"
+                                >
                                     {link.label}
                                 </Button>
                             </Link>

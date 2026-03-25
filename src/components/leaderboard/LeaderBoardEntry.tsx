@@ -30,11 +30,7 @@ export default function LeaderBoardEntry({
             </span>
 
             {/* Avatar + nom */}
-            <User
-                name={entry.name}
-                image={entry.image}
-                pictureWidth={28}
-            />
+            <User name={entry.name} image={entry.image} pictureWidth={28} />
 
             {/* Valeur + détail */}
             <div className="text-right shrink-0">

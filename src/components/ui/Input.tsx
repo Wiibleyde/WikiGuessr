@@ -25,10 +25,10 @@ export default function Input({ input, onInputChange, onSubmit }: InputProps) {
         lastGuessFound === false && lastGuessSimilarity >= CLOSE_THRESHOLD
             ? "border-amber-400 bg-amber-50"
             : lastGuessFound === false
-                ? "border-red-300 bg-red-50"
-                : lastGuessFound === true
-                    ? "border-emerald-300 bg-emerald-50"
-                    : "border-gray-300",
+              ? "border-red-300 bg-red-50"
+              : lastGuessFound === true
+                ? "border-emerald-300 bg-emerald-50"
+                : "border-gray-300",
     ].join(" ");
 
     return (

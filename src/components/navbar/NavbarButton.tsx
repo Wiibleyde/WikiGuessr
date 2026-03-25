@@ -1,14 +1,9 @@
-
 interface NavbarButtonProps {
     open: boolean;
     setOpen: (open: boolean) => void;
 }
 
-export default function NavbarButton({
-    open,
-    setOpen,
-}: NavbarButtonProps) {
-
+export default function NavbarButton({ open, setOpen }: NavbarButtonProps) {
     return (
         <button
             type="button"

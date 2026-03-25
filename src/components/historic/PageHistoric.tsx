@@ -4,7 +4,6 @@ import { formatDateWithMonthName } from "@/utils/date";
 import Button from "../ui/Button";
 
 export default function PageHistoric({ page }: { page: PageEntry }) {
-
     return (
         <div className="flex items-center justify-between bg-white rounded-xl border border-gray-200 px-4 py-3 gap-4">
             <div className="flex flex-col min-w-0">
@@ -15,15 +14,8 @@ export default function PageHistoric({ page }: { page: PageEntry }) {
                     {page.title}
                 </span>
             </div>
-            <Link
-                href={page.url}
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                <Button
-                    variant="primary"
-                    disabled={page.url === ""}
-                >
+            <Link href={page.url} target="_blank" rel="noopener noreferrer">
+                <Button variant="primary" disabled={page.url === ""}>
                     Lien de l'article
                 </Button>
             </Link>

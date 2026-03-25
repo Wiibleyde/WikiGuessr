@@ -6,11 +6,7 @@ interface UserProps {
     pictureWidth?: number;
 }
 
-export default function User({
-    name,
-    image,
-    pictureWidth = 20,
-}: UserProps) {
+export default function User({ name, image, pictureWidth = 20 }: UserProps) {
     return (
         <div className="flex items-center gap-2 min-w-0 flex-1">
             {image ? (
@@ -25,13 +21,14 @@ export default function User({
                 <div
                     style={{
                         width: pictureWidth,
-                        height: pictureWidth
+                        height: pictureWidth,
                     }}
-                    className="w-5 h-5 rounded-full bg-gray-200 shrink-0" />
+                    className="w-5 h-5 rounded-full bg-gray-200 shrink-0"
+                />
             )}
             <span className="text-sm font-medium text-gray-800 truncate">
                 {name}
             </span>
         </div>
-    )
+    );
 }
