@@ -1,51 +1,41 @@
-import { useContext } from "react";
-import NavbarContext from "@/contexts/NavbarContext";
 import type { AuthUser } from "@/types/auth";
+import Button from "../ui/Button";
 import UserMenu from "./UserMenu";
 
 interface NavbarAuthProps {
     user: AuthUser | null;
     loading: boolean;
     onLogin: () => void;
-    onLogout: () => void;
     mobile?: boolean;
+    open: boolean;
+    setOpen: (open: boolean) => void;
 }
 
 export default function NavbarAuth({
     user,
     loading,
     onLogin,
-    onLogout,
     mobile = false,
+    open,
+    setOpen,
 }: NavbarAuthProps) {
-    const { open, setOpen } = useContext(NavbarContext);
 
     if (loading) return null;
 
     if (user) {
-        return (
-            <UserMenu
-                user={user}
-                onLogout={onLogout}
-                onNavigate={() => setOpen(!open)}
-            />
-        );
+        return <UserMenu user={user} onNavigate={() => setOpen(!open)} />;
     }
 
     return (
-        <button
-            type="button"
+        <Button
             onClick={() => {
                 onLogin();
                 setOpen(!open);
             }}
-            className={
-                mobile
-                    ? "w-full px-3 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-                    : "px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-            }
+            variant="primary"
+            className={mobile ? "w-full" : ""}
         >
             Connexion Discord
-        </button>
+        </Button>
     );
 }

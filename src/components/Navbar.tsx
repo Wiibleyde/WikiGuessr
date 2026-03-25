@@ -2,13 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useContext } from "react";
-import NavbarContext from "@/contexts/NavbarContext";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import DesktopLink from "./navbar/DesktopLink";
-import MobileLink from "./navbar/MobileLink";
 import NavbarAuth from "./navbar/NavbarAuth";
 import NavbarButton from "./navbar/NavbarButton";
+import Button from "./ui/Button";
 
 const NAV_LINKS = [
     { href: "/", label: "Jouer" },
@@ -18,8 +17,9 @@ const NAV_LINKS = [
 ] as const;
 
 export default function Navbar() {
-    const { user, loading, login, logout } = useAuth();
-    const { open } = useContext(NavbarContext);
+    const { user, loading, login } = useAuth();
+    const [open, setOpen] = useState<boolean>(false);
+    const pathname = usePathname();
 
     return (
         <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
@@ -40,11 +40,18 @@ export default function Navbar() {
 
                     <nav className="hidden sm:flex items-center gap-1">
                         {NAV_LINKS.map((link) => (
-                            <DesktopLink
-                                key={link.href}
-                                href={link.href}
-                                label={link.label}
-                            />
+                            <Link key={link.href} href={link.href}>
+                                <Button
+                                    className={
+                                        pathname === link.href
+                                            ? "bg-gray-100 text-gray-900"
+                                            : ""
+                                    }
+                                    variant="navbar"
+                                >
+                                    {link.label}
+                                </Button>
+                            </Link>
                         ))}
                     </nav>
                 </div>
@@ -55,11 +62,15 @@ export default function Navbar() {
                         user={user}
                         loading={loading}
                         onLogin={login}
-                        onLogout={logout}
+                        open={open}
+                        setOpen={setOpen}
                     />
                 </div>
 
-                <NavbarButton />
+                <NavbarButton
+                    open={open}
+                    setOpen={setOpen}
+                />
             </div>
 
             {/* Mobile menu */}
@@ -67,11 +78,18 @@ export default function Navbar() {
                 <div className="sm:hidden border-t border-gray-200 bg-white">
                     <nav className="flex flex-col px-4 py-2 gap-1">
                         {NAV_LINKS.map((link) => (
-                            <MobileLink
+                            <Link
                                 key={link.href}
                                 href={link.href}
-                                label={link.label}
-                            />
+                                onClick={() => setOpen(false)}
+                            >
+
+                                <Button
+                                    className={`text-left w-full ${pathname === link.href ? "bg-gray-100 text-gray-900" : ""}`}
+                                    variant="navbar">
+                                    {link.label}
+                                </Button>
+                            </Link>
                         ))}
                     </nav>
                     <div className="px-4 py-3 border-t border-gray-100">
@@ -79,7 +97,8 @@ export default function Navbar() {
                             user={user}
                             loading={loading}
                             onLogin={login}
-                            onLogout={logout}
+                            open={open}
+                            setOpen={setOpen}
                             mobile
                         />
                     </div>

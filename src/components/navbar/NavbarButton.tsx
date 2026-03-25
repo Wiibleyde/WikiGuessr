@@ -1,8 +1,13 @@
-import { useContext } from "react";
-import NavbarContext from "@/contexts/NavbarContext";
 
-export default function NavbarButton() {
-    const { open, setOpen } = useContext(NavbarContext);
+interface NavbarButtonProps {
+    open: boolean;
+    setOpen: (open: boolean) => void;
+}
+
+export default function NavbarButton({
+    open,
+    setOpen,
+}: NavbarButtonProps) {
 
     return (
         <button

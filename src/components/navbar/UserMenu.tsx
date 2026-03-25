@@ -1,48 +1,30 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 import type { AuthUser } from "@/types/auth";
+import Button from "../ui/Button";
+import User from "../ui/User";
 
 interface UserMenuProps {
     user: AuthUser;
-    onLogout: () => void;
     onNavigate?: () => void;
 }
 
-export default function UserMenu({
-    user,
-    onLogout,
-    onNavigate,
-}: UserMenuProps) {
+export default function UserMenu({ user, onNavigate }: UserMenuProps) {
+    const { logout } = useAuth();
     return (
         <div className="flex items-center gap-3">
-            {user.image && (
-                <Image
-                    src={user.image}
-                    alt=""
-                    width={28}
-                    height={28}
-                    className="w-7 h-7 rounded-full"
-                />
-            )}
             <Link
                 href="/profile"
                 onClick={onNavigate}
-                className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+                className="bg-gray-100 text-gray-900 px-3 py-1.5 rounded-md "
             >
-                {user.name}
+                <User name={user.name} image={user.image} />
             </Link>
-            <button
-                type="button"
-                onClick={() => {
-                    onLogout();
-                    onNavigate?.();
-                }}
-                className="ml-auto text-xs text-gray-400 hover:text-red-500 transition-colors"
-            >
+            <Button variant="secondary" onClick={logout}>
                 Déconnexion
-            </button>
+            </Button>
         </div>
     );
 }
