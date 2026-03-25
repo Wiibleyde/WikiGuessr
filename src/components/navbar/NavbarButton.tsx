@@ -8,7 +8,7 @@ export default function NavbarButton({ open, setOpen }: NavbarButtonProps) {
         <button
             type="button"
             onClick={() => setOpen(!open)}
-            className="sm:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
+            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
             aria-label="Menu"
             aria-expanded={open}
         >

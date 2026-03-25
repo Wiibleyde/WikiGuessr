@@ -23,7 +23,7 @@ export default function Navbar() {
 
     return (
         <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
-            <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-y-2">
                 <div className="flex items-center gap-6">
                     <Image
                         src="/logo-wikiguessr.svg"
@@ -37,47 +37,13 @@ export default function Navbar() {
                     >
                         WikiGuessr
                     </Link>
-
-                    <nav className="hidden sm:flex items-center gap-1">
-                        {NAV_LINKS.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                onClick={() => setOpen(false)}
-                            >
-                                <Button
-                                    className={
-                                        pathname === link.href
-                                            ? "bg-gray-100 text-gray-900"
-                                            : ""
-                                    }
-                                    variant="navbar"
-                                >
-                                    {link.label}
-                                </Button>
-                            </Link>
-                        ))}
-                    </nav>
-                </div>
-
-                {/* Desktop auth */}
-                <div className="hidden sm:flex items-center gap-3">
-                    <NavbarAuth
-                        user={user}
-                        loading={loading}
-                        onLogin={login}
-                        open={open}
-                        setOpen={setOpen}
-                    />
                 </div>
 
                 <NavbarButton open={open} setOpen={setOpen} />
-            </div>
-
-            {/* Mobile menu */}
-            {open && (
-                <div className="sm:hidden border-t border-gray-200 bg-white">
-                    <nav className="flex flex-col px-4 py-2 gap-1">
+                <div
+                    className={`w-full border-t border-gray-200 pt-2 ${open ? "flex" : "hidden"} md:flex md:flex-row flex-col md:items-center md:gap-3 md:w-auto md:border-t-0 md:pt-0`}
+                >
+                        <nav className="flex flex-col gap-1 md:flex-row md:items-center">
                         {NAV_LINKS.map((link) => (
                             <Link
                                 key={link.href}
@@ -85,26 +51,27 @@ export default function Navbar() {
                                 onClick={() => setOpen(false)}
                             >
                                 <Button
-                                    className={`text-left w-full ${pathname === link.href ? "bg-gray-100 text-gray-900" : ""}`}
+                                    className={`w-full text-left md:w-auto md:text-center ${pathname === link.href ? "bg-gray-100 text-gray-900" : ""}`}
                                     variant="navbar"
                                 >
                                     {link.label}
                                 </Button>
                             </Link>
                         ))}
-                    </nav>
-                    <div className="px-4 py-3 border-t border-gray-100">
-                        <NavbarAuth
-                            user={user}
-                            loading={loading}
-                            onLogin={login}
-                            open={open}
-                            setOpen={setOpen}
-                            mobile
-                        />
-                    </div>
+                        </nav>
+
+                        <div className="mt-3 border-t border-gray-100 px-0 pt-3 md:mt-0 md:border-t-0 md:pt-0 md:flex md:items-center sm:gap-3">
+                            <NavbarAuth
+                                user={user}
+                                loading={loading}
+                                onLogin={login}
+                                open={open}
+                                setOpen={setOpen}
+                                mobile={open}
+                            />
+                        </div>
                 </div>
-            )}
+            </div>
         </header>
     );
 }
