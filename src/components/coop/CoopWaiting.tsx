@@ -4,6 +4,7 @@ import { useState } from "react";
 import Button from "@/components/ui/Button";
 import type { CoopPlayerInfo } from "@/types/coop";
 import { plural } from "@/utils/helper";
+import Player from "./Player";
 
 interface CoopWaitingProps {
     code: string;
@@ -65,19 +66,11 @@ export default function CoopWaiting({
                     </div>
                     <div className="divide-y divide-gray-50">
                         {players.map((player) => (
-                            <div
+                            <Player
                                 key={player.id}
-                                className="px-4 py-3 flex items-center justify-between"
-                            >
-                                <span className="text-sm font-medium text-gray-800">
-                                    {player.displayName}
-                                </span>
-                                {player.isLeader && (
-                                    <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
-                                        Leader
-                                    </span>
-                                )}
-                            </div>
+                                displayName={player.displayName}
+                                isLeader={player.isLeader}
+                            />
                         ))}
                     </div>
                 </div>

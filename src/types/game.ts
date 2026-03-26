@@ -60,10 +60,12 @@ export interface StoredGuess {
     occurrences: number;
     similarity: number;
     proximityReason?: ProximityReason;
-    player?: {
-        id: number;
-        displayName: string;
-    };
+    player?: Player;
+}
+
+export interface Player {
+    id: number;
+    displayName: string;
 }
 
 export type RevealedMap = Record<string, string>;

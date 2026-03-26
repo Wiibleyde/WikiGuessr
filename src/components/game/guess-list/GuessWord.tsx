@@ -1,10 +1,13 @@
+import type { Player } from "@/types/game";
+
 interface GuessWordProps {
     word: string;
+    player?: Player;
     isFound: boolean;
     isClose: boolean;
 }
 
-export default function GuessWord({ word, isFound, isClose }: GuessWordProps) {
+export default function GuessWord({ word, isFound, isClose, player }: GuessWordProps) {
     const wordClass = {
         found: "text-emerald-800",
         close: "text-amber-700",
@@ -21,6 +24,11 @@ export default function GuessWord({ word, isFound, isClose }: GuessWordProps) {
                       : wordClass.notFound
             }
         >
+            {player && (
+                <span className="text-xs font-medium text-gray-500 mr-1">
+                    {player.displayName}:
+                </span>
+            )}
             {word}
         </span>
     );
