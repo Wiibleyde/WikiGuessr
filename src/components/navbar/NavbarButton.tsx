@@ -1,14 +1,14 @@
-import { useContext } from "react";
-import NavbarContext from "@/contexts/NavbarContext";
+interface NavbarButtonProps {
+    open: boolean;
+    setOpen: (open: boolean) => void;
+}
 
-export default function NavbarButton() {
-    const { open, setOpen } = useContext(NavbarContext);
-
+export default function NavbarButton({ open, setOpen }: NavbarButtonProps) {
     return (
         <button
             type="button"
             onClick={() => setOpen(!open)}
-            className="sm:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
+            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
             aria-label="Menu"
             aria-expanded={open}
         >

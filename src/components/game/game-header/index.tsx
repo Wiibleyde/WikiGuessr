@@ -2,9 +2,10 @@
 
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { guessesAtom, inputAtom, lastGuessFoundAtom } from "@/atom/game";
-import YesterdayWord from "@/components/YesterdayWord";
+import YesterdayWord from "@/components/game/game-header/YesterdayWord";
+import { formatDateWithMonthName } from "@/utils/date";
 import { plural } from "@/utils/helper";
-import Input from "./ui/Input";
+import Input from "./Input";
 
 interface GameHeaderProps {
     date: string;
@@ -34,7 +35,7 @@ export default function GameHeader({
         <div className="bg-white border-b border-gray-200">
             <div className="max-w-5xl mx-auto px-4 py-3 space-y-2">
                 <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 flex-wrap">
-                    <span>{date}</span>
+                    <span>{formatDateWithMonthName(date)}</span>
                     <span className="hidden sm:inline">·</span>
                     <span>
                         {plural(guesses.length, "essai", "essais")}

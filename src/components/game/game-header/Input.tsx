@@ -5,6 +5,7 @@ import {
     lastGuessFoundAtom,
     lastGuessSimilarityAtom,
 } from "@/atom/game";
+import Button from "@/components/ui/Button";
 import { CLOSE_THRESHOLD } from "@/constants/game";
 
 interface InputProps {
@@ -40,13 +41,13 @@ export default function Input({ input, onInputChange, onSubmit }: InputProps) {
                 className={inputClass}
                 readOnly={guessing}
             />
-            <button
-                type="submit"
+            <Button
+                variant="primary"
                 disabled={guessing || !input.trim()}
-                className="shrink-0 px-4 sm:px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="shrink-0 px-4 sm:px-5"
             >
                 {guessing ? "…" : "Deviner"}
-            </button>
+            </Button>
         </form>
     );
 }

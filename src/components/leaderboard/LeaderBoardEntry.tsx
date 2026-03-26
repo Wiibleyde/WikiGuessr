@@ -1,0 +1,48 @@
+import type {
+    LeaderboardCategoryMeta,
+    LeaderboardEntry,
+} from "@/types/leaderboard";
+import User from "../ui/User";
+
+const RANK_BADGES: Record<number, string> = {
+    1: "🥇",
+    2: "🥈",
+    3: "🥉",
+};
+
+export default function LeaderBoardEntry({
+    entry,
+    meta,
+}: {
+    entry: LeaderboardEntry;
+    meta: LeaderboardCategoryMeta;
+}) {
+    return (
+        <div
+            className={[
+                "flex items-center gap-3 px-4 py-3 transition-colors",
+                entry.rank <= 3 ? "bg-amber-50/40" : "hover:bg-gray-50",
+            ].join(" ")}
+        >
+            {/* Rang */}
+            <span className="w-8 text-center text-sm font-bold text-gray-500 shrink-0">
+                {RANK_BADGES[entry.rank] ?? `#${entry.rank}`}
+            </span>
+
+            {/* Avatar + nom */}
+            <User name={entry.name} image={entry.image} pictureWidth={28} />
+
+            {/* Valeur + détail */}
+            <div className="text-right shrink-0">
+                <span className="text-sm font-semibold text-gray-900">
+                    {`${entry.value} ${meta.valueLabel}`}
+                </span>
+                {entry.detail && (
+                    <p className="text-xs text-gray-400 mt-0.5">
+                        {entry.detail}
+                    </p>
+                )}
+            </div>
+        </div>
+    );
+}

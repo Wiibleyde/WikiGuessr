@@ -1,13 +1,13 @@
 "use client";
 
-import ArticleView from "@/components/ArticleView";
-import GameHeader from "@/components/GameHeader";
-import GuessList from "@/components/GuessList";
-import ImageHint from "@/components/ImageHint";
+import GameHeader from "@/components/game/game-header";
+import ImageHint from "@/components/game/ImageHint";
 import { useWikiGuessr } from "@/hooks/useWikiGuessr";
-import ErrorMessage from "./ui/Error";
-import Loader from "./ui/Loader";
-import NoDataMessage from "./ui/NoDataMessage";
+import ErrorMessage from "../ui/Error";
+import Loader from "../ui/Loader";
+import NoDataMessage from "../ui/NoDataMessage";
+import ArticleView from "./article";
+import GuessList from "./guess-list";
 
 export default function Game() {
     const {
