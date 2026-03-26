@@ -64,6 +64,14 @@ export default function CoopForm({
         }
     };
 
+
+    const disabled = () => {
+        if (loading) return true;
+        if (!displayName.trim()) return true;
+        if (mode === "join" && !joinCode.trim()) return true;
+        return false;
+    };
+
     return (
         <form
             onSubmit={mode === "create" ? handleCreate : handleJoin}
@@ -108,7 +116,7 @@ export default function CoopForm({
             )}
             <Button
                 type="submit"
-                disabled={loading || !displayName.trim() || !joinCode.trim()}
+                disabled={disabled()}
                 className="w-full"
             >
                 {loading ? "Connexion…" :
