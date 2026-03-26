@@ -34,5 +34,10 @@ export const getArticleLtDate = async (date: Date) => {
     return prisma.dailyWikiPage.findMany({
         where: { date: { lt: date } },
         orderBy: { date: "desc" },
+        include: {
+            _count: {
+                select: { gameResults: { where: { won: true } } },
+            },
+        },
     });
 };

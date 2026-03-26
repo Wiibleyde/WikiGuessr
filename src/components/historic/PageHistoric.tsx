@@ -8,7 +8,9 @@ export default function PageHistoric({ page }: { page: PageEntry }) {
         <div className="flex items-center justify-between bg-white rounded-xl border border-gray-200 px-4 py-3 gap-4">
             <div className="flex flex-col min-w-0">
                 <span className="text-xs text-gray-400">
-                    {formatDateWithMonthName(page.date)}
+                    {formatDateWithMonthName(page.date)} - {page.resolvedCount}{" "}
+                    joueur
+                    {page.resolvedCount !== 1 ? "s" : ""} ont trouvé ce mot
                 </span>
                 <span className="text-sm font-medium text-gray-800 truncate">
                     {page.title}
@@ -16,7 +18,7 @@ export default function PageHistoric({ page }: { page: PageEntry }) {
             </div>
             <Link href={page.url} target="_blank" rel="noopener noreferrer">
                 <Button variant="primary" disabled={page.url === ""}>
-                    Lien de l'article
+                    Lien de la page
                 </Button>
             </Link>
         </div>
