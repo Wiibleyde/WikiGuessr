@@ -16,7 +16,8 @@ import {
     coopWonAtom,
 } from "@/atom/coop";
 import type { CoopJoinResponse, CoopLobbyState } from "@/types/coop";
-import { posKey } from "@/utils/helper";
+import { computeRevealPercentage } from "@/utils/game";
+import { applyPositions } from "@/utils/helper";
 
 export default function useCoopLobby() {
     const [lobby, setLobby] = useAtom(coopLobbyAtom);
@@ -32,10 +33,10 @@ export default function useCoopLobby() {
     const [error, setError] = useAtom(coopErrorAtom);
     const article = useAtomValue(coopArticleAtom);
 
-    const revealedCount = Object.keys(useAtomValue(coopRevealedAtom)).length;
-    const totalWords = article?.totalWords ?? 0;
-    const percentage =
-        totalWords > 0 ? Math.round((revealedCount / totalWords) * 100) : 0;
+    const percentage = computeRevealPercentage(
+        useAtomValue(coopRevealedAtom),
+        article,
+    );
 
     const createLobby = useCallback(
         async (displayName: string, userId?: string) => {
@@ -117,14 +118,10 @@ export default function useCoopLobby() {
                 if (data.lobby.status === "finished") setWon(true);
 
                 // Rebuild revealed map from guesses
-                const revealed: Record<string, string> = {};
+                let revealed = {};
                 for (const g of data.guesses) {
                     if (g.found) {
-                        for (const pos of g.positions) {
-                            revealed[
-                                posKey(pos.section, pos.part, pos.wordIndex)
-                            ] = pos.display;
-                        }
+                        revealed = applyPositions(revealed, g.positions);
                     }
                 }
                 setRevealed(revealed);

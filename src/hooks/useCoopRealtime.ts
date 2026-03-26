@@ -13,7 +13,7 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CoopGuessEntry, CoopPlayerInfo } from "@/types/coop";
 import type { MaskedArticle } from "@/types/game";
-import { posKey } from "@/utils/helper";
+import { applyPositions } from "@/utils/helper";
 
 export default function useCoopRealtime(code: string | null) {
     const setPlayers = useSetAtom(coopPlayersAtom);
@@ -77,14 +77,9 @@ export default function useCoopRealtime(code: string | null) {
                 });
 
                 if (guess.found && guess.positions.length > 0) {
-                    setRevealed((prev) => {
-                        const next = { ...prev };
-                        for (const pos of guess.positions) {
-                            next[posKey(pos.section, pos.part, pos.wordIndex)] =
-                                pos.display;
-                        }
-                        return next;
-                    });
+                    setRevealed((prev) =>
+                        applyPositions(prev, guess.positions),
+                    );
                 }
 
                 setPlayers((prev: CoopPlayerInfo[]) =>

@@ -3,6 +3,7 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { guessesAtom, inputAtom, lastGuessFoundAtom } from "@/atom/game";
 import YesterdayWord from "@/components/game/game-header/YesterdayWord";
+import ProgressBar from "@/components/ui/ProgressBar";
 import { formatDateWithMonthName } from "@/utils/date";
 import { plural } from "@/utils/helper";
 import Input from "./Input";
@@ -57,12 +58,7 @@ export default function GameHeader({
                     <YesterdayWord />
                 </div>
 
-                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                    <div
-                        className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                        style={{ width: `${percentage}%` }}
-                    />
-                </div>
+                <ProgressBar percentage={percentage} />
 
                 {won ? (
                     <div className="bg-emerald-50 border  border-emerald-300 rounded-lg p-3 text-center">

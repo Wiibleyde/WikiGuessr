@@ -3,6 +3,7 @@
 import { useAtomValue } from "jotai";
 import { useEffect } from "react";
 import * as atomGame from "@/atom/game";
+import { computeRevealPercentage } from "@/utils/game";
 import useArticle from "./useArticle";
 import useDb from "./useDb";
 import useGame from "./useGame";
@@ -20,10 +21,7 @@ export function useWikiGuessr() {
     const winImages = useAtomValue(atomGame.winImagesAtom);
     const revealingHint = useAtomValue(atomGame.revealingHintAtom);
 
-    const revealedCount = Object.keys(revealed).length;
-    const totalWords = article?.totalWords ?? 0;
-    const percentage =
-        totalWords > 0 ? Math.round((revealedCount / totalWords) * 100) : 0;
+    const percentage = computeRevealPercentage(revealed, article);
     const hintsUsed = revealedImages.length;
     const imageCount = article?.imageCount ?? 0;
     const displayImages =

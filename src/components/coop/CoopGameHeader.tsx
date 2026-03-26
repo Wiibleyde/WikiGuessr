@@ -1,6 +1,7 @@
 "use client";
 
 import Button from "@/components/ui/Button";
+import ProgressBar from "@/components/ui/ProgressBar";
 import { plural } from "@/utils/helper";
 
 interface CoopGameHeaderProps {
@@ -39,12 +40,7 @@ export default function CoopGameHeader({
                     <span>{plural(percentage, "% révélé", "% révélés")}</span>
                 </div>
 
-                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                    <div
-                        className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                        style={{ width: `${percentage}%` }}
-                    />
-                </div>
+                <ProgressBar percentage={percentage} />
 
                 {won ? (
                     <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-3 text-center">

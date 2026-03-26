@@ -28,6 +28,10 @@ function generateLobbyCode(): string {
     return code;
 }
 
+function toDateKey(date: Date): string {
+    return date.toISOString().split("T")[0];
+}
+
 export async function createCoopLobby(displayName: string, userId?: string) {
     const code = generateLobbyCode();
     const playerToken = randomUUID();
@@ -78,7 +82,7 @@ export async function startCoopGame(code: string, playerToken: string) {
     if (lobby.status !== "waiting") throw new GameAlreadyStartedError();
 
     const wikiPage = await fetchRandomWikiPage(1500);
-    const dateKey = new Date().toISOString().split("T")[0];
+    const dateKey = toDateKey(new Date());
 
     await setLobbyWikiPage(
         code,
@@ -116,7 +120,7 @@ export async function submitCoopGuess(
 
     // Ensure cache exists
     if (lobby.wikiTitle && lobby.wikiSections) {
-        const dateKey = lobby.createdAt.toISOString().split("T")[0];
+        const dateKey = toDateKey(lobby.createdAt);
         getOrBuildCoopCache(
             code,
             lobby.wikiTitle,
@@ -181,7 +185,7 @@ export async function getCoopLobbyState(code: string) {
 
     let article = null;
     if (lobby.wikiTitle && lobby.wikiSections && lobby.status !== "waiting") {
-        const dateKey = lobby.createdAt.toISOString().split("T")[0];
+        const dateKey = toDateKey(lobby.createdAt);
         const cache = getOrBuildCoopCache(
             code,
             lobby.wikiTitle,

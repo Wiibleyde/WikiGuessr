@@ -5,6 +5,15 @@ import { useState } from "react";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import useCoopLobby from "@/hooks/useCoopLobby";
+import type { CoopJoinResponse } from "@/types/coop";
+
+function storeCoopSession(result: CoopJoinResponse) {
+    sessionStorage.setItem(`coop:${result.code}:token`, result.playerToken);
+    sessionStorage.setItem(
+        `coop:${result.code}:playerId`,
+        String(result.playerId),
+    );
+}
 
 export default function CoopHome() {
     const { user } = useAuth();
@@ -19,14 +28,7 @@ export default function CoopHome() {
         if (!displayName.trim()) return;
         const result = await createLobby(displayName.trim(), user?.id);
         if (result) {
-            sessionStorage.setItem(
-                `coop:${result.code}:token`,
-                result.playerToken,
-            );
-            sessionStorage.setItem(
-                `coop:${result.code}:playerId`,
-                String(result.playerId),
-            );
+            storeCoopSession(result);
             router.push(`/coop/${result.code}`);
         }
     };
@@ -40,14 +42,7 @@ export default function CoopHome() {
             user?.id,
         );
         if (result) {
-            sessionStorage.setItem(
-                `coop:${result.code}:token`,
-                result.playerToken,
-            );
-            sessionStorage.setItem(
-                `coop:${result.code}:playerId`,
-                String(result.playerId),
-            );
+            storeCoopSession(result);
             router.push(`/coop/${result.code}`);
         }
     };

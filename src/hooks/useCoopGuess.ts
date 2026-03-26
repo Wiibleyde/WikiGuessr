@@ -12,7 +12,7 @@ import {
     coopWonAtom,
 } from "@/atom/coop";
 import type { GuessResult } from "@/types/game";
-import { posKey } from "@/utils/helper";
+import { applyPositions } from "@/utils/helper";
 
 export default function useCoopGuess(code: string | null) {
     const [input, setInput] = useAtom(coopInputAtom);
@@ -59,14 +59,9 @@ export default function useCoopGuess(code: string | null) {
                 };
 
                 if (result.found && result.positions.length > 0) {
-                    setRevealed((prev) => {
-                        const next = { ...prev };
-                        for (const pos of result.positions) {
-                            next[posKey(pos.section, pos.part, pos.wordIndex)] =
-                                pos.display;
-                        }
-                        return next;
-                    });
+                    setRevealed((prev) =>
+                        applyPositions(prev, result.positions),
+                    );
                 }
             } catch {
                 setError("Erreur lors de la soumission");

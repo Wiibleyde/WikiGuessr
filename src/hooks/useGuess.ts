@@ -17,7 +17,7 @@ import { checkGameGuess } from "@/lib/queries";
 import type { StoredGuess } from "@/types/game";
 import { saveCache } from "@/utils/cache";
 import { checkWinCondition } from "@/utils/game";
-import { posKey } from "@/utils/helper";
+import { applyPositions } from "@/utils/helper";
 import useArticle from "./useArticle";
 import useGame from "./useGame";
 
@@ -77,11 +77,10 @@ const useGuess = () => {
                 };
 
                 const newGuesses = [newGuess, ...guesses];
-                const newRevealed = { ...revealed };
-                for (const pos of guessResult.positions) {
-                    newRevealed[posKey(pos.section, pos.part, pos.wordIndex)] =
-                        pos.display;
-                }
+                const newRevealed = applyPositions(
+                    revealed,
+                    guessResult.positions,
+                );
 
                 setGuesses(newGuesses);
                 setRevealed(newRevealed);

@@ -14,6 +14,22 @@ import {
 } from "@/lib/services/coopService";
 import { err, ok } from "@/utils/response";
 
+function validateDisplayName(
+    name: unknown,
+): { valid: true; trimmed: string } | { valid: false; response: NextResponse } {
+    if (!name || typeof name !== "string") {
+        return { valid: false, response: err("Nom d'affichage requis", 400) };
+    }
+    const trimmed = name.trim();
+    if (trimmed.length === 0 || trimmed.length > 30) {
+        return {
+            valid: false,
+            response: err("Nom invalide (1-30 caractères)", 400),
+        };
+    }
+    return { valid: true, trimmed };
+}
+
 export async function createLobbyHandler(
     request: NextRequest,
 ): Promise<NextResponse> {
@@ -22,14 +38,9 @@ export async function createLobbyHandler(
         userId?: unknown;
     };
 
-    if (!body.displayName || typeof body.displayName !== "string") {
-        return err("Nom d'affichage requis", 400);
-    }
-
-    const trimmed = body.displayName.trim();
-    if (trimmed.length === 0 || trimmed.length > 30) {
-        return err("Nom invalide (1-30 caractères)", 400);
-    }
+    const nameResult = validateDisplayName(body.displayName);
+    if (!nameResult.valid) return nameResult.response;
+    const { trimmed } = nameResult;
 
     const userId = typeof body.userId === "string" ? body.userId : undefined;
 
@@ -58,16 +69,12 @@ export async function joinLobbyHandler(
     if (!body.code || typeof body.code !== "string") {
         return err("Code du lobby requis", 400);
     }
-    if (!body.displayName || typeof body.displayName !== "string") {
-        return err("Nom d'affichage requis", 400);
-    }
+
+    const nameResult = validateDisplayName(body.displayName);
+    if (!nameResult.valid) return nameResult.response;
 
     const code = body.code.trim().toUpperCase();
-    const trimmed = body.displayName.trim();
-
-    if (trimmed.length === 0 || trimmed.length > 30) {
-        return err("Nom invalide (1-30 caractères)", 400);
-    }
+    const { trimmed } = nameResult;
 
     const userId = typeof body.userId === "string" ? body.userId : undefined;
 
