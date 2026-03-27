@@ -3,7 +3,7 @@ import { HINT_IMAGE_URL_VERSION } from "@/utils/hintImage";
 
 const MAX_WIDTH = 600;
 const WEBP_QUALITY = 75;
-const USER_AGENT = "WikiGuessr/1.0 (https://wikiguessr.com)";
+const USER_AGENT = "WikiGuessr/1.0 (https://wikiguessr.bonnell.fr)";
 const MAX_CONCURRENT_WIKI_FETCHES = 1;
 const MAX_FETCH_RETRIES = 4;
 const MIN_TIME_BETWEEN_FETCHES_MS = 1200;

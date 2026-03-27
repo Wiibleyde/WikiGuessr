@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { ReactNode } from "react";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/ui/Footer";
@@ -35,7 +34,6 @@ export default function RootLayout({
                 <Navbar />
                 <main className="flex-1">{children}</main>
                 <Footer />
-                <SpeedInsights />
             </body>
         </html>
     );
