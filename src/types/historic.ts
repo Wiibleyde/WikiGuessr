@@ -4,4 +4,5 @@ export interface PageEntry {
     title: string;
     date: Date;
     url: string;
+    resolvedCount: number;
 }
