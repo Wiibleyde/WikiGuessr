@@ -12,8 +12,8 @@ import {
     coopPlayersAtom,
     coopPlayerTokenAtom,
 } from "@/atom/coop";
-import CoopGame from "@/components/coop/CoopGame";
 import CoopWaiting from "@/components/coop/CoopWaiting";
+import CoopMode from "@/components/game/CoopMode";
 import ErrorMessage from "@/components/ui/Error";
 import Loader from "@/components/ui/Loader";
 import useCoopLobby from "@/hooks/useCoopLobby";
@@ -107,5 +107,5 @@ export default function CoopLobbyPage() {
         );
     }
 
-    return <CoopGame code={code} />;
+    return <CoopMode code={code} />;
 }
