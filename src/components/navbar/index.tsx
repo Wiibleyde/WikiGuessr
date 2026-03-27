@@ -45,24 +45,26 @@ export default function Navbar() {
                     className={`w-full border-t border-gray-200 pt-2 ${open ? "flex" : "hidden"} md:flex md:flex-row flex-col md:items-center md:gap-3 md:w-auto md:border-t-0 md:pt-0`}
                 >
                     <nav className="flex flex-col gap-1 md:flex-row md:items-center">
-                        {NAV_LINKS.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                onClick={() => setOpen(false)}
-                            >
-                                <Button
-                                    className="w-full text-left md:w-auto md:text-center"
-                                    variant={
-                                        pathname === link.href
-                                            ? "navbarActive"
-                                            : "navbar"
-                                    }
+                        {NAV_LINKS.map((link) => {
+                            const isCoop = pathname.startsWith("/coop") && link.href === "/coop";
+                            const isActive = isCoop
+                                ? pathname.startsWith("/coop")
+                                : pathname === link.href;
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    onClick={() => setOpen(false)}
                                 >
-                                    {link.label}
-                                </Button>
-                            </Link>
-                        ))}
+                                    <Button
+                                        className="w-full text-left md:w-auto md:text-center"
+                                        variant={isActive ? "navbarActive" : "navbar"}
+                                    >
+                                        {link.label}
+                                    </Button>
+                                </Link>
+                            );
+                        })}
                     </nav>
 
                     <div className="mt-3 border-t border-gray-100 px-0 pt-3 md:mt-0 md:border-t-0 md:pt-0 md:flex md:items-center sm:gap-3">
