@@ -20,11 +20,12 @@ export default function CoopHome() {
             title="🤝 Mode Co-op"
             subtitle="Jouez à plusieurs pour deviner l'article Wikipédia !"
         >
-            <div className="flex flex-row items-start justify-around mb-6 bg-white rounded-xl py-2 mx-auto max-w-75">
+            <div className="flex flex-row items-start justify-center mb-6 rounded-xl py-2 ">
                 <Button
                     onClick={() => setMode("create")}
                     disabled={loading}
                     variant={mode === "create" ? "navbarActive" : "navbar"}
+                    className="rounded-r-none"
                 >
                     Créer un lobby
                 </Button>
@@ -32,6 +33,7 @@ export default function CoopHome() {
                     onClick={() => setMode("join")}
                     disabled={loading}
                     variant={mode === "join" ? "navbarActive" : "navbar"}
+                    className="rounded-l-none"
                 >
                     Rejoindre un lobby
                 </Button>
