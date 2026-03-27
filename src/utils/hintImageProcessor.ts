@@ -19,7 +19,7 @@ const OBFUSCATION_BLUR = 3;
 
 export const RESPONSE_CACHE_CONTROL =
     process.env.NODE_ENV === "production"
-        ? `public, max-age=86400, immutable`
+        ? "no-store, no-cache, must-revalidate"
         : "no-store";
 
 export { OBFUSCATION_PROFILE };
