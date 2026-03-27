@@ -4,18 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { NAV_LINKS } from "@/constants/navbar";
 import { useAuth } from "@/hooks/useAuth";
-import Button from "../ui/Button";
+import NavbarLink from "../ui/NavbarLink";
 import NavbarAuth from "./NavbarAuth";
 import NavbarButton from "./NavbarButton";
-
-const NAV_LINKS = [
-    { href: "/", label: "Jouer" },
-    { href: "/coop", label: "Co-op" },
-    { href: "/historic", label: "Historique" },
-    { href: "/leaderboard", label: "Classement" },
-    { href: "/profile", label: "Profil" },
-] as const;
 
 export default function Navbar() {
     const { user, loading, login } = useAuth();
@@ -46,23 +39,20 @@ export default function Navbar() {
                 >
                     <nav className="flex flex-col gap-1 md:flex-row md:items-center">
                         {NAV_LINKS.map((link) => {
-                            const isCoop = pathname.startsWith("/coop") && link.href === "/coop";
+                            const isCoop =
+                                pathname.startsWith("/coop") &&
+                                link.href === "/coop";
                             const isActive = isCoop
                                 ? pathname.startsWith("/coop")
                                 : pathname === link.href;
                             return (
-                                <Link
+                                <NavbarLink
                                     key={link.href}
                                     href={link.href}
+                                    label={link.label}
+                                    isActive={isActive}
                                     onClick={() => setOpen(false)}
-                                >
-                                    <Button
-                                        className="w-full text-left md:w-auto md:text-center"
-                                        variant={isActive ? "navbarActive" : "navbar"}
-                                    >
-                                        {link.label}
-                                    </Button>
-                                </Link>
+                                />
                             );
                         })}
                     </nav>
