@@ -93,11 +93,9 @@ export default function Game({
             />
 
             {coop && players && (
-                <div className="max-w-5xl mx-auto px-4 py-4">
-                    <CoopPlayerList
-                        players={players}
-                    />
-                </div>
+                <CoopPlayerList
+                    players={players}
+                />
             )}
 
             <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
