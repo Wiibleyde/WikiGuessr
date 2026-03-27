@@ -20,13 +20,14 @@ export default function useCoopRealtime(code: string | null) {
     const setLobby = useSetAtom(coopLobbyAtom);
     const setWon = useSetAtom(coopWonAtom);
     const channelRef = useRef<ReturnType<
-        ReturnType<typeof getSupabaseBrowserClient>["channel"]
+        NonNullable<ReturnType<typeof getSupabaseBrowserClient>>["channel"]
     > | null>(null);
 
     useEffect(() => {
         if (!code) return;
 
         const supabase = getSupabaseBrowserClient();
+        if (!supabase) return;
         const channel = supabase.channel(`coop:${code}`);
         channelRef.current = channel;
 

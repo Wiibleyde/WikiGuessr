@@ -6,7 +6,7 @@ let client: ReturnType<typeof createClient> | null = null;
 export function getSupabaseServerClient() {
     if (client) return client;
     client = createClient(
-        env.NEXT_PUBLIC_SUPABASE_URL,
+        env.SUPABASE_INTERNAL_URL || env.NEXT_PUBLIC_SUPABASE_URL,
         env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     );
     return client;
