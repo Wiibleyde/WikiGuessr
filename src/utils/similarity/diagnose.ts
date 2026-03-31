@@ -21,30 +21,23 @@ function isAdjacentTransposition(guess: string, target: string): boolean {
     return false;
 }
 
-export function diagnoseProximity(
-    guess: string,
-    target: string,
-): ProximityReason {
-    const dist = levenshteinDistance(guess, target);
-    const lenDiff = target.length - guess.length;
-    const absDiff = Math.abs(lenDiff);
-
-    // Same-length words: substitution, transposition, or mixed
-    if (lenDiff === 0) {
-        if (dist === 1) {
-            return isAdjacentTransposition(guess, target)
-                ? { type: "transposition", description: "Lettres inversées" }
-                : { type: "substitution", description: "1 lettre différente" };
-        }
-        if (dist === 2) {
-            return { type: "mixed", description: "2 lettres différentes" };
-        }
-        return { type: "mixed", description: "Mot très proche" };
+function diagnoseSameLengthWords(guess: string, target: string, levenshteinDistance: number): ProximityReason {
+    if (levenshteinDistance === 1) {
+        return isAdjacentTransposition(guess, target)
+            ? { type: "transposition", description: "Lettres inversées" }
+            : { type: "substitution", description: "1 lettre différente" };
     }
+    if (levenshteinDistance === 2) {
+        return { type: "mixed", description: "2 lettres différentes" };
+    }
+    return { type: "mixed", description: "Mot très proche" };
+}
 
-    // Different-length words: deletion or insertion
-    if (dist <= 2 || absDiff >= dist) {
-        const count = dist <= 2 ? absDiff : dist;
+function diagnoseMixedProximity(levenshteinDistance: number, lenDiff: number): ProximityReason {
+    const absDiff = Math.abs(lenDiff);
+    
+    if (levenshteinDistance <= 2 || absDiff >= levenshteinDistance) {
+        const count = levenshteinDistance <= 2 ? absDiff : levenshteinDistance;
         if (lenDiff > 0) {
             return {
                 type: "deletion",
@@ -55,6 +48,27 @@ export function diagnoseProximity(
             type: "insertion",
             description: `${plural(count, "lettre en trop", "lettres en trop")}`,
         };
+    }
+    return { type: "mixed", description: "Mot très proche" };
+}
+
+
+export function diagnoseProximity(
+    guess: string,
+    target: string,
+): ProximityReason {
+    const levenshteinDistanceValue = levenshteinDistance(guess, target);
+    const lenDiff = target.length - guess.length;
+    
+    // Same-length words: substitution, transposition, or mixed
+    if (lenDiff === 0) {
+        return diagnoseSameLengthWords(guess, target, levenshteinDistanceValue);
+    }
+    
+    const absDiff = Math.abs(lenDiff);
+    // Different-length words: deletion or insertion
+    if (levenshteinDistanceValue <= 2 || absDiff >= levenshteinDistanceValue) {
+        return diagnoseMixedProximity(levenshteinDistanceValue, lenDiff);
     }
 
     return { type: "mixed", description: "Mot très proche" };
