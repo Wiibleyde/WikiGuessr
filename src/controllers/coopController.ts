@@ -74,6 +74,9 @@ export async function joinLobbyHandler(
     if (!nameResult.valid) return nameResult.response;
 
     const code = body.code.trim().toUpperCase();
+    if (!/^[A-Z2-9]{6}$/.test(code)) {
+        return err("Code invalide (6 caractères attendus)", 400);
+    }
     const { trimmed } = nameResult;
 
     const userId = typeof body.userId === "string" ? body.userId : undefined;

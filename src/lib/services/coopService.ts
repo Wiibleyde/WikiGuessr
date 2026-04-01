@@ -167,13 +167,17 @@ export async function submitCoopGuess(
     const won = verifyCoopWin(code, allFoundWords);
 
     if (won) {
-        await updateLobbyStatus(code, "finished");
-        const playerCount = await getPlayerCount(lobby.id);
-        await broadcastToLobby(code, "game_won", {
-            totalGuesses: lobby.guesses.length + 1,
-            playerCount,
-        });
-        removeCoopChannel(code);
+        // Re-fetch status to guard against a concurrent winner
+        const freshLobby = await getLobbyByCode(code);
+        if (freshLobby && freshLobby.status === "playing") {
+            await updateLobbyStatus(code, "finished");
+            const playerCount = await getPlayerCount(lobby.id);
+            await broadcastToLobby(code, "game_won", {
+                totalGuesses: lobby.guesses.length + 1,
+                playerCount,
+            });
+            removeCoopChannel(code);
+        }
     }
 
     return { guessResult, won };
@@ -195,6 +199,14 @@ export async function getCoopLobbyState(code: string) {
         article = cache.maskedArticle;
     }
 
+    const guessCountByPlayer = new Map<number, number>();
+    for (const g of lobby.guesses) {
+        guessCountByPlayer.set(
+            g.playerId,
+            (guessCountByPlayer.get(g.playerId) ?? 0) + 1,
+        );
+    }
+
     return {
         lobby: {
             code: lobby.code,
@@ -206,7 +218,7 @@ export async function getCoopLobbyState(code: string) {
             id: p.id,
             displayName: p.displayName,
             isLeader: p.isLeader,
-            guessCount: lobby.guesses.filter((g) => g.playerId === p.id).length,
+            guessCount: guessCountByPlayer.get(p.id) ?? 0,
         })),
         guesses: lobby.guesses.map((g) => ({
             id: g.id,

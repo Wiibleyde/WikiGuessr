@@ -6,10 +6,7 @@ interface LoginProviderProps {
     children: React.ReactNode;
 }
 
-const LoginProvider = ({
-    children
-}: LoginProviderProps) => {
-
+const LoginProvider = ({ children }: LoginProviderProps) => {
     const [showLogin, setShowLogin] = useState<boolean>(false);
 
     return (

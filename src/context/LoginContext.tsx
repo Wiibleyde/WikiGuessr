@@ -1,5 +1,5 @@
 "use client";
-import { createContext } from 'react';
+import { createContext } from "react";
 
 interface LoginContextType {
     showLogin: boolean;
@@ -8,7 +8,7 @@ interface LoginContextType {
 
 const LoginContext = createContext<LoginContextType>({
     showLogin: false,
-    setShowLogin: () => { },
+    setShowLogin: () => {},
 });
 
 export default LoginContext;

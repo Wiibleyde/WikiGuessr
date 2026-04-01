@@ -5,13 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useContext, useState } from "react";
 import { NAV_LINKS, providers } from "@/constants/navbar";
+import LoginContext from "@/context/LoginContext";
 import { useAuth } from "@/hooks/useAuth";
 import ButtonProvider from "../ui/ButtonProvider";
 import Modal from "../ui/Modal";
 import NavbarLink from "../ui/NavbarLink";
 import NavbarAuth from "./NavbarAuth";
 import NavbarButton from "./NavbarButton";
-import LoginContext from "@/context/LoginContext";
 
 export default function Navbar() {
     const { user, loading } = useAuth();
