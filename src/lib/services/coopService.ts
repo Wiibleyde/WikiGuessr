@@ -4,11 +4,13 @@ import {
     getOrBuildCoopCache,
     verifyCoopWin,
 } from "@/lib/game/coop-game";
+import { normalizeWord } from "@/lib/game/normalize";
 import { fetchRandomWikiPage } from "@/lib/game/wiki";
 import {
     addGuess,
     addPlayer,
     createLobby,
+    getAllGuessedWords,
     getFoundGuessWords,
     getLobbyByCode,
     getPlayerByToken,
@@ -127,6 +129,12 @@ export async function submitCoopGuess(
             lobby.wikiSections as unknown as WikiSection[],
             dateKey,
         );
+    }
+
+    const allGuessedWords = await getAllGuessedWords(lobby.id);
+    const normalizedWord = normalizeWord(word.trim());
+    if (normalizedWord && allGuessedWords.includes(normalizedWord)) {
+        throw new DuplicateGuessError();
     }
 
     const revealedWords = await getFoundGuessWords(lobby.id);
@@ -275,5 +283,12 @@ export class GameNotStartedError extends Error {
     constructor() {
         super("La partie n'a pas encore commencé");
         this.name = "GameNotStartedError";
+    }
+}
+
+export class DuplicateGuessError extends Error {
+    constructor() {
+        super("Ce mot a déjà été proposé");
+        this.name = "DuplicateGuessError";
     }
 }
