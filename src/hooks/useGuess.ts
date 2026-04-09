@@ -1,15 +1,4 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback } from "react";
-import {
-    articleAtom,
-    errorAtom,
-    guessesAtom,
-    guessingAtom,
-    inputAtom,
-    revealedAtom,
-    revealedImagesAtom,
-    wonAtom,
-} from "@/atom/game";
+import { useCallback, useState } from "react";
 import { normalizeWord } from "@/lib/game/normalize";
 import { checkGameGuess } from "@/lib/queries";
 import type { StoredGuess } from "@/types/game";
@@ -18,17 +7,24 @@ import { checkWinCondition } from "@/utils/game";
 import { applyPositions } from "@/utils/helper";
 import useArticle from "./useArticle";
 import useGame from "./useGame";
+import { useGameState } from "./useGameState";
 
 const useGuess = () => {
     const { reloadArticle } = useArticle();
-    const [input, setInput] = useAtom(inputAtom);
-    const article = useAtomValue(articleAtom);
-    const [guessing, setGuessing] = useAtom(guessingAtom);
-    const [revealed, setRevealed] = useAtom(revealedAtom);
-    const [guesses, setGuesses] = useAtom(guessesAtom);
-    const revealedImages = useAtomValue(revealedImagesAtom);
-    const [won, setWon] = useAtom(wonAtom);
-    const setError = useSetAtom(errorAtom);
+    const {
+        input,
+        setInput,
+        article,
+        revealed,
+        setRevealed,
+        guesses,
+        setGuesses,
+        revealedImages,
+        won,
+        setWon,
+        setError,
+    } = useGameState();
+    const [guessing, setGuessing] = useState(false);
     const { revealAllWords, revealAllImages } = useGame();
 
     const submitGuess = useCallback<(e?: React.FormEvent) => Promise<void>>(
@@ -114,14 +110,13 @@ const useGuess = () => {
             reloadArticle,
             setGuesses,
             setRevealed,
-            setGuessing,
             setError,
             setInput,
             setWon,
         ],
     );
 
-    return { submitGuess };
+    return { submitGuess, guessing };
 };
 
 export default useGuess;

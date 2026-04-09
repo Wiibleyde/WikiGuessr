@@ -1,26 +1,27 @@
 "use client";
 
-import { useAtom, useAtomValue } from "jotai";
 import { useEffect } from "react";
-import * as atomGame from "@/atom/game";
 import { computeRevealPercentage } from "@/utils/game";
 import useArticle from "./useArticle";
 import useDb from "./useDb";
 import useGame from "./useGame";
+import { useGameState } from "./useGameState";
 import useGuess from "./useGuess";
 
 export function useWikiGuessr() {
-    const article = useAtomValue(atomGame.articleAtom);
-    const guesses = useAtomValue(atomGame.guessesAtom);
-    const revealed = useAtomValue(atomGame.revealedAtom);
-    const loading = useAtomValue(atomGame.loadingAtom);
-    const won = useAtomValue(atomGame.wonAtom);
-    const saved = useAtomValue(atomGame.savedAtom);
-    const error = useAtomValue(atomGame.errorAtom);
-    const revealedImages = useAtomValue(atomGame.revealedImagesAtom);
-    const winImages = useAtomValue(atomGame.winImagesAtom);
-    const revealingHint = useAtomValue(atomGame.revealingHintAtom);
-    const [input, setInput] = useAtom(atomGame.inputAtom);
+    const {
+        article,
+        guesses,
+        revealed,
+        loading,
+        won,
+        saved,
+        error,
+        revealedImages,
+        winImages,
+        input,
+        setInput,
+    } = useGameState();
 
     const percentage = computeRevealPercentage(revealed, article);
     const hintsUsed = revealedImages.length;
@@ -28,8 +29,8 @@ export function useWikiGuessr() {
     const displayImages =
         won && winImages.length > 0 ? winImages : revealedImages;
 
-    const { revealHint } = useGame();
-    const { submitGuess } = useGuess();
+    const { revealHint, revealingHint } = useGame();
+    const { submitGuess, guessing } = useGuess();
     const { reloadArticle } = useArticle();
     useDb();
 
@@ -54,5 +55,6 @@ export function useWikiGuessr() {
         imageCount,
         input,
         setInput,
+        guessing,
     };
 }
