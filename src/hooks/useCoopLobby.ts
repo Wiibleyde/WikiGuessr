@@ -118,7 +118,12 @@ export default function useCoopLobby() {
             }
             try {
                 const res = await fetch(`/api/coop/${code}`);
-                if (!res.ok) return;
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        setError("Ce lobby n'existe plus");
+                    }
+                    return;
+                }
                 const data = (await res.json()) as CoopLobbyState;
                 setLobby(data.lobby);
                 setPlayers(data.players);

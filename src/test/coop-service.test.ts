@@ -12,6 +12,9 @@ const getPlayerCountMock = mock();
 const addGuessMock = mock();
 const getFoundGuessWordsMock = mock();
 const getAllGuessedWordsMock = mock();
+const removePlayerMock = mock();
+const transferLeadershipMock = mock();
+const deleteLobbyMock = mock();
 
 mock.module("@/lib/repositories/coopRepository", () => ({
     createLobby: createLobbyMock,
@@ -24,6 +27,9 @@ mock.module("@/lib/repositories/coopRepository", () => ({
     addGuess: addGuessMock,
     getFoundGuessWords: getFoundGuessWordsMock,
     getAllGuessedWords: getAllGuessedWordsMock,
+    removePlayer: removePlayerMock,
+    transferLeadership: transferLeadershipMock,
+    deleteLobby: deleteLobbyMock,
 }));
 
 const broadcastToLobbyMock = mock();
@@ -43,6 +49,7 @@ mock.module("@/lib/game/wiki", () => ({
 const {
     createCoopLobby,
     joinCoopLobby,
+    leaveLobby,
     startCoopGame,
     submitCoopGuess,
     getCoopLobbyState,
@@ -409,5 +416,146 @@ describe("getCoopLobbyState", () => {
 
         expect(state.article).not.toBeNull();
         expect(state.article?.totalWords).toBeGreaterThan(0);
+    });
+});
+
+describe("leaveLobby", () => {
+    beforeEach(() => {
+        getPlayerByTokenMock.mockReset();
+        getLobbyByCodeMock.mockReset();
+        removePlayerMock.mockReset();
+        deleteLobbyMock.mockReset();
+        transferLeadershipMock.mockReset();
+        broadcastToLobbyMock.mockReset();
+        removeCoopChannelMock.mockReset();
+    });
+
+    it("throws LobbyNotFoundError when player token is invalid", async () => {
+        getPlayerByTokenMock.mockResolvedValue(null);
+        expect(leaveLobby("ABC123", "bad-tok")).rejects.toBeInstanceOf(
+            LobbyNotFoundError,
+        );
+    });
+
+    it("throws LobbyNotFoundError when lobby does not exist", async () => {
+        getPlayerByTokenMock.mockResolvedValue(makePlayer());
+        getLobbyByCodeMock.mockResolvedValue(null);
+        expect(leaveLobby("ABC123", "tok-alice")).rejects.toBeInstanceOf(
+            LobbyNotFoundError,
+        );
+    });
+
+    it("removes the player and broadcasts player_left", async () => {
+        const lobby = makeLobby({
+            players: [
+                {
+                    id: 10,
+                    displayName: "Alice",
+                    isLeader: true,
+                    token: "tok-alice",
+                    userId: "user-1",
+                },
+                {
+                    id: 20,
+                    displayName: "Bob",
+                    isLeader: false,
+                    token: "tok-bob",
+                    userId: null,
+                },
+            ],
+        });
+        getPlayerByTokenMock.mockResolvedValue(
+            makePlayer({
+                id: 20,
+                displayName: "Bob",
+                isLeader: false,
+                token: "tok-bob",
+            }),
+        );
+        getLobbyByCodeMock.mockResolvedValue(lobby);
+        removePlayerMock.mockResolvedValue(undefined);
+        broadcastToLobbyMock.mockResolvedValue(undefined);
+
+        const result = await leaveLobby("ABC123", "tok-bob");
+
+        expect(result.deleted).toBe(false);
+        expect(removePlayerMock).toHaveBeenCalledWith(20);
+        expect(broadcastToLobbyMock).toHaveBeenCalledWith(
+            "ABC123",
+            "player_left",
+            expect.objectContaining({ playerId: 20, displayName: "Bob" }),
+        );
+        expect(transferLeadershipMock).not.toHaveBeenCalled();
+    });
+
+    it("transfers leadership when leader leaves with other players", async () => {
+        const lobby = makeLobby({
+            players: [
+                {
+                    id: 10,
+                    displayName: "Alice",
+                    isLeader: true,
+                    token: "tok-alice",
+                    userId: "user-1",
+                },
+                {
+                    id: 20,
+                    displayName: "Bob",
+                    isLeader: false,
+                    token: "tok-bob",
+                    userId: null,
+                },
+            ],
+        });
+        getPlayerByTokenMock.mockResolvedValue(makePlayer());
+        getLobbyByCodeMock.mockResolvedValue(lobby);
+        removePlayerMock.mockResolvedValue(undefined);
+        transferLeadershipMock.mockResolvedValue(undefined);
+        broadcastToLobbyMock.mockResolvedValue(undefined);
+
+        const result = await leaveLobby("ABC123", "tok-alice");
+
+        expect(result.deleted).toBe(false);
+        expect(removePlayerMock).toHaveBeenCalledWith(10);
+        expect(transferLeadershipMock).toHaveBeenCalledWith(1, 10, 20);
+        expect(broadcastToLobbyMock).toHaveBeenCalledWith(
+            "ABC123",
+            "player_left",
+            expect.objectContaining({ playerId: 10, displayName: "Alice" }),
+        );
+        expect(broadcastToLobbyMock).toHaveBeenCalledWith(
+            "ABC123",
+            "leader_changed",
+            expect.objectContaining({
+                newLeaderId: 20,
+                displayName: "Bob",
+            }),
+        );
+    });
+
+    it("deletes lobby when last player leaves", async () => {
+        const lobby = makeLobby({
+            players: [
+                {
+                    id: 10,
+                    displayName: "Alice",
+                    isLeader: true,
+                    token: "tok-alice",
+                    userId: "user-1",
+                },
+            ],
+        });
+        getPlayerByTokenMock.mockResolvedValue(makePlayer());
+        getLobbyByCodeMock.mockResolvedValue(lobby);
+        removePlayerMock.mockResolvedValue(undefined);
+        deleteLobbyMock.mockResolvedValue(undefined);
+        removeCoopChannelMock.mockImplementation(() => {});
+
+        const result = await leaveLobby("ABC123", "tok-alice");
+
+        expect(result.deleted).toBe(true);
+        expect(removePlayerMock).toHaveBeenCalledWith(10);
+        expect(deleteLobbyMock).toHaveBeenCalledWith("ABC123");
+        expect(broadcastToLobbyMock).not.toHaveBeenCalled();
     });
 });

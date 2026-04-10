@@ -47,6 +47,27 @@ export default function useCoopRealtime(code: string | null) {
                     ];
                 });
             })
+            .on("broadcast", { event: "player_left" }, ({ payload }) => {
+                const { playerId } = payload as {
+                    playerId: number;
+                    displayName: string;
+                };
+                setPlayers((prev: CoopPlayerInfo[]) =>
+                    prev.filter((p) => p.id !== playerId),
+                );
+            })
+            .on("broadcast", { event: "leader_changed" }, ({ payload }) => {
+                const { newLeaderId } = payload as {
+                    newLeaderId: number;
+                    displayName: string;
+                };
+                setPlayers((prev: CoopPlayerInfo[]) =>
+                    prev.map((p) => ({
+                        ...p,
+                        isLeader: p.id === newLeaderId,
+                    })),
+                );
+            })
             .on("broadcast", { event: "game_started" }, ({ payload }) => {
                 const { article } = payload as { article: MaskedArticle };
                 setLobby((prev) =>
