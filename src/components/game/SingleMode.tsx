@@ -1,11 +1,8 @@
 "use client";
-import { useAtomValue } from "jotai";
-import { guessingAtom } from "@/atom/game";
 import { useWikiGuessr } from "@/hooks/useWikiGuessr";
 import Game from ".";
 
 const SingleMode = () => {
-    const guessing = useAtomValue(guessingAtom);
     const {
         article,
         guesses,
@@ -22,6 +19,7 @@ const SingleMode = () => {
         imageCount,
         input,
         setInput,
+        guessing,
     } = useWikiGuessr();
 
     return (

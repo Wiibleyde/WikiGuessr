@@ -1,36 +1,25 @@
-import { useSetAtom } from "jotai";
 import { useCallback } from "react";
-import {
-    articleAtom,
-    errorAtom,
-    guessesAtom,
-    inputAtom,
-    loadingAtom,
-    revealedAtom,
-    revealedImagesAtom,
-    savedAtom,
-    syncedAtom,
-    winImagesAtom,
-    wonAtom,
-} from "@/atom/game";
 import { fetchGame } from "@/lib/queries";
 import { clearOldCaches, loadCache } from "@/utils/cache";
 import { checkWinCondition } from "@/utils/game";
 import { normalizeHintImageUrls } from "@/utils/hintImage";
 import useGame from "./useGame";
+import { useGameState } from "./useGameState";
 
 const useArticle = () => {
-    const setGuesses = useSetAtom(guessesAtom);
-    const setLoading = useSetAtom(loadingAtom);
-    const setRevealed = useSetAtom(revealedAtom);
-    const setWon = useSetAtom(wonAtom);
-    const setSaved = useSetAtom(savedAtom);
-    const setError = useSetAtom(errorAtom);
-    const setSynced = useSetAtom(syncedAtom);
-    const setInput = useSetAtom(inputAtom);
-    const setRevealedImages = useSetAtom(revealedImagesAtom);
-    const setWinImages = useSetAtom(winImagesAtom);
-    const setArticle = useSetAtom(articleAtom);
+    const {
+        setGuesses,
+        setLoading,
+        setRevealed,
+        setWon,
+        setSaved,
+        setError,
+        setSynced,
+        setInput,
+        setRevealedImages,
+        setWinImages,
+        setArticle,
+    } = useGameState();
 
     const { revealAllWords, revealAllImages } = useGame();
 

@@ -1,30 +1,24 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback } from "react";
-import {
-    articleAtom,
-    guessesAtom,
-    revealedAtom,
-    revealedImagesAtom,
-    revealingHintAtom,
-    savedAtom,
-    winImagesAtom,
-    wonAtom,
-} from "@/atom/game";
+import { useCallback, useState } from "react";
 import { MIN_GUESSES_FOR_HINT } from "@/constants/game";
 import { fetchGameReveal, fetchImageHint } from "@/lib/queries";
 import type { MaskedArticle, RevealedMap, StoredGuess } from "@/types/game";
 import { saveCache } from "@/utils/cache";
 import { applyPositions } from "@/utils/helper";
+import { useGameState } from "./useGameState";
 
 const useGame = () => {
-    const setWinImages = useSetAtom(winImagesAtom);
-    const [revealingHint, setRevealingHint] = useAtom(revealingHintAtom);
-    const [revealedImages, setRevealedImages] = useAtom(revealedImagesAtom);
-    const article = useAtomValue(articleAtom);
-    const won = useAtomValue(wonAtom);
-    const guesses = useAtomValue(guessesAtom);
-    const [revealed, setRevealed] = useAtom(revealedAtom);
-    const saved = useAtomValue(savedAtom);
+    const {
+        article,
+        won,
+        guesses,
+        revealed,
+        setRevealed,
+        saved,
+        revealedImages,
+        setRevealedImages,
+        setWinImages,
+    } = useGameState();
+    const [revealingHint, setRevealingHint] = useState(false);
 
     const revealAllWords = useCallback(
         async (
@@ -90,10 +84,9 @@ const useGame = () => {
         revealed,
         saved,
         setRevealedImages,
-        setRevealingHint,
     ]);
 
-    return { revealAllWords, revealAllImages, revealHint };
+    return { revealAllWords, revealAllImages, revealHint, revealingHint };
 };
 
 export default useGame;

@@ -1,27 +1,21 @@
 "use client";
 
-import { useSetAtom } from "jotai";
 import { useEffect, useRef } from "react";
-import {
-    coopArticleAtom,
-    coopGuessesAtom,
-    coopLobbyAtom,
-    coopPlayersAtom,
-    coopRevealedAtom,
-    coopWonAtom,
-} from "@/atom/coop";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CoopGuessEntry, CoopPlayerInfo } from "@/types/coop";
 import type { MaskedArticle } from "@/types/game";
 import { applyPositions } from "@/utils/helper";
+import { useCoopState } from "./useCoopState";
 
 export default function useCoopRealtime(code: string | null) {
-    const setPlayers = useSetAtom(coopPlayersAtom);
-    const setArticle = useSetAtom(coopArticleAtom);
-    const setGuesses = useSetAtom(coopGuessesAtom);
-    const setLobby = useSetAtom(coopLobbyAtom);
-    const setWon = useSetAtom(coopWonAtom);
-    const setRevealed = useSetAtom(coopRevealedAtom);
+    const {
+        setPlayers,
+        setArticle,
+        setGuesses,
+        setLobby,
+        setWon,
+        setRevealed,
+    } = useCoopState();
     const channelRef = useRef<ReturnType<
         NonNullable<ReturnType<typeof getSupabaseBrowserClient>>["channel"]
     > | null>(null);
@@ -52,6 +46,27 @@ export default function useCoopRealtime(code: string | null) {
                         },
                     ];
                 });
+            })
+            .on("broadcast", { event: "player_left" }, ({ payload }) => {
+                const { playerId } = payload as {
+                    playerId: number;
+                    displayName: string;
+                };
+                setPlayers((prev: CoopPlayerInfo[]) =>
+                    prev.filter((p) => p.id !== playerId),
+                );
+            })
+            .on("broadcast", { event: "leader_changed" }, ({ payload }) => {
+                const { newLeaderId } = payload as {
+                    newLeaderId: number;
+                    displayName: string;
+                };
+                setPlayers((prev: CoopPlayerInfo[]) =>
+                    prev.map((p) => ({
+                        ...p,
+                        isLeader: p.id === newLeaderId,
+                    })),
+                );
             })
             .on("broadcast", { event: "game_started" }, ({ payload }) => {
                 const { article } = payload as { article: MaskedArticle };

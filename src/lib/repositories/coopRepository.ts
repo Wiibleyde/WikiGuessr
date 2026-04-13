@@ -132,3 +132,28 @@ export async function getAllGuessedWords(lobbyId: number): Promise<string[]> {
     });
     return guesses.map((g) => g.word);
 }
+
+export async function removePlayer(playerId: number) {
+    return prisma.coopPlayer.delete({ where: { id: playerId } });
+}
+
+export async function transferLeadership(
+    _lobbyId: number,
+    oldLeaderId: number,
+    newLeaderId: number,
+) {
+    return prisma.$transaction([
+        prisma.coopPlayer.update({
+            where: { id: oldLeaderId },
+            data: { isLeader: false },
+        }),
+        prisma.coopPlayer.update({
+            where: { id: newLeaderId },
+            data: { isLeader: true },
+        }),
+    ]);
+}
+
+export async function deleteLobby(code: string) {
+    return prisma.coopLobby.delete({ where: { code } });
+}

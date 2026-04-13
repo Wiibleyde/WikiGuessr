@@ -62,7 +62,7 @@ const Lobby = ({ code }: LobbyProps) => {
         const storedId = getCoopPlayerId(code);
         if (storedId !== null && players.length > 0) {
             const me = players.find((p) => p.id === storedId);
-            if (me?.isLeader) setIsLeader(true);
+            setIsLeader(me?.isLeader ?? false);
         }
     }, [code, players, setIsLeader]);
 
@@ -77,7 +77,19 @@ const Lobby = ({ code }: LobbyProps) => {
         }
     };
 
-    const handleLeave = () => {
+    const handleLeave = async () => {
+        const token = getCoopToken(code);
+        if (token) {
+            try {
+                await fetch(`/api/coop/${code}/leave`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ playerToken: token }),
+                });
+            } catch {
+                // Best-effort — proceed with local cleanup regardless
+            }
+        }
         clearCoopSession(code);
         resetState();
         router.push("/coop");

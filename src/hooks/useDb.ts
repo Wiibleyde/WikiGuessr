@@ -1,7 +1,5 @@
 import axios from "axios";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
-import * as atomGame from "@/atom/game";
 import type { GameCache } from "@/types/game";
 import { loadCache, saveCache } from "@/utils/cache";
 import { checkWinCondition } from "@/utils/game";
@@ -9,20 +7,27 @@ import { normalizeHintImageUrls } from "@/utils/hintImage";
 import { fetchStateFromServer, pushStateToServer } from "@/utils/server";
 import { useAuth } from "./useAuth";
 import useGame from "./useGame";
+import { useGameState } from "./useGameState";
 
 const useDb = () => {
     const { user, loading: authLoading } = useAuth();
     const { revealAllWords, revealAllImages } = useGame();
-    const article = useAtomValue(atomGame.articleAtom);
-    const loading = useAtomValue(atomGame.loadingAtom);
-    const [guesses, setGuesses] = useAtom(atomGame.guessesAtom);
-    const [revealed, setRevealed] = useAtom(atomGame.revealedAtom);
-    const won = useAtomValue(atomGame.wonAtom);
-    const [saved, setSaved] = useAtom(atomGame.savedAtom);
-    const revealedImages = useAtomValue(atomGame.revealedImagesAtom);
-    const setWon = useSetAtom(atomGame.wonAtom);
-    const [synced, setSynced] = useAtom(atomGame.syncedAtom);
-    const setRevealedImages = useSetAtom(atomGame.revealedImagesAtom);
+    const {
+        article,
+        loading,
+        guesses,
+        setGuesses,
+        revealed,
+        setRevealed,
+        won,
+        setWon,
+        saved,
+        setSaved,
+        revealedImages,
+        setRevealedImages,
+        synced,
+        setSynced,
+    } = useGameState();
 
     /** Push current state to the DB (called on each guess when logged in). */
     const syncToDatabase = useCallback(async () => {

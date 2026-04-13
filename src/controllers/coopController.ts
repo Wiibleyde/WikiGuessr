@@ -8,6 +8,7 @@ import {
     LobbyFinishedError,
     LobbyFullError,
     LobbyNotFoundError,
+    leaveLobby,
     NotLeaderError,
     startCoopGame,
     submitCoopGuess,
@@ -169,6 +170,25 @@ export async function submitCoopGuessHandler(
         if (error instanceof LobbyNotFoundError) return err(error.message, 404);
         if (error instanceof GameNotStartedError)
             return err(error.message, 400);
+        throw error;
+    }
+}
+
+export async function leaveLobbyHandler(
+    request: NextRequest,
+    code: string,
+): Promise<NextResponse> {
+    const body = (await request.json()) as { playerToken?: unknown };
+
+    if (!body.playerToken || typeof body.playerToken !== "string") {
+        return err("Token joueur requis", 400);
+    }
+
+    try {
+        const result = await leaveLobby(code, body.playerToken);
+        return ok(result);
+    } catch (error) {
+        if (error instanceof LobbyNotFoundError) return err(error.message, 404);
         throw error;
     }
 }

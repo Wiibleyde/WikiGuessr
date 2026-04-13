@@ -49,6 +49,14 @@ export type CoopBroadcastEvent =
           payload: { playerId: number; displayName: string };
       }
     | {
+          type: "player_left";
+          payload: { playerId: number; displayName: string };
+      }
+    | {
+          type: "leader_changed";
+          payload: { newLeaderId: number; displayName: string };
+      }
+    | {
           type: "game_started";
           payload: { article: MaskedArticle };
       }

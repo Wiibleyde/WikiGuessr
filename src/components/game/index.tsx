@@ -93,6 +93,7 @@ export default function Game({
                 revealingHint={revealingHint}
                 won={won}
                 onRevealHint={revealHint}
+                guessCount={guesses.length}
             />
 
             {coop && players && (

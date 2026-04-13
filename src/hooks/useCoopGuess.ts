@@ -1,30 +1,16 @@
 "use client";
 
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback } from "react";
-import {
-    coopArticleAtom,
-    coopErrorAtom,
-    coopGuessesAtom,
-    coopGuessingAtom,
-    coopInputAtom,
-    coopPlayerTokenAtom,
-    coopRevealedAtom,
-    coopWonAtom,
-} from "@/atom/coop";
+import { useCallback, useState } from "react";
 import { normalizeWord } from "@/lib/game/normalize";
 import type { GuessResult } from "@/types/game";
 import { applyPositions } from "@/utils/helper";
+import { useCoopState } from "./useCoopState";
 
 export default function useCoopGuess(code: string | null) {
-    const [input, setInput] = useAtom(coopInputAtom);
-    const article = useAtomValue(coopArticleAtom);
-    const playerToken = useAtomValue(coopPlayerTokenAtom);
-    const guesses = useAtomValue(coopGuessesAtom);
-    const won = useAtomValue(coopWonAtom);
-    const [guessing, setGuessing] = useAtom(coopGuessingAtom);
-    const setRevealed = useSetAtom(coopRevealedAtom);
-    const setError = useSetAtom(coopErrorAtom);
+    const [input, setInput] = useState("");
+    const { article, playerToken, guesses, won, setRevealed } = useCoopState();
+    const [guessing, setGuessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const submitGuess = useCallback(
         async (e?: React.FormEvent) => {
@@ -88,12 +74,9 @@ export default function useCoopGuess(code: string | null) {
             won,
             guessing,
             guesses,
-            setGuessing,
             setRevealed,
-            setError,
-            setInput,
         ],
     );
 
-    return { input, setInput, submitGuess, guessing };
+    return { input, setInput, submitGuess, guessing, error };
 }

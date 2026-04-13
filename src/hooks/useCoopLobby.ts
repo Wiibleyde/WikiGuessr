@@ -1,34 +1,29 @@
 "use client";
 
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback } from "react";
-import {
-    coopArticleAtom,
-    coopErrorAtom,
-    coopGuessesAtom,
-    coopIsLeaderAtom,
-    coopLoadingAtom,
-    coopLobbyAtom,
-    coopPlayersAtom,
-    coopPlayerTokenAtom,
-    coopRevealedAtom,
-    coopWonAtom,
-} from "@/atom/coop";
+import { useCallback, useState } from "react";
 import type { CoopJoinResponse, CoopLobbyState } from "@/types/coop";
 import { computeRevealPercentage } from "@/utils/game";
 import { applyPositions } from "@/utils/helper";
+import { useCoopState } from "./useCoopState";
 
 export default function useCoopLobby() {
-    const [lobby, setLobby] = useAtom(coopLobbyAtom);
-    const [players, setPlayers] = useAtom(coopPlayersAtom);
-    const [article, setArticle] = useAtom(coopArticleAtom);
-    const setGuesses = useSetAtom(coopGuessesAtom);
-    const setRevealed = useSetAtom(coopRevealedAtom);
-    const setWon = useSetAtom(coopWonAtom);
-    const [playerToken, setPlayerToken] = useAtom(coopPlayerTokenAtom);
-    const [isLeader, setIsLeader] = useAtom(coopIsLeaderAtom);
-    const [loading, setLoading] = useAtom(coopLoadingAtom);
-    const [error, setError] = useAtom(coopErrorAtom);
+    const {
+        lobby,
+        setLobby,
+        players,
+        setPlayers,
+        article,
+        setArticle,
+        setGuesses,
+        revealed,
+        setRevealed,
+        setWon,
+        playerToken,
+        setPlayerToken,
+    } = useCoopState();
+    const [isLeader, setIsLeader] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const resetState = useCallback(() => {
         setLobby(null);
@@ -49,15 +44,9 @@ export default function useCoopLobby() {
         setRevealed,
         setWon,
         setPlayerToken,
-        setIsLeader,
-        setLoading,
-        setError,
     ]);
 
-    const percentage = computeRevealPercentage(
-        useAtomValue(coopRevealedAtom),
-        article,
-    );
+    const percentage = computeRevealPercentage(revealed, article);
 
     const createLobby = useCallback(
         async (displayName: string, userId?: string) => {
@@ -87,7 +76,7 @@ export default function useCoopLobby() {
                 setLoading(false);
             }
         },
-        [setLoading, setError, setPlayerToken, setIsLeader],
+        [setPlayerToken],
     );
 
     const joinLobby = useCallback(
@@ -119,7 +108,7 @@ export default function useCoopLobby() {
                 setLoading(false);
             }
         },
-        [setLoading, setError, setPlayerToken, setIsLeader],
+        [setPlayerToken],
     );
 
     const loadState = useCallback(
@@ -129,7 +118,12 @@ export default function useCoopLobby() {
             }
             try {
                 const res = await fetch(`/api/coop/${code}`);
-                if (!res.ok) return;
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        setError("Ce lobby n'existe plus");
+                    }
+                    return;
+                }
                 const data = (await res.json()) as CoopLobbyState;
                 setLobby(data.lobby);
                 setPlayers(data.players);
@@ -153,16 +147,7 @@ export default function useCoopLobby() {
                 }
             }
         },
-        [
-            setLoading,
-            setLobby,
-            setPlayers,
-            setGuesses,
-            setArticle,
-            setRevealed,
-            setWon,
-            setError,
-        ],
+        [setLobby, setPlayers, setGuesses, setArticle, setRevealed, setWon],
     );
 
     const startGame = useCallback(async () => {
@@ -203,7 +188,7 @@ export default function useCoopLobby() {
         } finally {
             setLoading(false);
         }
-    }, [lobby, playerToken, setLoading, setError, setLobby, setArticle]);
+    }, [lobby, playerToken, setLobby, setArticle]);
 
     return {
         lobby,

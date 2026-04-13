@@ -10,12 +10,15 @@ import {
     addGuess,
     addPlayer,
     createLobby,
+    deleteLobby,
     getAllGuessedWords,
     getFoundGuessWords,
     getLobbyByCode,
     getPlayerByToken,
     getPlayerCount,
+    removePlayer,
     setLobbyWikiPage,
+    transferLeadership,
     updateLobbyStatus,
 } from "@/lib/repositories/coopRepository";
 import { broadcastToLobby, removeCoopChannel } from "@/lib/supabase/broadcast";
@@ -84,6 +87,43 @@ export async function joinCoopLobby(
     });
 
     return { lobby, player, playerToken };
+}
+
+export async function leaveLobby(code: string, playerToken: string) {
+    const player = await getPlayerByToken(playerToken);
+    if (!player) throw new LobbyNotFoundError();
+
+    const lobby = await getLobbyByCode(code);
+    if (!lobby) throw new LobbyNotFoundError();
+
+    const wasLeader = player.isLeader;
+    const otherPlayers = lobby.players.filter((p) => p.id !== player.id);
+
+    await removePlayer(player.id);
+
+    if (otherPlayers.length === 0) {
+        // Last player left — delete the lobby entirely
+        await deleteLobby(code);
+        removeCoopChannel(code);
+        return { deleted: true };
+    }
+
+    await broadcastToLobby(code, "player_left", {
+        playerId: player.id,
+        displayName: player.displayName,
+    });
+
+    if (wasLeader) {
+        // Transfer leadership to the next oldest player
+        const newLeader = otherPlayers[0];
+        await transferLeadership(lobby.id, player.id, newLeader.id);
+        await broadcastToLobby(code, "leader_changed", {
+            newLeaderId: newLeader.id,
+            displayName: newLeader.displayName,
+        });
+    }
+
+    return { deleted: false };
 }
 
 export async function startCoopGame(code: string, playerToken: string) {

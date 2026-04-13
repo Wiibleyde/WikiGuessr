@@ -1,14 +1,7 @@
 "use client";
-import { useAtomValue } from "jotai";
-import {
-    coopArticleAtom,
-    coopGuessesAtom,
-    coopPlayersAtom,
-    coopRevealedAtom,
-    coopWonAtom,
-} from "@/atom/coop";
 import useCoopGuess from "@/hooks/useCoopGuess";
 import useCoopLobby from "@/hooks/useCoopLobby";
+import { useCoopState } from "@/hooks/useCoopState";
 import Game from ".";
 
 interface CoopGameProps {
@@ -17,13 +10,10 @@ interface CoopGameProps {
 }
 
 const CoopMode = ({ code, onLeave }: CoopGameProps) => {
-    const article = useAtomValue(coopArticleAtom);
-    const guesses = useAtomValue(coopGuessesAtom);
-    const revealed = useAtomValue(coopRevealedAtom);
-    const players = useAtomValue(coopPlayersAtom);
-    const won = useAtomValue(coopWonAtom);
+    const { article, guesses, revealed, players, won } = useCoopState();
     const { percentage } = useCoopLobby();
-    const { input, setInput, submitGuess, guessing } = useCoopGuess(code);
+    const { input, setInput, submitGuess, guessing, error } =
+        useCoopGuess(code);
 
     if (!article) return null;
 
@@ -32,7 +22,7 @@ const CoopMode = ({ code, onLeave }: CoopGameProps) => {
             article={article}
             guesses={guesses}
             revealed={revealed}
-            error={null}
+            error={error}
             loading={false}
             won={won}
             percentage={percentage}
