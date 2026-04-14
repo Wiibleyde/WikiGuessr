@@ -80,7 +80,7 @@ export default function MentionsLegalesPage() {
                     WikiGuessr est développé avec Next.js, React, TypeScript,
                     Tailwind CSS et Prisma. Le code source est disponible sur{" "}
                     <Link
-                        href="https://github.com/Wiibleyde/BetterWikiGuessr"
+                        href="https://github.com/Wiibleyde/WikiGuessr"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
