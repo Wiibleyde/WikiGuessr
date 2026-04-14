@@ -4,11 +4,12 @@ export async function register() {
         const { verifyDatabaseConnection } = await import("@/lib/db-check");
         await verifyDatabaseConnection();
 
-        const { ensureDailyWikiPage, startDailyCron } = await import(
+        const { ensureDailyWikiPage } = await import(
             "@/lib/game/daily-wiki"
         );
 
         const { dailyPurge } = await import("@/lib/batchs/purge");
+        const { startDailyCron } = await import("@/lib/batchs/dailyPage");
 
         try {
             await ensureDailyWikiPage();
