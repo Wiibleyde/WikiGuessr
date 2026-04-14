@@ -6,7 +6,7 @@ interface UserProps {
     pictureWidth?: number;
 }
 
-export default function User({ name, image, pictureWidth = 20 }: UserProps) {
+export default function User({ name, image, pictureWidth = 24 }: UserProps) {
     return (
         <div className="flex items-center gap-2 min-w-0">
             {image ? (
@@ -15,7 +15,7 @@ export default function User({ name, image, pictureWidth = 20 }: UserProps) {
                     alt={name}
                     width={pictureWidth}
                     height={pictureWidth}
-                    className="rounded-full shrink-0"
+                    className="rounded-full shrink-0 border-2 border-subtle"
                 />
             ) : (
                 <div
@@ -23,10 +23,12 @@ export default function User({ name, image, pictureWidth = 20 }: UserProps) {
                         width: pictureWidth,
                         height: pictureWidth,
                     }}
-                    className="w-5 h-5 rounded-full bg-gray-200 shrink-0"
-                />
+                    className="rounded-full bg-gradient-to-br from-primary to-success shrink-0 text-white text-xs font-bold flex items-center justify-center"
+                >
+                    {name.charAt(0).toUpperCase()}
+                </div>
             )}
-            <span className="text-sm font-medium text-gray-800 truncate">
+            <span className="text-sm font-medium text-text truncate">
                 {name}
             </span>
         </div>

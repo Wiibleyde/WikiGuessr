@@ -75,7 +75,7 @@ export default function CoopHome() {
                     <div>
                         <label
                             htmlFor="createDisplayName"
-                            className="block text-sm font-medium text-gray-700 mb-1"
+                            className="block text-sm font-medium text-text-secondary mb-1"
                         >
                             Votre pseudo
                         </label>
@@ -104,7 +104,7 @@ export default function CoopHome() {
                     <div>
                         <label
                             htmlFor="joinCode"
-                            className="block text-sm font-medium text-gray-700 mb-1"
+                            className="block text-sm font-medium text-text-secondary mb-1"
                         >
                             Code du lobby
                         </label>

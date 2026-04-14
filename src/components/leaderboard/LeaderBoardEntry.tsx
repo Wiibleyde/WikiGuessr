@@ -21,11 +21,11 @@ export default function LeaderBoardEntry({
         <div
             className={[
                 "flex items-center gap-3 px-4 py-3 transition-colors",
-                entry.rank <= 3 ? "bg-amber-50/40" : "hover:bg-gray-50",
+                entry.rank <= 3 ? "bg-warning-light/40" : "hover:bg-page",
             ].join(" ")}
         >
             {/* Rang */}
-            <span className="w-8 text-center text-sm font-bold text-gray-500 shrink-0">
+            <span className="w-8 text-center text-sm font-bold text-muted shrink-0">
                 {RANK_BADGES[entry.rank] ?? `#${entry.rank}`}
             </span>
 
@@ -34,13 +34,11 @@ export default function LeaderBoardEntry({
 
             {/* Valeur + détail */}
             <div className="ml-auto text-right shrink-0">
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold text-text">
                     {`${entry.value} ${meta.valueLabel}`}
                 </span>
                 {entry.detail && (
-                    <p className="text-xs text-gray-400 mt-0.5">
-                        {entry.detail}
-                    </p>
+                    <p className="text-xs text-muted mt-0.5">{entry.detail}</p>
                 )}
             </div>
         </div>

@@ -11,9 +11,9 @@ export default function GuessInfos({
     ...props
 }: GuessInfosProps) {
     const variants = {
-        close: "text-amber-500",
-        found: "text-emerald-600",
-        notFound: "text-red-400 line-through",
+        close: "text-warning",
+        found: "text-success",
+        notFound: "text-danger",
     };
 
     return (

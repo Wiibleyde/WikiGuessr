@@ -17,14 +17,14 @@ export default function LeaderboardTable({
 }: LeaderboardTableProps) {
     if (entries.length === 0) {
         return (
-            <p className="text-center text-gray-400 text-sm py-6">
+            <p className="text-center text-muted text-sm py-6">
                 Aucune donnée pour ce classement.
             </p>
         );
     }
 
     return (
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-subtle">
             {entries.map((entry) => (
                 <LeaderBoardEntry
                     key={entry.userId}

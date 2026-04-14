@@ -9,6 +9,7 @@ import { formatDateWithMonthName } from "@/utils/date";
 import { plural } from "@/utils/helper";
 import CoopPlayerList from "../coop/CoopPlayerList";
 import Button from "../ui/Button";
+import Confetti from "../ui/Confetti";
 import ErrorMessage from "../ui/Error";
 import Loader from "../ui/Loader";
 import NoDataMessage from "../ui/NoDataMessage";
@@ -68,7 +69,8 @@ export default function Game({
         );
 
     return (
-        <div className="min-h-screen bg-stone-50 text-gray-900">
+        <div className="min-h-screen bg-page text-text">
+            <Confetti active={won} />
             <GameHeader
                 date={article.date}
                 percentage={percentage}

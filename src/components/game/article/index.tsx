@@ -12,8 +12,8 @@ interface ArticleViewProps {
 export default function ArticleView({ article, revealed }: ArticleViewProps) {
     return (
         <main className="flex-1 min-w-0 space-y-4">
-            <div className="p-5 bg-white rounded-xl shadow-sm border border-gray-100">
-                <h2 className="text-2xl font-bold leading-[2.2]">
+            <div className="p-5 bg-surface rounded-xl shadow-sm border border-border">
+                <h2 className="text-2xl font-bold leading-[2.2] font-(family-name:--font-heading)">
                     <TokenList
                         tokens={article.sections[0].titleTokens}
                         section={0}

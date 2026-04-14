@@ -44,7 +44,7 @@ export default function LeaderboardContent() {
             isLoading={isLoading}
         >
             {categories.length === 0 ? (
-                <p className="text-center text-gray-400 text-sm">
+                <p className="text-center text-muted text-sm">
                     Aucun classement disponible pour le moment.
                 </p>
             ) : (
