@@ -11,17 +11,17 @@ export default function Button({
     ...props
 }: ButtonProps) {
     const variants = {
-        primary: "bg-blue-600 text-white hover:bg-indigo-700",
-        secondary: "bg-red-500 text-gray-200 hover:text-white",
-        navbar: "text-gray-500 hover:text-gray-800 hover:bg-gray-50",
-        navbarActive:
-            "bg-gray-100 text-gray-900 hover:text-gray-800 hover:bg-gray-50",
+        primary:
+            "bg-primary text-white hover:bg-primary-hover shadow-sm hover:shadow-md hover:scale-[1.02]",
+        secondary: "border border-danger text-danger hover:bg-danger-light",
+        navbar: "text-muted hover:text-text hover:bg-primary-light/50",
+        navbarActive: "bg-primary-light text-primary-text",
     };
 
     return (
         <button
             className={cn(
-                `px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed ${variants[variant]}`,
+                `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${variants[variant]}`,
                 className,
             )}
             {...props}

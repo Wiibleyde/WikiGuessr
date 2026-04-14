@@ -10,13 +10,13 @@ interface GuessListProps {
 export default function GuessList({ guesses }: GuessListProps) {
     return (
         <aside className="lg:w-72 w-full shrink-0">
-            <div className="sticky top-36 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100 text-sm font-semibold text-gray-600">
+            <div className="sticky top-36 bg-surface rounded-xl shadow-sm border border-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-page border-b border-border text-sm font-semibold text-text-secondary">
                     Essais ({guesses.length})
                 </div>
-                <div className="max-h-[60vh] overflow-y-auto divide-y divide-gray-50">
+                <div className="max-h-[60vh] overflow-y-auto divide-y divide-subtle">
                     {guesses.length === 0 ? (
-                        <p className="p-4 text-center text-gray-400 text-xs">
+                        <p className="p-4 text-center text-muted text-xs">
                             Aucun essai
                         </p>
                     ) : (

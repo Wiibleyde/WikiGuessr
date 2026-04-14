@@ -20,9 +20,9 @@ export default function Navbar() {
     const pathname = usePathname();
 
     return (
-        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
+        <header className="sticky top-0 z-50 bg-surface/95 backdrop-blur border-b border-border shadow-sm">
             <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-y-2">
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3">
                     <Image
                         src="/logo-wikiguessr.svg"
                         alt="WikiGuessr logo"
@@ -31,7 +31,7 @@ export default function Navbar() {
                     />
                     <Link
                         href="/"
-                        className="text-xl font-extrabold tracking-tight text-gray-800 hover:text-gray-600 transition-colors"
+                        className="text-xl font-extrabold tracking-tight text-text hover:text-primary transition-colors font-(family-name:--font-heading)"
                     >
                         WikiGuessr
                     </Link>
@@ -39,9 +39,12 @@ export default function Navbar() {
 
                 <NavbarButton open={open} setOpen={setOpen} />
                 <div
-                    className={`w-full border-t border-gray-200 pt-2 ${open ? "flex" : "hidden"} md:flex md:flex-row flex-col md:items-center md:gap-3 md:w-auto md:border-t-0 md:pt-0`}
+                    className={`w-full border-t border-border pt-2 ${open ? "flex" : "hidden"} md:flex md:flex-row flex-col md:items-center md:gap-3 md:w-auto md:border-t-0 md:pt-0`}
                 >
-                    <nav className="flex flex-col gap-1 md:flex-row md:items-center">
+                    <nav
+                        className="flex flex-col gap-1 md:flex-row md:items-center"
+                        aria-label="Navigation principale"
+                    >
                         {NAV_LINKS.map((link) => {
                             const inCoopGame =
                                 pathname.startsWith("/coop/") &&
@@ -65,7 +68,7 @@ export default function Navbar() {
                         })}
                     </nav>
 
-                    <div className="mt-3 border-t border-gray-100 px-0 pt-3 md:mt-0 md:border-t-0 md:pt-0 md:flex md:items-center sm:gap-3">
+                    <div className="mt-3 border-t border-subtle px-0 pt-3 md:mt-0 md:border-t-0 md:pt-0 md:flex md:items-center sm:gap-3">
                         <NavbarAuth
                             user={user}
                             loading={loading}

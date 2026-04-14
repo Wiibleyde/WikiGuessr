@@ -23,10 +23,10 @@ export default function Guess({ guess }: GuessProps) {
             className={[
                 "flex items-center justify-between px-4 py-1.5 text-sm",
                 guess.found
-                    ? "bg-emerald-50/60"
+                    ? "bg-success-light/60"
                     : isClose
-                      ? "bg-amber-50/60"
-                      : "bg-red-50/60",
+                      ? "bg-warning-light/60"
+                      : "bg-danger-light/60",
             ].join(" ")}
         >
             <GuessWord

@@ -4,29 +4,27 @@ export default function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="border-t border-gray-200 bg-white/95 backdrop-blur mt-auto">
+        <footer className="border-t border-border bg-surface/95 backdrop-blur mt-auto">
             <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-gray-700">
+                    <span className="text-sm font-bold text-text font-(family-name:--font-heading)">
                         WikiGuessr
                     </span>
-                    <span className="text-xs text-gray-400">
-                        © {currentYear}
-                    </span>
+                    <span className="text-xs text-muted">© {currentYear}</span>
                 </div>
 
-                <nav className="flex items-center gap-4">
+                <nav className="flex items-center gap-4" aria-label="Crédits">
                     <Link
                         target="_blank"
                         href="https://nathan.bonnell.fr"
-                        className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+                        className="text-sm text-muted hover:text-text transition-colors"
                     >
                         Nathan Bonnell
                     </Link>
                     <Link
                         target="_blank"
                         href="https://matheolang.fr"
-                        className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+                        className="text-sm text-muted hover:text-text transition-colors"
                     >
                         Mathéo Lang
                     </Link>
@@ -36,7 +34,7 @@ export default function Footer() {
                     href="https://github.com/Wiibleyde/BetterWikiGuessr"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1"
+                    className="text-xs text-muted hover:text-primary transition-colors flex items-center gap-1"
                 >
                     <svg
                         className="w-4 h-4"

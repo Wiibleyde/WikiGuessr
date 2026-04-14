@@ -78,7 +78,7 @@ export default function InputOtp({
                     type="text"
                     inputMode="numeric"
                     maxLength={1}
-                    className="w-12 h-12 text-center text-lg rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors duration-200"
+                    className="w-12 h-12 text-center text-lg rounded-md border border-border text-text focus:border-primary focus:ring-1 focus:ring-ring focus:outline-none transition-colors duration-200"
                 />
             ))}
         </div>

@@ -14,15 +14,15 @@ export default function GuessWord({
     player,
 }: GuessWordProps) {
     const wordClass = {
-        found: "text-emerald-800",
-        close: "text-amber-700",
-        notFound: "text-red-400 line-through",
+        found: "text-success-text",
+        close: "text-warning-text",
+        notFound: "text-danger",
     };
 
     return (
         <div className="flex items-center gap-1 text-sm font-medium">
             {player && (
-                <span className="text-gray-500">{player.displayName}:</span>
+                <span className="text-muted">{player.displayName}:</span>
             )}
             <span
                 className={

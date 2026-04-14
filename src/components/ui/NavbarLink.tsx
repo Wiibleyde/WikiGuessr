@@ -19,6 +19,7 @@ export default function NavbarLink({
             <Button
                 className="w-full text-left md:w-auto md:text-center"
                 variant={isActive ? "navbarActive" : "navbar"}
+                aria-current={isActive ? "page" : undefined}
             >
                 {label}
             </Button>

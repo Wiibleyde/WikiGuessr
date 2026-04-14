@@ -31,13 +31,13 @@ const Layout = ({
     if (isError) return <ErrorMessage message={error} />;
 
     return (
-        <div className="h-full bg-stone-50 text-gray-900 w-full">
-            <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
+        <div className="h-full bg-page text-text w-full">
+            <main className="max-w-3xl mx-auto px-4 py-8 space-y-4 animate-fade-in">
                 <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">
+                    <h2 className="text-2xl font-bold text-text font-(family-name:--font-heading)">
                         {title}
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+                    <p className="text-sm text-muted mt-1">{subtitle}</p>
                 </div>
                 {children}
             </main>

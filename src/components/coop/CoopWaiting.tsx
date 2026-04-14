@@ -45,24 +45,24 @@ export default function CoopWaiting({
             title="🤝 Lobby Co-op"
             subtitle="En attente du lancement de la partie"
         >
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="bg-surface rounded-xl shadow-sm border border-border p-6 mb-6">
                 <div className="text-center mb-4">
-                    <p className="text-sm text-gray-500 mb-2">Code du lobby</p>
+                    <p className="text-sm text-muted mb-2">Code du lobby</p>
                     <button
                         type="button"
                         onClick={copyCode}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-page rounded-lg border border-border hover:bg-subtle transition-colors cursor-pointer"
                     >
-                        <span className="text-3xl font-mono font-bold tracking-[0.3em] text-gray-800">
+                        <span className="text-3xl font-bold tracking-[0.3em] text-text font-(family-name:--font-heading)">
                             {code}
                         </span>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-muted">
                             {copied ? "Copié !" : "Copier"}
                         </span>
                     </button>
                 </div>
 
-                <p className="text-center text-sm text-gray-500">
+                <p className="text-center text-sm text-muted">
                     Partagez ce code avec vos amis pour qu'ils rejoignent.
                 </p>
 
@@ -70,7 +70,7 @@ export default function CoopWaiting({
                     <button
                         type="button"
                         onClick={copyLink}
-                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 rounded-lg border border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-text bg-primary-light rounded-lg border border-primary/20 hover:bg-primary-light/70 transition-colors cursor-pointer"
                     >
                         🔗{" "}
                         {copiedLink
@@ -80,11 +80,11 @@ export default function CoopWaiting({
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-                <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100 text-sm font-semibold text-gray-600">
+            <div className="bg-surface rounded-xl shadow-sm border border-border overflow-hidden mb-6">
+                <div className="px-4 py-2.5 bg-page border-b border-subtle text-sm font-semibold text-text-secondary">
                     {plural(players.length, "joueur", "joueurs")} (max 4)
                 </div>
-                <div className="divide-y divide-gray-50">
+                <div className="divide-y divide-subtle">
                     {players.map((player) => (
                         <Player
                             key={player.id}
@@ -104,7 +104,7 @@ export default function CoopWaiting({
                     {loading ? "Lancement…" : "Lancer la partie"}
                 </Button>
             ) : (
-                <div className="text-center text-sm text-gray-500 py-4">
+                <div className="text-center text-sm text-muted py-4">
                     En attente du leader pour lancer la partie…
                 </div>
             )}
