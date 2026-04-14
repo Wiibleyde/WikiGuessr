@@ -58,7 +58,7 @@ export default async function RootLayout({
 
     return (
         <html lang="fr" className={`${inter.variable} ${jakarta.variable}`}>
-            <body className="font-[family-name:var(--font-body)] antialiased m-0 p-0 min-h-screen h-screen flex flex-col bg-page text-text">
+            <body className="font-(family-name:--font-body) antialiased m-0 p-0 min-h-screen h-screen flex flex-col bg-page text-text">
                 <Script
                     id="runtime-config"
                     strategy="beforeInteractive"
