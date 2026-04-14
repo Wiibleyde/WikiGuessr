@@ -21,7 +21,7 @@ export default function TokenList({
                 if (token.type === "punct") {
                     if (token.text === "\n") return <br key={token.id} />;
                     return (
-                        <span key={token.id} className="text-gray-500">
+                        <span key={token.id} className="text-muted">
                             {token.text}
                         </span>
                     );

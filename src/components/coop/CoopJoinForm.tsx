@@ -42,7 +42,7 @@ export default function CoopJoinForm({
                 <div>
                     <label
                         htmlFor="joinDisplayName"
-                        className="block text-sm font-medium text-gray-700 mb-1"
+                        className="block text-sm font-medium text-text-secondary mb-1"
                     >
                         Votre pseudo
                     </label>

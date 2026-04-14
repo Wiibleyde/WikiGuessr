@@ -15,8 +15,8 @@ export default function YesterdayWord() {
     if (!title) return null;
 
     return (
-        <span className="text-sm text-gray-500">
-            Hier : <span className="font-medium text-gray-700">{title}</span>
+        <span className="text-sm text-muted">
+            Hier : <span className="font-medium text-text">{title}</span>
         </span>
     );
 }

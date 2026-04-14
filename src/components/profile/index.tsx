@@ -53,13 +53,13 @@ export default function ProfileContent() {
                     />
 
                     {stats.results.length > 0 ? (
-                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                            <div className="px-4 py-3 border-b border-gray-100">
-                                <h2 className="font-semibold text-gray-800">
+                        <div className="bg-surface rounded-xl border border-border overflow-hidden">
+                            <div className="px-4 py-3 border-b border-subtle">
+                                <h2 className="font-semibold text-text font-[family-name:var(--font-heading)]">
                                     Historique
                                 </h2>
                             </div>
-                            <div className="divide-y divide-gray-100">
+                            <div className="divide-y divide-subtle">
                                 {stats.results.map((result) => (
                                     <ProfileResult
                                         result={result}

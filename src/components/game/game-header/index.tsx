@@ -37,16 +37,18 @@ export default function GameHeader({
     };
 
     return (
-        <div className="bg-white border-b border-gray-200">
+        <div className="bg-surface border-b border-border">
             <div className="max-w-5xl mx-auto px-4 py-3 space-y-2">
-                <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 flex-wrap">
+                <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted flex-wrap">
                     {coop && <Badge color="green">Co-op</Badge>}
                     {datas.map((value) => {
                         const isFirst = datas[0] === value;
                         return (
                             <span key={value}>
                                 <span className="hidden sm:inline">
-                                    {!isFirst && "· "}{" "}
+                                    {!isFirst && (
+                                        <span className="text-muted">· </span>
+                                    )}{" "}
                                 </span>
                                 {value}
                             </span>
@@ -56,15 +58,18 @@ export default function GameHeader({
                         <YesterdayWord />
                     </span>
                 </div>
-                <div className="sm:hidden text-xs text-gray-500">
+                <div className="sm:hidden text-xs text-muted">
                     <YesterdayWord />
                 </div>
 
                 <ProgressBar percentage={percentage} />
 
                 {won ? (
-                    <div className="bg-emerald-50 border  border-emerald-300 rounded-lg p-3 text-center">
-                        <p className="text-emerald-800 font-bold text-lg">
+                    <div
+                        className="bg-success-light border border-success/30 rounded-xl p-3 text-center"
+                        aria-live="polite"
+                    >
+                        <p className="text-success-text font-bold text-lg font-[family-name:var(--font-heading)]">
                             Bravo !
                             {` Trouvé en ${plural(guessCount, "essai", "essais")}${hintsUsed > 0 ? ` avec ${plural(hintsUsed, "indice", "indices")}` : ""} !`}
                         </p>

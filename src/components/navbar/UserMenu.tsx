@@ -18,7 +18,7 @@ export default function UserMenu({ user, onNavigate }: UserMenuProps) {
             <Link
                 href="/profile"
                 onClick={onNavigate}
-                className="bg-gray-100 text-gray-900 px-3 py-1.5 rounded-md "
+                className="bg-primary-light text-primary-text px-3 py-1.5 rounded-lg transition-colors hover:bg-primary-light/70"
             >
                 <User name={user.name} image={user.image} />
             </Link>

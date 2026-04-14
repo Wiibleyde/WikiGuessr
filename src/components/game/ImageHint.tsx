@@ -34,20 +34,20 @@ export default function ImageHint({
 
     return (
         <div className="max-w-5xl mx-auto px-4 pt-4">
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-                <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">
+            <div className="bg-surface border border-border rounded-xl overflow-hidden">
+                <div className="px-4 py-3 flex items-center justify-between border-b border-subtle">
                     <div className="flex items-center gap-2">
                         <span className="text-base">🖼️</span>
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-sm font-medium text-text-secondary">
                             Indices images
                         </span>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-muted">
                             ({hintsUsed}/{imageCount})
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
                         {!hintUnlocked && !won && (
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-muted">
                                 Disponible après {MIN_GUESSES_FOR_HINT} essais (
                                 {guessCount}/{MIN_GUESSES_FOR_HINT})
                             </span>
@@ -57,7 +57,7 @@ export default function ImageHint({
                                 type="button"
                                 onClick={onRevealHint}
                                 disabled={revealingHint}
-                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-warning text-white hover:bg-warning-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 {revealingHint
                                     ? "…"
@@ -68,7 +68,7 @@ export default function ImageHint({
                             <button
                                 type="button"
                                 onClick={() => setExpanded((prev) => !prev)}
-                                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-xs text-muted hover:text-text transition-colors"
                             >
                                 {expanded ? "Masquer" : "Afficher"}
                             </button>
@@ -81,7 +81,7 @@ export default function ImageHint({
                         {displayUrls.map((url, i) => (
                             <div
                                 key={url}
-                                className="relative rounded-lg overflow-hidden shadow-sm border border-gray-100 max-h-48"
+                                className="relative rounded-lg overflow-hidden shadow-sm border border-subtle max-h-48"
                             >
                                 <Image
                                     src={url}
@@ -99,7 +99,7 @@ export default function ImageHint({
 
                 {hintsUsed === 0 && (
                     <div className="px-4 py-3 text-center">
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-muted">
                             {hintUnlocked ? (
                                 <>
                                     Révélez des images de l&apos;article pour

@@ -6,10 +6,10 @@ export default function ProfileResult({ result }: { result: GameResultData }) {
     return (
         <div className="px-4 py-3 flex items-center justify-between">
             <div>
-                <p className="text-sm font-medium text-gray-800">
+                <p className="text-sm font-medium text-text">
                     {result.articleTitle}
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted">
                     {formatDateWithMonthName(result.date)}
                 </p>
             </div>
@@ -17,12 +17,12 @@ export default function ProfileResult({ result }: { result: GameResultData }) {
                 <Badge color={result.won ? "green" : "red"}>
                     {result.won ? "Deviné" : "Echoué"}
                 </Badge>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-text-secondary">
                     {result.guessCount} essai
                     {result.guessCount !== 1 && "s"}
                 </span>
                 {result.hintsUsed > 0 && (
-                    <span className="text-xs text-amber-500">
+                    <span className="text-xs text-warning">
                         +{result.hintsUsed} indice
                         {result.hintsUsed !== 1 && "s"}
                     </span>

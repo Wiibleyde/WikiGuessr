@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
 import { connection } from "next/server";
 import "./globals.css";
@@ -7,6 +8,18 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/ui/Footer";
 import env from "@/env";
 import LoginProvider from "@/provider/LoginProvider";
+
+const inter = Inter({
+    subsets: ["latin"],
+    variable: "--font-body",
+    display: "swap",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+    subsets: ["latin"],
+    variable: "--font-heading",
+    display: "swap",
+});
 
 export const metadata: Metadata = {
     title: "Wiki Guessr",
@@ -44,8 +57,8 @@ export default async function RootLayout({
     }).replace(/</g, "\\u003c");
 
     return (
-        <html lang="fr">
-            <body className="antialiased m-0 p-0 min-h-screen h-screen flex flex-col">
+        <html lang="fr" className={`${inter.variable} ${jakarta.variable}`}>
+            <body className="font-[family-name:var(--font-body)] antialiased m-0 p-0 min-h-screen h-screen flex flex-col bg-page text-text">
                 <Script
                     id="runtime-config"
                     strategy="beforeInteractive"
@@ -55,8 +68,13 @@ export default async function RootLayout({
                     }}
                 />
                 <LoginProvider>
+                    <a href="#main-content" className="skip-nav">
+                        Aller au contenu principal
+                    </a>
                     <Navbar />
-                    <main className="flex-1">{children}</main>
+                    <main id="main-content" className="flex-1">
+                        {children}
+                    </main>
                     <Footer />
                 </LoginProvider>
             </body>

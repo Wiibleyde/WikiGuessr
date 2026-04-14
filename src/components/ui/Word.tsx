@@ -5,8 +5,8 @@ import { cn } from "@/utils/cn";
 import { plural } from "@/utils/helper";
 
 const VARIANTS = {
-    articleTitle: "bg-amber-200 text-amber-900 font-bold",
-    default: "bg-emerald-100 text-emerald-900",
+    articleTitle: "bg-warning-light text-warning-text font-bold",
+    default: "bg-success-light text-success-text",
 } as const;
 
 type WordVariant = keyof typeof VARIANTS;
@@ -44,9 +44,14 @@ export default function Word({ length, text, variant = "default" }: WordProps) {
 
     return (
         <span
-            className="inline-block bg-gray-300 rounded-sm mx-px align-middle cursor-default"
-            style={{ width: `${length}ch`, height: "1.15em" }}
+            className="inline-block bg-subtle rounded mx-px align-middle cursor-default"
+            style={{
+                width: `${length}ch`,
+                height: "1.15em",
+                backgroundSize: "200% 100%",
+            }}
             title={plural(length, "caractère", "caractères")}
+            aria-hidden="true"
         />
     );
 }
