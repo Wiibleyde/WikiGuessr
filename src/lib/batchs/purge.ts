@@ -5,7 +5,7 @@ import { deleteOldLobbies } from "../repositories/coopRepository";
 
 export function dailyPurge(): () => void {
     const task = cron.schedule(
-        "34 13 * * *",
+        "0 0 * * *",
         async () => {
             try {
                 console.log("[purge] Running daily purge...");
@@ -15,7 +15,7 @@ export function dailyPurge(): () => void {
                 await deleteOldCoopGuess(cutoffDate);
                 await deleteOldLobbies(cutoffDate);
                 await deleteOldPlayers(cutoffDate);
-                
+
                 console.log("[purge] Daily purge completed successfully.");
             } catch (error) {
                 console.error("[purge] Erreur purge quotidienne :", error);
