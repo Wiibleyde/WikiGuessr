@@ -8,12 +8,15 @@ export async function register() {
             "@/lib/game/daily-wiki"
         );
 
+        const { dailyPurge } = await import("@/lib/batchs/purge");
+
         try {
             await ensureDailyWikiPage();
         } catch (error) {
             console.error("[instrumentation]", error);
         }
 
+        dailyPurge();
         startDailyCron();
 
         // Cleanup stale coop caches every 30 minutes
