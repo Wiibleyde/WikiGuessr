@@ -44,10 +44,6 @@ export const metadata: Metadata = {
     category: "game",
     classification: "general",
     creator: "Nathan Bonnell et Mathéo Lang",
-    robots: {
-        index: true,
-        follow: true,
-    },
 };
 
 export default async function RootLayout({

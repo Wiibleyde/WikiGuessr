@@ -11,7 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     return pages.map((page) => {
         return {
-            url: page.url,
+            url: `${BASE_URL}${page.url}`,
             lastModified: page.lastModified.toISOString(),
             priority: getPriority(page.url),
         };
