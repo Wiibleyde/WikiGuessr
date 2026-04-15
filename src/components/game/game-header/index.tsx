@@ -28,7 +28,7 @@ export default function GameHeader({
     input,
     setInput,
     guessCount,
-    coop = false,
+    coop,
     datas,
     guessing,
 }: GameHeaderProps) {
@@ -54,13 +54,15 @@ export default function GameHeader({
                             </span>
                         );
                     })}
-                    <span className="hidden sm:inline">
+                    {!coop && <span className="hidden sm:inline">
                         <YesterdayWord />
-                    </span>
+                    </span>}
                 </div>
-                <div className="sm:hidden text-xs text-muted">
-                    <YesterdayWord />
-                </div>
+                {!coop && (
+                    <div className="sm:hidden text-xs text-muted">
+                        <YesterdayWord />
+                    </div>
+                )}
 
                 <ProgressBar percentage={percentage} />
 
