@@ -23,7 +23,11 @@ import type {
     WordPosition,
 } from "@/types/game";
 import { buildHintImageUrl } from "@/utils/hintImage";
-import { GameVerificationError, HintLockedError, HintNotFoundError } from "../errors/gameError";
+import {
+    GameVerificationError,
+    HintLockedError,
+    HintNotFoundError,
+} from "../errors/gameError";
 
 export async function getArticle(): Promise<MaskedArticle> {
     return getMaskedArticle();
