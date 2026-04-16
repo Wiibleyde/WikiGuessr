@@ -1,17 +1,28 @@
 # WikiGuessr
 
-Un jeu de devinettes quotidien basé sur Wikipédia. Chaque jour, une page Wikipédia est sélectionnée, son contenu est découpé en tokens, puis ses mots sont masqués. Le but est de retrouver progressivement l'article jusqu'à révéler le titre.
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/c0fa28c225044b569bfc25e63924e287)](https://app.codacy.com/gh/Wiibleyde/WikiGuessr/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+![Next.js](https://img.shields.io/badge/Next.js-16-111111?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)
+![TanStack Query](https://img.shields.io/badge/TanStack_Query-5-FF4154?logo=reactquery&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Realtime-3FCF8E?logo=supabase&logoColor=white)
+![Bun](https://img.shields.io/badge/Bun-Runtime_%26_Tests-F9F1E1?logo=bun&logoColor=black)
+![License](https://img.shields.io/badge/Licence-GPL--3.0-4B5563)
 
-## Fonctionnalités
+Un jeu de devinettes quotidien basé sur Wikipédia. Chaque jour, une page Wikipédia est sélectionnée, son contenu est découpé en tokens, puis ses mots sont masqués. Le but est de retrouver progressivement l'article jusqu'à révéler son titre.
 
-- Jeu quotidien avec un nouvel article chaque jour
-- Masquage des mots avec ponctuation toujours visible
-- Correspondance floue pour accepter les mots proches
+## Aperçu
+
+- Un nouvel article Wikipédia chaque jour
+- Masquage intelligent des mots avec ponctuation visible
+- Correspondance floue pour accepter les propositions proches
 - Indices image progressifs après plusieurs essais
-- Authentification Discord via Better Auth pour sauvegarder la progression
-- Sauvegarde de l'état de partie pour les utilisateurs connectés
-- Classements et statistiques de profil
-- Historique des articles précédents
+- Authentification Discord via Better Auth
+- Sauvegarde de progression pour les utilisateurs connectés
+- Classements, statistiques de profil et historique
+- Mode coopératif en temps réel
 
 ## Stack technique
 
@@ -21,21 +32,26 @@ Un jeu de devinettes quotidien basé sur Wikipédia. Chaque jour, une page Wikip
 | UI | React 19 |
 | Langage | TypeScript 5 |
 | Style | Tailwind CSS 4 |
-| Etat client | Jotai + hooks React |
+| Etat client | React Context + hooks |
+| Data fetching | TanStack Query 5 |
+| HTTP | Axios |
 | Authentification | Better Auth + Discord OAuth |
 | Base de données | PostgreSQL via Prisma 7 |
-| Data Fetching | SWR |
+| Temps réel | Supabase Realtime |
+| Validation | Zod |
 | Linter / Formatter | Biome 2.2 |
 | Tests | Bun test |
 | Package manager | Bun |
 
-## Prérequis
+## Démarrage rapide
+
+### Prérequis
 
 - Bun >= 1.0
 - Docker et Docker Compose pour PostgreSQL local
 - Une application Discord si vous activez l'authentification
 
-## Installation
+### Installation
 
 ```bash
 git clone https://github.com/Wiibleyde/BetterWikiGuessr.git
@@ -45,26 +61,17 @@ bun install
 
 Le script post-install génère automatiquement le client Prisma.
 
-## Configuration
+### Configuration
 
-Créer un fichier `.env` à la racine du projet :
+Copier le fichier d'exemple et renseigner les valeurs :
 
-```env
-DATABASE_URL=postgresql://wikiguessr:wikiguessr@localhost:5432/wikiguessr
-
-# Better Auth
-BETTER_AUTH_SECRET=replace-with-a-secret-of-at-least-32-characters
-BETTER_AUTH_URL=http://localhost:3000
-
-# Discord OAuth
-DISCORD_CLIENT_ID=your_discord_client_id
-DISCORD_CLIENT_SECRET=your_discord_client_secret
-
-# Optionnel
-GAME_TIMEZONE=Europe/Paris
+```bash
+cp .env.example .env
 ```
 
-## Lancer le projet en local
+Le `.env.example` contient toutes les variables nécessaires (Supabase self-hosted, PostgreSQL, Better Auth, Discord OAuth, etc.). Les variables propres à l'application Next.js se trouvent dans la section **WikiGuessr App** du fichier.
+
+### Lancer en local
 
 ```bash
 # Démarrer PostgreSQL
@@ -77,7 +84,7 @@ bun run db:migrate
 bun run dev
 ```
 
-L'application est disponible sur http://localhost:3000.
+L'application est disponible sur `http://localhost:3000`.
 
 ## Développement avec Docker
 
@@ -87,9 +94,9 @@ Le dépôt contient un `docker-compose.yml` qui démarre PostgreSQL et l'applica
 docker compose up --build
 ```
 
-L'image applicative exécute la génération Prisma, le build Next.js standalone, puis démarre l'application via `docker-entrypoint.sh`.
+L'image applicative génère Prisma, build l'application en mode standalone, puis démarre le serveur via `docker-entrypoint.sh`.
 
-## Commandes disponibles
+## Commandes utiles
 
 ```bash
 bun run dev            # Serveur de développement
@@ -109,24 +116,23 @@ bun run db:migrate     # Créer/appliquer une migration Prisma
 
 ## Architecture
 
-### Interface
+### Frontend
 
-- `src/app/` contient les pages App Router, les routes API, `layout.tsx`, `robots.ts` et `sitemap.ts`
-- `src/components/` contient les composants UI, avec des sous-dossiers pour l'article, l'historique, la navbar, le leaderboard, le profil et les composants génériques
-- `src/providers/` et `src/contexts/` gèrent les providers React globaux
+- `src/app/` contient les pages App Router, métadonnées et routes API
+- `src/components/` contient les composants UI et sous-modules d'interface
+- `src/provider/` et `src/context/` gèrent les providers et contextes globaux
 
 ### Etat client
 
-- `src/atom/game.ts` centralise l'état principal du jeu avec Jotai
-- `src/hooks/useArticle.ts`, `useGame.ts`, `useGuess.ts`, `useDb.ts` et `useWikiGuessr.ts` orchestrent le chargement d'article, les soumissions, les indices et la synchronisation serveur
+- `src/hooks/` orchestre le chargement d'article, les soumissions, la synchro et le mode coop
+- `src/context/` centralise les états globaux côté client
 
 ### Backend
 
-- `src/controllers/` valide les requêtes HTTP et formate les réponses
-- `src/services/` contient la logique applicative par domaine
-- `src/lib/game/` contient la logique métier du jeu, la récupération Wikipédia et la rotation quotidienne
+- `src/lib/controllers/` valide les requêtes et formate les réponses
+- `src/lib/services/` porte la logique applicative
+- `src/lib/game/` contient la logique métier liée au jeu et aux articles Wikipédia
 - `src/lib/repositories/` encapsule les accès Prisma
-- `src/utils/handler.ts` fournit les wrappers d'erreur, d'authentification et de rate limit
 
 ## API principale
 
@@ -148,34 +154,24 @@ bun run db:migrate     # Créer/appliquer une migration Prisma
 
 ## Base de données
 
-Le schéma Prisma couvre :
+Le schéma Prisma couvre les modèles Better Auth et les modèles applicatifs suivants :
 
-- les modèles Better Auth (`User`, `Session`, `Account`, `Verification`)
-- les modèles applicatifs (`DailyWikiPage`, `GameResult`, `GameState`)
+- `User`, `Session`, `Account`, `Verification`
+- `DailyWikiPage`, `GameResult`, `GameState`
 
 Le client Prisma généré est placé dans `generated/prisma/` et ne doit pas être modifié manuellement.
-
-## Tests
-
-Les tests actuels vivent dans `src/test/`.
-
-- `src/test/normalize.test.ts`
-- `src/test/game.test.ts`
 
 ## Structure du projet
 
 ```text
 src/
 ├── app/                  # Pages, layouts, métadonnées et routes API
-├── atom/                 # Atomes Jotai du jeu
 ├── components/           # Composants UI et sous-modules d'interface
 ├── constants/            # Constantes métier
-├── contexts/             # Contextes React
-├── controllers/          # Entrées HTTP
+├── context/              # Contextes React
 ├── hooks/                # Hooks client
-├── lib/                  # Logique métier, auth, Prisma, repositories
-├── providers/            # Providers globaux
-├── services/             # Cas d'usage applicatifs
+├── lib/                  # Logique métier, auth, repositories, services
+├── provider/             # Providers globaux
 ├── test/                 # Tests Bun
 ├── types/                # Types partagés
 └── utils/                # Utilitaires transverses
@@ -184,6 +180,16 @@ prisma/
 └── migrations/           # Migrations SQL
 generated/
 └── prisma/               # Client Prisma généré
+```
+
+## Qualité
+
+Pour vérifier un changement avant ouverture de PR :
+
+```bash
+bun run lint
+bun run test
+bun run build
 ```
 
 ## Contribution
