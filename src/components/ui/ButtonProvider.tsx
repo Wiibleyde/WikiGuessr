@@ -19,7 +19,7 @@ export default function ButtonProvider({
     const { login } = useAuth();
 
     const handleClick = () => {
-        login(name);
+        login(name as "discord");
         onClose();
     };
 
