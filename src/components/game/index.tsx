@@ -81,6 +81,7 @@ export default function Game({
                 input={input}
                 setInput={setInput}
                 guessCount={guesses.length}
+                coop={coop}
                 datas={[
                     formatDateWithMonthName(article.date),
                     plural(guesses.length, "essai", "essais"),

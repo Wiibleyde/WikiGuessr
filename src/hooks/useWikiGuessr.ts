@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { computeRevealPercentage } from "@/utils/game";
 import useArticle from "./useArticle";
 import useDb from "./useDb";
@@ -31,12 +30,8 @@ export function useWikiGuessr() {
 
     const { revealHint, revealingHint } = useGame();
     const { submitGuess, guessing } = useGuess();
-    const { reloadArticle } = useArticle();
+    useArticle();
     useDb();
-
-    useEffect(() => {
-        reloadArticle();
-    }, [reloadArticle]);
 
     return {
         article,

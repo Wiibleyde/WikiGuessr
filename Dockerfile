@@ -1,7 +1,7 @@
 # ============================================
 # Stage 1: Dependencies Installation Stage
 # ============================================
-FROM oven/bun:1 AS dependencies
+FROM oven/bun:1.3.11 AS dependencies
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 # ============================================
 # Stage 2: Build Next.js application in standalone mode
 # ============================================
-FROM oven/bun:1 AS builder
+FROM oven/bun:1.3.11 AS builder
 
 WORKDIR /app
 
@@ -27,15 +27,11 @@ ENV NODE_ENV=production
 ARG DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder
 ARG DISCORD_CLIENT_ID=placeholder
 ARG DISCORD_CLIENT_SECRET=placeholder
-ARG BETTER_AUTH_SECRET=placeholder-secret-placeholder-secret-00
-ARG BETTER_AUTH_URL=https://wikiguessr.bonnell.fr
-ARG NEXT_PUBLIC_SUPABASE_URL=https://supabase.bonnell.fr
-ARG NEXT_PUBLIC_SUPABASE_ANON_KEY=
+ARG NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder
 ENV DATABASE_URL=$DATABASE_URL
 ENV DISCORD_CLIENT_ID=$DISCORD_CLIENT_ID
 ENV DISCORD_CLIENT_SECRET=$DISCORD_CLIENT_SECRET
-ENV BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
-ENV BETTER_AUTH_URL=$BETTER_AUTH_URL
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -47,7 +43,7 @@ RUN bun run build
 # ============================================
 # Stage 3: Minimal Prisma dependencies for migrations
 # ============================================
-FROM oven/bun:1-slim AS prisma-deps
+FROM oven/bun:1.3.11-slim AS prisma-deps
 
 WORKDIR /prisma-deps
 
@@ -57,7 +53,7 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 # ============================================
 # Stage 4: Run Next.js application
 # ============================================
-FROM oven/bun:1-slim AS runner
+FROM oven/bun:1.3.11-slim AS runner
 
 WORKDIR /app
 

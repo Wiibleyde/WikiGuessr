@@ -1,13 +1,15 @@
 import type { NextRequest, NextResponse } from "next/server";
 import {
-    completeGame,
     GameVerificationError,
+    HintLockedError,
+    HintNotFoundError,
+} from "@/lib/errors/gameError";
+import {
+    completeGame,
     getArticle,
     getGameState,
     getHint,
     getYesterday,
-    HintLockedError,
-    HintNotFoundError,
     revealAll,
     saveGameState,
     submitGuess,

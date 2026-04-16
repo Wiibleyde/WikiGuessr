@@ -157,3 +157,9 @@ export async function transferLeadership(
 export async function deleteLobby(code: string) {
     return prisma.coopLobby.delete({ where: { code } });
 }
+
+export async function deleteOldLobbies(date: Date) {
+    return prisma.coopLobby.deleteMany({
+        where: { createdAt: { lt: date } },
+    });
+}

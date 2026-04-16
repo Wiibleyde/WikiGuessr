@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         { url: "/", lastModified: new Date() },
         { url: "/coop", lastModified: new Date() },
         { url: "/leaderboard", lastModified: new Date() },
+        { url: "/mentions-legales", lastModified: new Date() },
     ];
 
     return pages.map((page) => {

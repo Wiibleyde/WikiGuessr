@@ -1,15 +1,17 @@
 import type { NextRequest, NextResponse } from "next/server";
 import {
-    createCoopLobby,
     GameAlreadyStartedError,
     GameNotStartedError,
-    getCoopLobbyState,
-    joinCoopLobby,
     LobbyFinishedError,
     LobbyFullError,
     LobbyNotFoundError,
-    leaveLobby,
     NotLeaderError,
+} from "@/lib/errors/coopError";
+import {
+    createCoopLobby,
+    getCoopLobbyState,
+    joinCoopLobby,
+    leaveLobby,
     startCoopGame,
     submitCoopGuess,
 } from "@/lib/services/coopService";
