@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { NextRequest } from "next/server";
+import "@/test/mocks/articleRepoModule";
 import "@/test/mocks/gameModule";
 
 const getCachedYesterdayTitleMock = mock();
 
 mock.module("@/lib/game/yesterday", () => ({
     getCachedYesterdayTitle: getCachedYesterdayTitleMock,
+    warmYesterdayTitleCache: mock(),
 }));
 
 const { GET } = await import("./route");

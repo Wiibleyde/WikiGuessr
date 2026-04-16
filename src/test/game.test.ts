@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "bun:test";
+import "@/test/mocks/articleRepoModule";
 import { ensureDailyWikiPageMock } from "@/test/mocks/dailyWikiModule";
 
 const { checkGuess, verifyWin } = await import("@/lib/game/game");

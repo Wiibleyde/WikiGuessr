@@ -1,14 +1,10 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { NextRequest } from "next/server";
+import "@/test/mocks/articleRepoModule";
 import { getSessionMock } from "@/test/mocks/authModule";
 import { ensureDailyWikiPageMock } from "@/test/mocks/dailyWikiModule";
 import { verifyWinMock } from "@/test/mocks/gameModule";
-
-const createOrUpdateGameResultMock = mock();
-
-mock.module("@/lib/repositories/gameResultRepository", () => ({
-    createOrUpdateGameResult: createOrUpdateGameResultMock,
-}));
+import { createOrUpdateGameResultMock } from "@/test/mocks/gameResultRepoModule";
 
 await import("@/lib/errors/gameError");
 const { POST } = await import("./route");

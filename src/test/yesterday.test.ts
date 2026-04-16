@@ -1,10 +1,5 @@
-import { describe, expect, it, mock } from "bun:test";
-
-const getYesterdaysArticleMock = mock();
-
-mock.module("@/lib/repositories/articleRepository", () => ({
-    getYesterdaysArticle: getYesterdaysArticleMock,
-}));
+import { describe, expect, it } from "bun:test";
+import { getYesterdaysArticleMock } from "@/test/mocks/articleRepoModule";
 
 const { getCachedYesterdayTitle } = await import("@/lib/game/yesterday");
 

@@ -1,5 +1,6 @@
 import { describe, expect, it, mock } from "bun:test";
 import { NextRequest } from "next/server";
+import "@/test/mocks/articleRepoModule";
 import { checkGuessMock } from "@/test/mocks/gameModule";
 
 const checkRateLimitMock = mock();
