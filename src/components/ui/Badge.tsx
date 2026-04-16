@@ -1,7 +1,14 @@
 import { cn } from "@/utils/cn";
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-    color?: "danger" | "success" | "warning" | "red" | "green" | "amber" | "primary";
+    color?:
+        | "danger"
+        | "success"
+        | "warning"
+        | "red"
+        | "green"
+        | "amber"
+        | "primary";
 }
 
 export default function Badge({

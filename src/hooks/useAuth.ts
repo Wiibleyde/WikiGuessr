@@ -4,16 +4,18 @@ import { useCallback } from "react";
 import { authClient } from "@/lib/auth/client";
 import type { AuthUser } from "@/types/auth";
 
-type SocialProvider = Parameters<
-    typeof authClient.signIn.social
->[0]["provider"];
-
-export function useAuth(): {
+interface UseAuthResult {
     user: AuthUser | null;
     loading: boolean;
     login: (provider?: SocialProvider) => void;
     logout: () => Promise<void>;
-} {
+}
+
+type SocialProvider = Parameters<
+    typeof authClient.signIn.social
+>[0]["provider"];
+
+export function useAuth(): UseAuthResult {
     const { data: session, isPending } = authClient.useSession();
 
     const user = (session?.user as AuthUser | undefined) ?? null;
