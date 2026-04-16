@@ -11,7 +11,7 @@ import ProfileStatsRender from "./ProfileStatsRender";
 export default function ProfileContent() {
     const { user, loading: authLoading } = useAuth();
     const { data: stats, isLoading: statsLoading } = useFetchProfileStats(
-        user?.id ?? null,
+        user?.id ?? "",
         !authLoading,
     );
 

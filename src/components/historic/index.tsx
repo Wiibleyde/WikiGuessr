@@ -15,7 +15,7 @@ export default function HistoricContent() {
             error={"Impossible de charger le historique."}
             isLoading={isLoading}
             loadingMessage={"Chargement du historique…"}
-            noData={pages && pages.length === 0 && !isLoading}
+            noData={pages?.length === 0 && !isLoading}
             noDataMessage={"Aucune page disponible."}
         >
             {pages?.map((page) => (
