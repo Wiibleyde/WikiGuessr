@@ -1,6 +1,8 @@
-import { WIKI_API } from "@/constants/wiki";
+import axios from "axios";
 import type { ProfileStats } from "@/types/auth";
 import type {
+    GameCache,
+    GameStateResponse,
     GuessResult,
     HintResponse,
     MaskedArticle,
@@ -8,43 +10,7 @@ import type {
 } from "@/types/game";
 import type { PageEntry } from "@/types/historic";
 import type { LeaderboardCategoryData } from "@/types/leaderboard";
-import type {
-    ArticleApiResponse,
-    ImageApiResponse,
-    PageData,
-    RandomPageResponse,
-} from "@/types/wiki";
-import { fetcher, fetchWikiPagePart } from "@/utils/fetcher";
-
-export async function fetchRandomTitle(): Promise<string | undefined> {
-    const data = await fetchWikiPagePart<RandomPageResponse>(
-        `${WIKI_API}?action=query&format=json&list=random&rnnamespace=0&rnlimit=1`,
-    );
-    return data.query?.random?.[0]?.title;
-}
-
-export async function fetchPageData(
-    title: string,
-): Promise<PageData | undefined> {
-    const data = await fetchWikiPagePart<ArticleApiResponse>(
-        `${WIKI_API}?action=query&format=json&titles=${encodeURIComponent(title)}&prop=extracts|images|info&inprop=url&explaintext=true&imlimit=500`,
-    );
-    const pages = data.query?.pages;
-    if (!pages) return undefined;
-    return Object.values(pages)[0];
-}
-
-export async function fetchImageUrls(imageTitles: string[]): Promise<string[]> {
-    if (imageTitles.length === 0) return [];
-
-    const data = await fetchWikiPagePart<ImageApiResponse>(
-        `${WIKI_API}?action=query&format=json&titles=${encodeURIComponent(imageTitles.join("|"))}&prop=imageinfo&iiprop=url`,
-    );
-
-    return Object.values(data.query?.pages ?? {})
-        .map((p) => p.imageinfo?.[0]?.url)
-        .filter((url): url is string => !!url);
-}
+import { fetcher } from "@/utils/fetcher";
 
 export const fetchImageHint = async (
     hintIndex: number,
@@ -154,3 +120,30 @@ export const fetchProfileStats = async (
         return null;
     }
 };
+
+/** Push current game state to server (fire-and-forget). */
+export async function pushStateToServer(cache: GameCache): Promise<boolean> {
+    try {
+        const response = await axios.put("/api/game/state", cache, {
+            validateStatus: () => true,
+        });
+        return response.status >= 200 && response.status < 300;
+    } catch {
+        console.error("[sync] failed to push state to server");
+        return false;
+    }
+}
+
+/** Fetch saved game state from server. */
+export async function fetchStateFromServer(): Promise<GameCache | null> {
+    try {
+        const response = await axios.get<GameStateResponse>("/api/game/state", {
+            validateStatus: () => true,
+        });
+        if (response.status < 200 || response.status >= 300) return null;
+        return response.data.state;
+    } catch {
+        console.error("[sync] failed to fetch state from server");
+        return null;
+    }
+}

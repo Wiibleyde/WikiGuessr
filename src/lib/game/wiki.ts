@@ -1,9 +1,11 @@
-import { fetchImageUrls, fetchPageData, fetchRandomTitle } from "@/lib/query/queries";
 import type { PageData, WikiPage } from "@/types/wiki";
-import { filterGenericImages, parseWikiSections } from "@/utils/wiki";
+import { fetchImageUrls, fetchPageData, fetchRandomTitle } from "../query/wiki";
+import { filterGenericImages, parseWikiSections } from "./wiki-parser";
 
 function toWikiUrl(title: string, fullurl?: string): string {
-    return fullurl ?? `https://fr.wikipedia.org/wiki/${encodeURIComponent(title)}`;
+    return (
+        fullurl ?? `https://fr.wikipedia.org/wiki/${encodeURIComponent(title)}`
+    );
 }
 
 function createWikiPage(
