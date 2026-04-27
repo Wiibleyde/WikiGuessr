@@ -8,6 +8,7 @@
 ![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)
 ![TanStack Query](https://img.shields.io/badge/TanStack_Query-5-FF4154?logo=reactquery&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Realtime-3FCF8E?logo=supabase&logoColor=white)
+![BetterAuth](https://img.shields.io/badge/BetterAuth-Authentication-000000?logo=shield&logoColor=white)
 ![Bun](https://img.shields.io/badge/Bun-Runtime_%26_Tests-F9F1E1?logo=bun&logoColor=black)
 ![License](https://img.shields.io/badge/Licence-GPL--3.0-4B5563)
 
@@ -35,7 +36,7 @@ Un jeu de devinettes quotidien basé sur Wikipédia. Chaque jour, une page Wikip
 | Etat client | React Context + hooks |
 | Data fetching | TanStack Query 5 |
 | HTTP | Axios |
-| Authentification | Supabase Auth + Discord OAuth |
+| Authentification | BetterAuth + Discord OAuth |
 | Base de données | PostgreSQL via Prisma 7 |
 | Temps réel | Supabase Realtime |
 | Validation | Zod |
@@ -54,8 +55,8 @@ Un jeu de devinettes quotidien basé sur Wikipédia. Chaque jour, une page Wikip
 ### Installation
 
 ```bash
-git clone https://github.com/Wiibleyde/BetterWikiGuessr.git
-cd BetterWikiGuessr
+git clone https://github.com/Wiibleyde/WikiGuessr.git
+cd WikiGuessr
 bun install
 ```
 
@@ -119,72 +120,205 @@ bun run db:migrate     # Créer/appliquer une migration Prisma
 ### Frontend
 
 - `src/app/` contient les pages App Router, métadonnées et routes API
-- `src/components/` contient les composants UI et sous-modules d'interface
-- `src/provider/` et `src/context/` gèrent les providers et contextes globaux
+# WikiGuessr
 
-### Etat client
+![Next.js](https://img.shields.io/badge/Next.js-16-111111?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)
+![Bun](https://img.shields.io/badge/Bun-Runtime-F9F1E1?logo=bun&logoColor=black)
 
-- `src/hooks/` orchestre le chargement d'article, les soumissions, la synchro et le mode coop
-- `src/context/` centralise les états globaux côté client
+Un jeu de devinettes quotidien basé sur Wikipédia. Chaque jour une page Wikipédia est choisie et son texte est progressivement masqué ; le joueur devine des mots pour révéler l'article et le titre.
 
-### Backend
+## Sommaire
 
-- `src/lib/controllers/` valide les requêtes et formate les réponses
-- `src/lib/services/` porte la logique applicative
-- `src/lib/game/` contient la logique métier liée au jeu et aux articles Wikipédia
-- `src/lib/repositories/` encapsule les accès Prisma
+- [Aperçu](#aperçu)
+- [Stack technique](#stack-technique)
+- [Prérequis](#prérequis)
+- [Installation & configuration](#installation--configuration)
+- [Commandes utiles](#commandes-utiles)
+- [Démarrage local (Bun)](#démarrage-local-bun)
+- [Développement avec Docker](#développement-avec-docker)
+- [Architecture et organisation du repo](#architecture-et-organisation-du-repo)
+- [API & documentation (OpenAPI / Swagger)](#api--documentation-openapi--swagger)
+- [Base de données & Prisma](#base-de-données--prisma)
+- [Qualité, tests et CI](#qualité-tests-et-ci)
+- [Contribuer](#contribuer)
+- [Licence](#licence)
 
-## API principale
+## Aperçu
 
-| Méthode | Route | Description |
-| --- | --- | --- |
-| GET | `/api/game` | Retourne l'article masqué du jour |
-| POST | `/api/game/guess` | Vérifie un mot proposé |
-| POST | `/api/game/complete` | Enregistre une victoire |
-| PUT | `/api/game/state` | Sauvegarde l'état d'une partie connectée |
-| GET | `/api/game/state` | Restaure l'état d'une partie connectée |
-| POST | `/api/game/reveal` | Révèle tous les mots après vérification de victoire |
-| GET | `/api/game/yesterday` | Retourne le titre de la veille |
-| POST | `/api/game/hint` | Débloque un indice image |
-| GET | `/api/game/hint/image` | Sert une image d'indice obfusquée |
-| GET | `/api/historic` | Retourne l'historique des articles |
-| GET | `/api/leaderboard` | Retourne les classements |
-| GET | `/api/profile/stats` | Retourne les statistiques du profil |
-| GET | `/api/auth/callback/[provider]` | Callback OAuth Supabase |
+- Article quotidien tiré de Wikipédia
+- Masquage de mots avec maintien de ponctuation
+- Correspondance floue pour accepter les propositions proches
+- Indices images progressifs
+- Authentification (BetterAuth + Discord)
+- Sauvegarde d'état pour utilisateurs authentifiés
+- Mode coopératif en temps réel
 
-## Base de données
+## Stack technique
 
-Le schéma Prisma couvre les modèles applicatifs suivants :
+- Framework: Next.js 16 (App Router)
+- UI: React 19
+- Langage: TypeScript 5 (strict)
+- Styling: Tailwind CSS 4
+- Client state: Jotai / React Context + hooks
+- HTTP / Fetching: SWR / fetch
+- Base de données: PostgreSQL + Prisma 7
+- Auth: BetterAuth (Prisma adapter) with Discord social provider
+- Runtime & package manager: Bun
+- Linter / Formatter: Biome
+- Tests: Bun test
 
-- `User` (profil synchronisé depuis `auth.users` via un trigger)
-- `DailyWikiPage`, `GameResult`, `GameState`
+## Prérequis
 
-Le client Prisma généré est placé dans `generated/prisma/` et ne doit pas être modifié manuellement.
+- Bun (v1+)
+- Node / npm non requis (Bun utilisé)
+- Docker & Docker Compose (optionnel, pour Postgres local)
+- PostgreSQL (local ou distant)
 
-## Structure du projet
+## Installation & configuration
 
-```text
-src/
-├── app/                  # Pages, layouts, métadonnées et routes API
-├── components/           # Composants UI et sous-modules d'interface
-├── constants/            # Constantes métier
-├── context/              # Contextes React
-├── hooks/                # Hooks client
-├── lib/                  # Logique métier, auth, repositories, services
-├── provider/             # Providers globaux
-├── test/                 # Tests Bun
-├── types/                # Types partagés
-└── utils/                # Utilitaires transverses
-prisma/
-├── schema.prisma         # Schéma Prisma
-└── migrations/           # Migrations SQL
-generated/
-└── prisma/               # Client Prisma généré
+1. Cloner le dépôt
+
+```bash
+git clone https://github.com/Wiibleyde/WikiGuessr.git
+cd WikiGuessr
+bun install
 ```
 
-## Qualité
+2. Copier les variables d'environnement
 
-Pour vérifier un changement avant ouverture de PR :
+```bash
+cp .env.example .env
+```
+
+3. Variables d'environnement importantes (extrait)
+
+- `DATABASE_URL` (Postgres)
+- `BETTER_AUTH_SECRET` (min 32 chars)
+- `BETTER_AUTH_URL` (BetterAuth base URL)
+- `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` (Discord OAuth)
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (optionnel pour Realtime)
+- `GAME_TIMEZONE` (optionnel, défaut Europe/Paris)
+
+Compléter le `.env` à partir du `.env.example` fourni.
+
+## Commandes utiles
+
+```bash
+bun run dev          # Serveur de développement (Next.js)
+bun run build        # Build de production
+bun run start        # Lancer la build en production
+bun run lint         # Biome lint
+bun run format       # Biome format
+
+bun run test         # Tests Bun
+bun run test:watch   # Tests en watch
+
+bun run db:generate  # Générer Prisma client
+bun run db:migrate   # Appliquer les migrations
+```
+
+## Démarrage local (Bun)
+
+1. Démarrer PostgreSQL (Docker)
+
+```bash
+docker compose up -d postgres
+```
+
+2. Appliquer les migrations et générer le client
+
+```bash
+bun run db:migrate
+bun run db:generate
+```
+
+3. Lancer l'app
+
+```bash
+bun run dev
+```
+
+L'application sera disponible sur `http://localhost:3000`.
+
+## Développement avec Docker
+
+Le projet contient un `docker-compose.yml` permettant de lancer PostgreSQL et, si besoin, de builder l'application.
+
+```bash
+docker compose up --build
+```
+
+Le `Dockerfile` et `docker-entrypoint.sh` gèrent la génération du client Prisma et le démarrage.
+
+## Architecture et organisation du repo
+
+Structure principale (résumé)
+
+```
+src/
+├── app/                # App Router pages, metadata et routes API
+├── components/         # Composants UI (game, navbar, profile...)
+├── atom/               # Atomes Jotai pour état global
+├── constants/          # Constantes métier
+├── context/            # Context providers (Coop, Game, Login)
+├── hooks/              # Hooks client (useArticle, useGame, useGuess...)
+├── lib/                # Backend logic: controllers, services, repos, game
+├── provider/           # Providers React (CoopProvider, GameProvider)
+└── test/               # Tests Bun
+
+prisma/                 # schema.prisma + migrations
+generated/prisma/       # Client Prisma généré (ne pas modifier)
+```
+
+Règles d'organisation
+
+- `app/*` : pages + routes API (Next.js App Router)
+- `lib/controllers/*` : validation HTTP et shaping des réponses
+- `lib/services/*` : cas d'utilisation métier
+- `lib/repositories/*` : accès à la base via Prisma
+- `lib/game/*` : logique purement liée au jeu (normalisation, tokenisation)
+
+## API & documentation (OpenAPI / Swagger)
+
+Une spécification OpenAPI est générée automatiquement via `swagger-jsdoc` et est servie à :
+
+- JSON spec: `/api/docs`
+- UI interactive: `/docs` (Swagger UI)
+
+Pour enrichir la documentation, ajouter des blocs JSDoc `@openapi` dans les fichiers de route (ex. `src/app/api/.../route.ts`) ou remplacer par des fichiers YAML si vous préférez.
+
+Sécurité: la page `/docs` est publique par défaut ; si vous la déployez en production, pensez à la protéger (authentification ou IP allowlist).
+
+## Base de données & Prisma
+
+- Fichiers principaux: `prisma/schema.prisma` et le dossier `prisma/migrations/`.
+- Le client Prisma généré se trouve dans `generated/prisma/`.
+
+Migrations courantes
+
+```bash
+bun run db:migrate
+```
+
+Génération du client (si nécessaire)
+
+```bash
+bun run db:generate
+```
+
+Important: ne pas modifier manuellement `generated/prisma/`.
+
+## Qualité, tests et CI
+
+- Linter/formatter: Biome (`bun run lint`, `bun run format`)
+- Tests: Bun test (`bun run test`) — la suite de tests actuelle passe localement.
+- CI: workflows GitHub Actions présents pour lint, tests et build Docker.
+
+Conseils avant PR
 
 ```bash
 bun run lint
@@ -192,11 +326,29 @@ bun run test
 bun run build
 ```
 
+## Dépannage commun
+
+- Si Prisma client est manquant: `bun run db:generate`
+- Si migration bloquée: vérifier `DATABASE_URL` et relancer `bun run db:migrate`
+- Si tests échouent localement: lancer `bun run test:watch` pour debug
+
 ## Contribution
 
-Les contributions se font depuis des branches de feature vers `develop`.
+1. Créer une branche `feature/xxx` depuis `develop`.
+2. Respecter le style (TypeScript strict, Biome).
+3. Ajouter des tests pour toute nouvelle logique métier.
+4. Ouvrir une Pull Request vers `develop`.
 
-1. Créer une branche depuis `develop`
-2. Développer et lancer `bun run lint`
-3. Exécuter les tests pertinents
-4. Ouvrir une pull request vers `develop`
+## Prochaines améliorations suggérées
+
+- Compléter l'annotation OpenAPI de toutes les routes API pour documentation complète.
+- Introduire des schémas `zod` pour toutes les validations d'entrée (controllers) afin d'améliorer la robustesse et la doc.
+- Protéger `/docs` en production.
+
+## Licence
+
+Ce projet est distribué sous licence GPL-3.0.
+
+---
+
+Si vous voulez que j'ajoute une version anglaise du README, des captures d'écran, ou que je complète les annotations OpenAPI pour toutes les routes, dites-le et je m'en occupe.
