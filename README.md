@@ -350,5 +350,3 @@ bun run build
 Ce projet est distribué sous licence GPL-3.0.
 
 ---
-
-Si vous voulez que j'ajoute une version anglaise du README, des captures d'écran, ou que je complète les annotations OpenAPI pour toutes les routes, dites-le et je m'en occupe.
