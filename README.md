@@ -205,6 +205,58 @@ cp .env.example .env
 
 Compléter le `.env` à partir du `.env.example` fourni.
 
+### Ajouter un provider OAuth (BetterAuth)
+
+Exemple : ajouter Google en plus de Discord.
+
+1. Ajouter les variables dans `.env` (et dans `.env.example` pour documenter le setup) :
+
+```env
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+```
+
+2. Étendre la validation Zod dans `src/env.ts` :
+
+```ts
+const envSchema = z.object({
+    // ...
+    GOOGLE_CLIENT_ID: z.string(),
+    GOOGLE_CLIENT_SECRET: z.string(),
+});
+
+const env = envSchema.parse({
+    // ...
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+});
+```
+
+3. Déclarer le provider dans BetterAuth (`src/lib/auth/auth.ts`) :
+
+```ts
+socialProviders: {
+    discord: {
+        clientId: env.DISCORD_CLIENT_ID,
+        clientSecret: env.DISCORD_CLIENT_SECRET,
+    },
+    google: {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+    },
+},
+```
+
+4. Si vous voulez l'afficher dans l'UI de login, ajouter une entrée dans `src/constants/navbar.tsx` (`providers`).
+
+5. Configurer l'URL de redirection dans le dashboard OAuth du provider (obligatoire) :
+   - Base app : `BETTER_AUTH_URL` (ex: `http://localhost:3000`)
+   - Route BetterAuth : `src/app/api/auth/[...betterauth]/route.ts`
+   - Callback OAuth attendue par BetterAuth : `${BETTER_AUTH_URL}/api/auth/callback/<provider>` (ex: `/api/auth/callback/google`)
+   - Exemple Discord local : `http://localhost:3000/api/auth/callback/discord`
+
+6. Redémarrer le serveur après changement de variables d'environnement.
+
 ## Commandes utiles
 
 ```bash
