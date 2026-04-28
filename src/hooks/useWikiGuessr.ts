@@ -20,6 +20,9 @@ export function useWikiGuessr() {
         winImages,
         input,
         setInput,
+        lastFoundKeys,
+        abandoned,
+        todayRank,
     } = useGameState();
 
     const percentage = computeRevealPercentage(revealed, article);
@@ -28,7 +31,7 @@ export function useWikiGuessr() {
     const displayImages =
         won && winImages.length > 0 ? winImages : revealedImages;
 
-    const { revealHint, revealingHint } = useGame();
+    const { revealHint, revealingHint, abandonGame } = useGame();
     const { submitGuess, guessing } = useGuess();
     useArticle();
     useDb();
@@ -51,5 +54,9 @@ export function useWikiGuessr() {
         input,
         setInput,
         guessing,
+        lastFoundKeys,
+        abandoned,
+        abandonGame,
+        todayRank,
     };
 }

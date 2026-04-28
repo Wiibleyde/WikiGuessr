@@ -27,6 +27,7 @@ const useDb = () => {
         setRevealedImages,
         synced,
         setSynced,
+        setTodayRank,
     } = useGameState();
 
     /** Push current state to the DB (called on each guess when logged in). */
@@ -129,8 +130,10 @@ const useDb = () => {
                 guessedWords: guesses.map((g) => g.word),
                 hintsUsed,
             })
-            .then(() => {
+            .then((res) => {
                 setSaved(true);
+                const rank = (res.data as { rank?: number }).rank;
+                if (rank != null) setTodayRank(rank);
                 saveCache(
                     article.date,
                     guesses,
@@ -159,6 +162,7 @@ const useDb = () => {
         revealed,
         revealedImages,
         setSaved,
+        setTodayRank,
         syncToDatabase,
     ]);
 

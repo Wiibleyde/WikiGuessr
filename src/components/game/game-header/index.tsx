@@ -6,6 +6,11 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import { plural } from "@/utils/helper";
 import GameInput from "./GameInput";
 
+function formatRank(rank: number): string {
+    if (rank === 1) return "1er";
+    return `${rank}ème`;
+}
+
 interface GameHeaderProps {
     date: string;
     percentage: number;
@@ -18,6 +23,7 @@ interface GameHeaderProps {
     guessCount: number;
     guessing: boolean;
     datas: string[];
+    todayRank?: number | null;
 }
 
 export default function GameHeader({
@@ -31,6 +37,7 @@ export default function GameHeader({
     coop,
     datas,
     guessing,
+    todayRank,
 }: GameHeaderProps) {
     const onInputChange = (value: string) => {
         setInput(value);
@@ -77,6 +84,12 @@ export default function GameHeader({
                             Bravo !
                             {` Trouvé en ${plural(guessCount, "essai", "essais")}${hintsUsed > 0 ? ` avec ${plural(hintsUsed, "indice", "indices")}` : ""} !`}
                         </p>
+                        {todayRank != null && (
+                            <p className="text-success-text/80 text-sm mt-1">
+                                Tu es {formatRank(todayRank)} aujourd&apos;hui
+                                🏆
+                            </p>
+                        )}
                     </div>
                 ) : (
                     <GameInput

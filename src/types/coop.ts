@@ -71,4 +71,12 @@ export type CoopBroadcastEvent =
               playerCount: number;
               positions: WordPosition[];
           };
+      }
+    | {
+          type: "game_reset";
+          payload: Record<string, never>;
+      }
+    | {
+          type: "game_abandoned";
+          payload: { positions: WordPosition[] };
       };

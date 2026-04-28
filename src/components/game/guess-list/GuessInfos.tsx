@@ -19,7 +19,7 @@ export default function GuessInfos({
     return (
         <span
             className={cn(
-                "text-xs flex items-center gap-1",
+                "text-xs flex items-center gap-1 whitespace-nowrap",
                 variants[variant],
                 className,
             )}

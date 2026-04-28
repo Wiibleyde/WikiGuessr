@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CoopGuessEntry, CoopPlayerInfo } from "@/types/coop";
 import type { MaskedArticle, WordPosition } from "@/types/game";
-import { applyPositions } from "@/utils/helper";
+import { applyPositions, posKey } from "@/utils/helper";
 import { useCoopState } from "./useCoopState";
 
 export default function useCoopRealtime(code: string | null) {
@@ -15,6 +15,8 @@ export default function useCoopRealtime(code: string | null) {
         setLobby,
         setWon,
         setRevealed,
+        setLastFoundKeys,
+        setAbandoned,
     } = useCoopState();
     const channelRef = useRef<ReturnType<
         NonNullable<ReturnType<typeof getSupabaseBrowserClient>>["channel"]
@@ -100,6 +102,12 @@ export default function useCoopRealtime(code: string | null) {
                     setRevealed((prev) =>
                         applyPositions(prev, guess.positions),
                     );
+                    const keys = new Set(
+                        guess.positions.map((p) =>
+                            posKey(p.section, p.part, p.wordIndex),
+                        ),
+                    );
+                    setLastFoundKeys(keys);
                 }
 
                 setPlayers((prev: CoopPlayerInfo[]) =>
@@ -125,6 +133,27 @@ export default function useCoopRealtime(code: string | null) {
                 }
                 setWon(true);
             })
+            .on("broadcast", { event: "game_reset" }, () => {
+                setGuesses([]);
+                setRevealed({});
+                setArticle(null);
+                setWon(false);
+                setAbandoned(false);
+                setLastFoundKeys(new Set());
+                setLobby((prev) =>
+                    prev ? { ...prev, status: "waiting" } : prev,
+                );
+            })
+            .on("broadcast", { event: "game_abandoned" }, ({ payload }) => {
+                const { positions } = payload as { positions: WordPosition[] };
+                setLobby((prev) =>
+                    prev ? { ...prev, status: "finished" } : prev,
+                );
+                if (positions.length > 0) {
+                    setRevealed((prev) => applyPositions(prev, positions));
+                }
+                setAbandoned(true);
+            })
             .subscribe();
 
         return () => {
@@ -139,5 +168,7 @@ export default function useCoopRealtime(code: string | null) {
         setLobby,
         setWon,
         setRevealed,
+        setLastFoundKeys,
+        setAbandoned,
     ]);
 }

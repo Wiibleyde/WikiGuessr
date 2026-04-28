@@ -8,10 +8,12 @@ import {
     NotLeaderError,
 } from "@/lib/errors/coopError";
 import {
+    abandonCoopGame,
     createCoopLobby,
     getCoopLobbyState,
     joinCoopLobby,
     leaveLobby,
+    restartCoopGame,
     startCoopGame,
     submitCoopGuess,
 } from "@/lib/services/coopService";
@@ -191,6 +193,50 @@ export async function leaveLobbyHandler(
         return ok(result);
     } catch (error) {
         if (error instanceof LobbyNotFoundError) return err(error.message, 404);
+        throw error;
+    }
+}
+
+export async function restartCoopGameHandler(
+    request: NextRequest,
+    code: string,
+): Promise<NextResponse> {
+    const body = (await request.json()) as { playerToken?: unknown };
+
+    if (!body.playerToken || typeof body.playerToken !== "string") {
+        return err("Token joueur manquant", 400);
+    }
+
+    try {
+        await restartCoopGame(code, body.playerToken);
+        return ok({ success: true });
+    } catch (error) {
+        if (error instanceof LobbyNotFoundError) return err(error.message, 404);
+        if (error instanceof NotLeaderError) return err(error.message, 403);
+        if (error instanceof GameNotStartedError)
+            return err(error.message, 400);
+        throw error;
+    }
+}
+
+export async function abandonCoopGameHandler(
+    request: NextRequest,
+    code: string,
+): Promise<NextResponse> {
+    const body = (await request.json()) as { playerToken?: unknown };
+
+    if (!body.playerToken || typeof body.playerToken !== "string") {
+        return err("Token joueur manquant", 400);
+    }
+
+    try {
+        await abandonCoopGame(code, body.playerToken);
+        return ok({ success: true });
+    } catch (error) {
+        if (error instanceof LobbyNotFoundError) return err(error.message, 404);
+        if (error instanceof NotLeaderError) return err(error.message, 403);
+        if (error instanceof GameNotStartedError)
+            return err(error.message, 400);
         throw error;
     }
 }

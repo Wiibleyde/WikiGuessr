@@ -18,6 +18,7 @@ import {
 import {
     CLOSE_THRESHOLD,
     MAX_LENGTH_RATIO,
+    MIN_AUTO_REVEAL_LENGTH,
     MIN_FUZZY_LENGTH,
     REVEAL_THRESHOLD,
     TOKEN_REGEX,
@@ -207,9 +208,15 @@ export function checkGuessAgainstCache(
     let autoRevealPositions: WordPosition[] | null = null;
     let autoRevealOccurrences = 0;
 
-    if (normalizedGuess.length >= MIN_FUZZY_LENGTH) {
+    if (normalizedGuess.length >= MIN_AUTO_REVEAL_LENGTH) {
         for (const [normalized, positions] of wordGroups) {
-            if (normalized.length < MIN_FUZZY_LENGTH) continue;
+            const qualifiesForAutoReveal =
+                normalized.length >= MIN_AUTO_REVEAL_LENGTH;
+            const qualifiesForSimilarity =
+                normalized.length >= MIN_FUZZY_LENGTH &&
+                normalizedGuess.length >= MIN_FUZZY_LENGTH;
+
+            if (!qualifiesForAutoReveal && !qualifiesForSimilarity) continue;
 
             // Skip words already discovered by the player
             if (revealedSet?.has(normalized)) continue;
@@ -219,20 +226,24 @@ export function checkGuessAgainstCache(
             const shorter = Math.min(normalizedGuess.length, normalized.length);
             if (longer / shorter > MAX_LENGTH_RATIO) continue;
 
-            const dist = levenshteinDistance(normalizedGuess, normalized);
+            if (qualifiesForAutoReveal) {
+                const dist = levenshteinDistance(normalizedGuess, normalized);
 
-            // Auto-reveal at distance 1
-            if (dist === 1 && positions.length > autoRevealOccurrences) {
-                autoRevealPositions = positions;
-                autoRevealOccurrences = positions.length;
-                bestMatchWord = normalized;
+                // Auto-reveal at distance 1
+                if (dist === 1 && positions.length > autoRevealOccurrences) {
+                    autoRevealPositions = positions;
+                    autoRevealOccurrences = positions.length;
+                    bestMatchWord = normalized;
+                }
             }
 
-            const sim = combinedSimilarity(normalizedGuess, normalized);
-            if (sim > bestSimilarity) {
-                bestSimilarity = sim;
-                if (dist !== 1) {
-                    bestMatchWord = normalized;
+            if (qualifiesForSimilarity) {
+                const sim = combinedSimilarity(normalizedGuess, normalized);
+                if (sim > bestSimilarity) {
+                    bestSimilarity = sim;
+                    if (!autoRevealPositions) {
+                        bestMatchWord = normalized;
+                    }
                 }
             }
         }

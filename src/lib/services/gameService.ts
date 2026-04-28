@@ -8,7 +8,10 @@ import {
     verifyWin,
 } from "@/lib/game/game";
 import { getCachedYesterdayTitle } from "@/lib/game/yesterday";
-import { createOrUpdateGameResult } from "@/lib/repositories/gameResultRepository";
+import {
+    createOrUpdateGameResult,
+    getTodayRankForUser,
+} from "@/lib/repositories/gameResultRepository";
 import {
     createOrUpdateGameState,
     getGameStateByUserAndDailyPage,
@@ -79,7 +82,7 @@ export async function completeGame(
     guessCount: number,
     guessedWords: string[],
     hintsUsed: number,
-): Promise<{ resultId: number }> {
+): Promise<{ resultId: number; rank: number }> {
     const won = await verifyWin(guessedWords);
     if (!won) {
         throw new GameVerificationError(
@@ -94,7 +97,16 @@ export async function completeGame(
         guessCount,
         hintsUsed,
     );
-    return { resultId: result.id };
+    const rank = await getTodayRankForUser(
+        user.id,
+        dailyPage.id,
+        result.createdAt,
+    );
+    return { resultId: result.id, rank };
+}
+
+export async function abandonGame(): Promise<WordPosition[]> {
+    return getAllWordPositions();
 }
 
 export async function revealAll(words: string[]): Promise<WordPosition[]> {

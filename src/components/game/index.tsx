@@ -36,6 +36,10 @@ interface GameProps {
     players?: CoopPlayerInfo[];
     coop?: boolean;
     onLeave?: () => void;
+    lastFoundKeys?: Set<string>;
+    abandoned?: boolean;
+    abandonGame?: () => void;
+    todayRank?: number | null;
 }
 
 export default function Game({
@@ -58,6 +62,10 @@ export default function Game({
     players,
     coop = false,
     onLeave,
+    lastFoundKeys,
+    abandoned = false,
+    abandonGame,
+    todayRank,
 }: GameProps) {
     if (loading) return <Loader message="Chargement de l'article du jour…" />;
 
@@ -82,6 +90,7 @@ export default function Game({
                 setInput={setInput}
                 guessCount={guesses.length}
                 coop={coop}
+                todayRank={todayRank}
                 datas={[
                     formatDateWithMonthName(article.date),
                     plural(guesses.length, "essai", "essais"),
@@ -89,6 +98,19 @@ export default function Game({
                     plural(percentage, "% révélé", "% révélés"),
                 ]}
             />
+
+            {abandoned && (
+                <div className="max-w-5xl mx-auto px-4 pt-4">
+                    <div
+                        className="bg-danger-light/60 border border-danger/30 rounded-xl p-3 text-center"
+                        aria-live="polite"
+                    >
+                        <p className="text-danger font-bold text-lg font-(family-name:--font-heading)">
+                            Partie abandonnée — réponse révélée
+                        </p>
+                    </div>
+                </div>
+            )}
 
             <ImageHint
                 imageCount={imageCount}
@@ -115,9 +137,25 @@ export default function Game({
             )}
 
             <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
-                <ArticleView article={article} revealed={revealed} />
+                <ArticleView
+                    article={article}
+                    revealed={revealed}
+                    lastFoundKeys={lastFoundKeys}
+                />
                 <GuessList guesses={guesses} />
             </div>
+
+            {!won && !abandoned && !coop && abandonGame && (
+                <div className="max-w-5xl mx-auto px-4 pb-4 text-center">
+                    <button
+                        type="button"
+                        onClick={abandonGame}
+                        className="text-xs text-danger hover:underline cursor-pointer"
+                    >
+                        Abandonner la partie
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

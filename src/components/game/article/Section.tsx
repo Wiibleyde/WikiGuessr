@@ -6,6 +6,7 @@ interface SectionProps {
     titleTokens: Token[];
     contentTokens: Token[];
     revealed: RevealedMap;
+    lastFoundKeys?: Set<string>;
 }
 
 export function Section({
@@ -13,6 +14,7 @@ export function Section({
     titleTokens,
     contentTokens,
     revealed,
+    lastFoundKeys,
 }: SectionProps) {
     return (
         <section className="p-5 bg-surface rounded-xl shadow-sm border border-border">
@@ -23,6 +25,7 @@ export function Section({
                         section={sectionIndex}
                         part="title"
                         revealed={revealed}
+                        lastFoundKeys={lastFoundKeys}
                     />
                 </h3>
             )}
@@ -32,6 +35,7 @@ export function Section({
                     section={sectionIndex}
                     part="content"
                     revealed={revealed}
+                    lastFoundKeys={lastFoundKeys}
                 />
             </div>
         </section>

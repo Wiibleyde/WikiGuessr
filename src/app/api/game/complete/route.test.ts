@@ -4,7 +4,10 @@ import "@/test/mocks/articleRepoModule";
 import { getSessionMock } from "@/test/mocks/authModule";
 import { ensureDailyWikiPageMock } from "@/test/mocks/dailyWikiModule";
 import { verifyWinMock } from "@/test/mocks/gameModule";
-import { createOrUpdateGameResultMock } from "@/test/mocks/gameResultRepoModule";
+import {
+    createOrUpdateGameResultMock,
+    getTodayRankForUserMock,
+} from "@/test/mocks/gameResultRepoModule";
 
 await import("@/lib/errors/gameError");
 const { POST } = await import("./route");
@@ -25,6 +28,7 @@ describe("POST /api/game/complete", () => {
         verifyWinMock.mockReset();
         ensureDailyWikiPageMock.mockReset();
         createOrUpdateGameResultMock.mockReset();
+        getTodayRankForUserMock.mockReset();
         getSessionMock.mockResolvedValue({ user: fakeUser });
     });
 
@@ -57,7 +61,11 @@ describe("POST /api/game/complete", () => {
             id: "page-1",
             date: new Date(),
         });
-        createOrUpdateGameResultMock.mockResolvedValue({ id: 42 });
+        createOrUpdateGameResultMock.mockResolvedValue({
+            id: 42,
+            createdAt: new Date(),
+        });
+        getTodayRankForUserMock.mockResolvedValue(3);
 
         const res = await POST(
             jsonRequest({
@@ -69,11 +77,13 @@ describe("POST /api/game/complete", () => {
         const body = (await res.json()) as {
             success: boolean;
             resultId: number;
+            rank: number;
         };
 
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.resultId).toBe(42);
+        expect(body.rank).toBe(3);
     });
 
     it("returns 400 on GameVerificationError", async () => {

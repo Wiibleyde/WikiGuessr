@@ -2,7 +2,12 @@ import { useCallback, useState } from "react";
 import { MIN_GUESSES_FOR_HINT } from "@/constants/game";
 import { useRevealAllWords } from "@/lib/query";
 import { fetchImageHint } from "@/lib/query/client";
-import type { MaskedArticle, RevealedMap, StoredGuess } from "@/types/game";
+import type {
+    MaskedArticle,
+    RevealedMap,
+    StoredGuess,
+    WordPosition,
+} from "@/types/game";
 import { saveCache } from "@/utils/cache";
 import { applyPositions } from "@/utils/helper";
 import { useGameState } from "./useGameState";
@@ -18,6 +23,8 @@ const useGame = () => {
         revealedImages,
         setRevealedImages,
         setWinImages,
+        abandoned,
+        setAbandoned,
     } = useGameState();
     const [revealingHint, setRevealingHint] = useState(false);
 
@@ -103,7 +110,57 @@ const useGame = () => {
         setRevealedImages,
     ]);
 
-    return { revealAllWords, revealAllImages, revealHint, revealingHint };
+    const abandonGame = useCallback(async () => {
+        if (!article || won || abandoned) return;
+
+        if (
+            !window.confirm(
+                "Abandonner la partie ? La réponse sera révélée sans point.",
+            )
+        )
+            return;
+
+        try {
+            const response = await fetch("/api/game/abandon", {
+                method: "POST",
+            });
+            if (!response.ok) return;
+            const data = (await response.json()) as {
+                positions: WordPosition[];
+            };
+            const fullRevealed = applyPositions(revealed, data.positions);
+            setRevealed(fullRevealed);
+            setAbandoned(true);
+            saveCache(
+                article.date,
+                guesses,
+                fullRevealed,
+                saved,
+                revealedImages,
+            );
+        } catch (e) {
+            console.error("[abandon]", e);
+        }
+    }, [
+        article,
+        won,
+        abandoned,
+        revealed,
+        guesses,
+        saved,
+        revealedImages,
+        setRevealed,
+        setAbandoned,
+    ]);
+
+    return {
+        revealAllWords,
+        revealAllImages,
+        revealHint,
+        revealingHint,
+        abandonGame,
+        abandoned,
+    };
 };
 
 export default useGame;

@@ -7,6 +7,7 @@ interface TokenListProps {
     section: number;
     part: "title" | "content";
     revealed: RevealedMap;
+    lastFoundKeys?: Set<string>;
 }
 
 export default function TokenList({
@@ -14,6 +15,7 @@ export default function TokenList({
     section,
     part,
     revealed,
+    lastFoundKeys,
 }: TokenListProps) {
     return (
         <>
@@ -36,6 +38,7 @@ export default function TokenList({
                         length={token.length}
                         text={displayText}
                         variant="default"
+                        isLastFound={lastFoundKeys?.has(key)}
                     />
                 );
             })}

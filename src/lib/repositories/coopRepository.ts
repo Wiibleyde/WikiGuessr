@@ -4,7 +4,7 @@ import type {
     CoopLobbyWithState,
     CoopPlayerWithLobby,
 } from "@/types/repository";
-import type { Prisma } from "../../../generated/prisma/client";
+import { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../prisma";
 
 export async function createLobby(
@@ -178,6 +178,25 @@ export async function deleteLobby(
     code: string,
 ): Promise<Prisma.CoopLobbyGetPayload<object>> {
     return prisma.coopLobby.delete({ where: { code } });
+}
+
+export async function clearLobbyGuesses(lobbyId: number): Promise<void> {
+    await prisma.coopGuess.deleteMany({ where: { lobbyId } });
+}
+
+export async function resetLobbyForRestart(
+    code: string,
+): Promise<Prisma.CoopLobbyGetPayload<object>> {
+    return prisma.coopLobby.update({
+        where: { code },
+        data: {
+            status: "waiting",
+            wikiTitle: null,
+            wikiSections: Prisma.DbNull,
+            wikiImages: [],
+            wikiUrl: null,
+        },
+    });
 }
 
 export async function deleteOldLobbies(

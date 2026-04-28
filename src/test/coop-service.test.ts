@@ -15,6 +15,8 @@ const getAllGuessedWordsMock = mock();
 const removePlayerMock = mock();
 const transferLeadershipMock = mock();
 const deleteLobbyMock = mock();
+const clearLobbyGuessesMock = mock();
+const resetLobbyForRestartMock = mock();
 
 mock.module("@/lib/repositories/coopRepository", () => ({
     createLobby: createLobbyMock,
@@ -32,6 +34,8 @@ mock.module("@/lib/repositories/coopRepository", () => ({
     transferLeadership: transferLeadershipMock,
     deleteLobby: deleteLobbyMock,
     deleteOldLobbies: mock(),
+    clearLobbyGuesses: clearLobbyGuessesMock,
+    resetLobbyForRestart: resetLobbyForRestartMock,
 }));
 
 const broadcastToLobbyMock = mock();

@@ -8,6 +8,21 @@ import type {
 import type { DailyWikiPage, Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../prisma";
 
+export const getTodayRankForUser = async (
+    _userId: string,
+    dailyWikiPageId: number,
+    resultCreatedAt: Date,
+): Promise<number> => {
+    const count = await prisma.gameResult.count({
+        where: {
+            dailyWikiPageId,
+            won: true,
+            createdAt: { lte: resultCreatedAt },
+        },
+    });
+    return count;
+};
+
 export const getVictoriesGroupedByUser = async (): Promise<VictoryRow[]> => {
     const results = await prisma.gameResult.findMany({
         where: { won: true },

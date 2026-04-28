@@ -3,6 +3,7 @@ import {
     checkCoopGuess,
     getAllCoopWordPositions,
     getOrBuildCoopCache,
+    removeCoopCache,
     verifyCoopWin,
 } from "@/lib/game/coop-game";
 import { normalizeWord } from "@/lib/game/normalize";
@@ -10,6 +11,7 @@ import { fetchRandomWikiPage } from "@/lib/game/wiki";
 import {
     addGuess,
     addPlayer,
+    clearLobbyGuesses,
     createLobby,
     deleteLobby,
     getAllGuessedWords,
@@ -18,6 +20,7 @@ import {
     getPlayerByToken,
     getPlayerCount,
     removePlayer,
+    resetLobbyForRestart,
     setLobbyWikiPage,
     transferLeadership,
     updateLobbyStatus,
@@ -322,4 +325,42 @@ export async function getCoopLobbyState(
         })),
         article,
     };
+}
+
+export async function restartCoopGame(
+    code: string,
+    playerToken: string,
+): Promise<void> {
+    const player = await getPlayerByToken(playerToken);
+    if (!player) throw new LobbyNotFoundError();
+    if (!player.isLeader) throw new NotLeaderError();
+
+    const lobby = await getLobbyByCode(code);
+    if (!lobby) throw new LobbyNotFoundError();
+    if (lobby.status !== "finished") throw new GameNotStartedError();
+
+    await clearLobbyGuesses(lobby.id);
+    await resetLobbyForRestart(code);
+    removeCoopCache(code);
+
+    await broadcastToLobby(code, "game_reset", {});
+}
+
+export async function abandonCoopGame(
+    code: string,
+    playerToken: string,
+): Promise<void> {
+    const player = await getPlayerByToken(playerToken);
+    if (!player) throw new LobbyNotFoundError();
+    if (!player.isLeader) throw new NotLeaderError();
+
+    const lobby = await getLobbyByCode(code);
+    if (!lobby) throw new LobbyNotFoundError();
+    if (lobby.status !== "playing") throw new GameNotStartedError();
+
+    await updateLobbyStatus(code, "finished");
+    const positions = getAllCoopWordPositions(code);
+    await broadcastToLobby(code, "game_abandoned", { positions });
+    removeCoopCache(code);
+    removeCoopChannel(code);
 }
