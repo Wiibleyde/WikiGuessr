@@ -140,6 +140,494 @@ Le projet est un monorepo Next.js avec code frontend et backend cohabitant dans 
 - Les routes API se trouvent dans `src/app/api/` et restent légères : elles orchestrent les contrôleurs, l'auth et les services.
 - Ne pas modifier `generated/prisma/` manuellement
 
+## Routes HTTP
+
+Ci-dessous un résumé des principales routes API exposées par l'application, le verbe HTTP, la nécessité d'authentification et le format du body attendu (JSON). Les routes renvoient des réponses JSON sauf indication contraire.
+
+- **GET /api/game**
+    - Auth: Non
+    - Body: Aucun
+    - Description: Récupère l'article masqué du jour (MaskedArticle).
+
+- **POST /api/game/guess**
+    - Auth: Non
+    - Body: {
+        "word": "string" (required),
+        "revealedWords": ["string", ...] (optional)
+        }
+    - Description: Soumet une proposition de mot et reçoit le résultat de la recherche.
+
+- **POST /api/game/complete**
+    - Auth: Oui
+    - Body: {
+        "guessCount": number (required),
+        "guessedWords": ["string", ...] (required),
+        "hintsUsed": number (optional)
+        }
+    - Description: Persiste une partie vérifiée pour un utilisateur authentifié.
+
+- **GET /api/game/state**
+    - Auth: Oui
+    - Body: Aucun
+    - Description: Récupère l'état sauvegardé (`GameCache`) pour l'utilisateur.
+
+- **PUT /api/game/state**
+    - Auth: Oui
+    - Body: GameCache {
+        "guesses": [{ "word": string, "found": boolean, ... }, ...],
+        "revealed": { "<tokenId>": "displayText", ... },
+        "saved": boolean (optional),
+        "revealedImages": ["string", ...] (optional)
+        }
+    - Description: Enregistre l'état de la partie pour l'utilisateur connecté.
+
+- **POST /api/game/reveal**
+    - Auth: Non
+    - Body: { "words": ["string", ...] }
+    - Description: Demande de révéler une liste de mots (utilisé pour vérification côté client/outil).
+
+- **GET /api/game/yesterday**
+    - Auth: Non
+    - Body: Aucun
+    - Description: Récupère le titre de l'article d'hier. Réponse: { "title": string }
+
+- **POST /api/game/hint**
+    - Auth: Optionnel (auth disponible mais non obligatoire)
+    - Body: {
+        "hintIndex": number (required),
+        "guesses": ["string", ...] (optional),
+        "won": boolean (optional)
+        }
+    - Description: Demande un indice (image) ; certains indices peuvent nécessiter un utilisateur authentifié ou conditions métier.
+
+- **GET /api/game/hint/image?index=<n>**
+    - Auth: Non
+    - Query: `index` (required, integer)
+    - Body: Aucun
+    - Description: Retourne l'image d'indice obfusquée en `image/webp` pour l'index donné.
+
+- **GET /api/historic**
+    - Auth: Non
+    - Body: Aucun
+    - Description: Liste les articles historiques disponibles.
+
+- **GET /api/leaderboard**
+    - Auth: Non
+    - Body: Aucun
+    - Description: Récupère les classements publics.
+
+- **GET /api/profile/stats**
+    - Auth: Oui
+    - Body: Aucun
+    - Description: Statistiques de profil pour l'utilisateur connecté.
+
+- **Routes d'authentification (BetterAuth)**
+    - Base: `/api/auth/[...betterauth]`
+    - Description: Toutes les routes d'auth sont gérées par BetterAuth (échange OAuth, session, callbacks). Voir la configuration dans `src/lib/auth/`.
+
+- **Coop (temps réel)**
+    - Base: `/api/coop/*`
+    - Exemples (JSON bodies):
+        - `POST /api/coop` (create lobby): { "displayName": "string", "userId": "string" (optional) }
+        - `POST /api/coop/join`: { "code": "STRING", "displayName": "string", "userId": "string" (optional) }
+        - `POST /api/coop/{code}/guess`: { "playerToken": "string", "word": "string" }
+    - Description: Endpoints pour la création/jointure de lobby et le jeu coopératif (voir `src/lib/controllers/coopController.ts`).
+
+Si vous souhaitez, je peux générer un schéma OpenAPI minimal à partir de ces définitions.
+ 
+### Documentation détaillée des routes API
+
+Chaque route est décrite avec une courte présentation, un exemple d'appel et un exemple de réponse (HTTP 200 ou type attendu). Les exemples utilisent `http://localhost:3000` comme base locale.
+
+---
+
+### GET `/api/game`
+
+Retourne l'article masqué du jour (structure `MaskedArticle`).
+
+Exemple :
+```
+GET http://localhost:3000/api/game
+```
+
+Réponse 200 :
+```json
+{
+    "sections": [ /* MaskedSection[] */ ],
+    "totalWords": 123,
+    "date": "2026-04-28",
+    "imageCount": 2
+}
+```
+
+---
+
+### POST `/api/game/guess`
+
+Soumet un mot proposé par le joueur et renvoie le résultat de la recherche (positions, similarité, occurrences...).
+
+Exemple :
+```
+POST http://localhost:3000/api/game/guess
+Content-Type: application/json
+
+{
+    "word": "Napoléon",
+    "revealedWords": ["empereur"]
+}
+```
+
+Réponse 200 :
+```json
+{
+    "found": true,
+    "word": "Napoléon",
+    "positions": [ /* WordPosition[] */ ],
+    "occurrences": 2,
+    "similarity": 1.0,
+    "serverDate": "2026-04-28T12:34:56.000Z"
+}
+```
+
+---
+
+### POST `/api/game/complete`  (auth requis)
+
+Persiste une partie validée pour l'utilisateur authentifié.
+
+Exemple :
+```
+POST http://localhost:3000/api/game/complete
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+    "guessCount": 12,
+    "guessedWords": ["mot1","mot2","mot3"],
+    "hintsUsed": 1
+}
+```
+
+Réponse 200 :
+```json
+{
+    "success": true,
+    "resultId": "abc123"
+}
+```
+
+---
+
+### GET `/api/game/state`  (auth requis)
+
+Récupère l'état sauvegardé (`GameCache`) pour l'utilisateur connecté.
+
+Exemple :
+```
+GET http://localhost:3000/api/game/state
+Authorization: Bearer <token>
+```
+
+Réponse 200 :
+```json
+{
+    "state": {
+        "guesses": [ /* StoredGuess[] */ ],
+        "revealed": { "tokenId": "texte affiché" },
+        "saved": true,
+        "revealedImages": ["/images/hint1.webp"]
+    }
+}
+```
+
+---
+
+### PUT `/api/game/state`  (auth requis)
+
+Enregistre l'état de la partie pour l'utilisateur connecté (forme `GameCache`).
+
+Exemple :
+```
+PUT http://localhost:3000/api/game/state
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+    "guesses": [{ "word":"Paris","found":true,"occurrences":1 }],
+    "revealed": { "t_1": "Paris" },
+    "saved": true
+}
+```
+
+Réponse 200 :
+```json
+{ "success": true }
+```
+
+---
+
+### POST `/api/game/reveal`
+
+Demande de révéler une liste de mots (utilisé pour vérification ou outils).
+
+Exemple :
+```
+POST http://localhost:3000/api/game/reveal
+Content-Type: application/json
+
+{ "words": ["mot1","mot2"] }
+```
+
+Réponse 200 :
+```json
+{
+    "positions": [ /* WordPosition[] */ ]
+}
+```
+
+---
+
+### GET `/api/game/yesterday`
+
+Renvoie le titre de l'article d'hier.
+
+Exemple :
+```
+GET http://localhost:3000/api/game/yesterday
+```
+
+Réponse 200 :
+```json
+{ "title": "Article d'hier" }
+```
+
+---
+
+### POST `/api/game/hint`
+
+Demande un indice (image). Authentication optionnelle — si l'utilisateur est connecté, la logique métier peut débloquer plus d'options.
+
+Exemple :
+```
+POST http://localhost:3000/api/game/hint
+Content-Type: application/json
+
+{
+    "hintIndex": 0,
+    "guesses": ["mot1"],
+    "won": false
+}
+```
+
+Réponse 200 :
+```json
+{
+    "imageUrl": "https://.../hint0.webp",
+    "hintIndex": 0,
+    "totalImages": 3
+}
+```
+
+---
+
+### GET `/api/game/hint/image?index=<n>`
+
+Récupère l'image d'indice obfusquée (réponse binaire `image/webp`).
+
+Exemple :
+```
+GET http://localhost:3000/api/game/hint/image?index=0
+```
+
+Réponse 200 :
+- Content-Type: image/webp (corps binaire)
+- Headers: `X-WikiGuessr-Obfuscation`, `Cache-Control`
+
+---
+
+### GET `/api/historic`
+
+Liste les articles historiques disponibles.
+
+Exemple :
+```
+GET http://localhost:3000/api/historic
+```
+
+Réponse 200 :
+```json
+[
+    { "id": 1, "title":"...", "date":"2026-04-01", "url":"...", "resolvedCount": 12 }
+]
+```
+
+---
+
+### GET `/api/leaderboard`
+
+Récupère les classements publics.
+
+Exemple :
+```
+GET http://localhost:3000/api/leaderboard
+```
+
+Réponse 200 :
+```json
+{
+    "categories": [ /* LeaderboardCategoryData[] */ ]
+}
+```
+
+---
+
+### GET `/api/profile/stats`  (auth requis)
+
+Statistiques du profil pour l'utilisateur connecté.
+
+Exemple :
+```
+GET http://localhost:3000/api/profile/stats
+Authorization: Bearer <token>
+```
+
+Réponse 200 :
+```json
+{ /* statistiques utilisateur */ }
+```
+
+---
+
+### POST `/api/coop` (créer un lobby)
+
+Crée un lobby coopératif et retourne le code + token joueur.
+
+Exemple :
+```
+POST http://localhost:3000/api/coop
+Content-Type: application/json
+
+{ "displayName": "Alice", "userId": "optional-user-id" }
+```
+
+Réponse 200 :
+```json
+{ "code": "ABC123", "playerId": 1, "playerToken": "tok..", "isLeader": true }
+```
+
+---
+
+### POST `/api/coop/join`
+
+Rejoint un lobby existant.
+
+Exemple :
+```
+POST http://localhost:3000/api/coop/join
+Content-Type: application/json
+
+{ "code": "ABC123", "displayName": "Bob" }
+```
+
+Réponse 200 :
+```json
+{ "code": "ABC123", "playerId": 2, "playerToken": "tok..", "isLeader": false }
+```
+
+---
+
+### GET `/api/coop/{code}`
+
+Récupère l'état du lobby (remplacer `{code}` par le code du lobby).
+
+Exemple :
+```
+GET http://localhost:3000/api/coop/ABC123
+```
+
+Réponse 200 :
+```json
+{ /* état du lobby : joueurs, statut, leader, etc. */ }
+```
+
+---
+
+### POST `/api/coop/{code}/start`
+
+Démarre la partie coop (le body doit contenir `playerToken` ; la route vérifie que le joueur est leader).
+
+Exemple :
+```
+POST http://localhost:3000/api/coop/ABC123/start
+Content-Type: application/json
+
+{ "playerToken": "tok.." }
+```
+
+Réponse 200 :
+```json
+{ "article": { /* MaskedArticle */ } }
+```
+
+---
+
+### POST `/api/coop/{code}/guess`
+
+Soumet une proposition en mode coop (rate-limited).
+
+Exemple :
+```
+POST http://localhost:3000/api/coop/ABC123/guess
+Content-Type: application/json
+
+{ "playerToken": "tok..", "word": "Paris" }
+```
+
+Réponse 200 :
+```json
+{ /* GuessResult + "won": boolean */ }
+```
+
+---
+
+### POST `/api/coop/{code}/leave`
+
+Permet à un joueur de quitter le lobby.
+
+Exemple :
+```
+POST http://localhost:3000/api/coop/ABC123/leave
+Content-Type: application/json
+
+{ "playerToken": "tok.." }
+```
+
+Réponse 200 :
+```json
+{ "success": true }
+```
+
+---
+
+### GET/POST `/api/auth/[...betterauth]`
+
+Routes d'authentification gérées par BetterAuth (OAuth, sessions, callbacks). Le détail dépend de l'opération BetterAuth.
+
+Exemples :
+```
+GET /api/auth/session
+POST /api/auth/callback/discord
+```
+
+Réponse : variable selon l'opération BetterAuth (JSON ou redirection OAuth).
+
+---
+
+Si vous voulez, je peux :
+- extraire ces exemples dans `docs/API.md` au format plus long;
+- ou générer un fichier OpenAPI (YAML/JSON) minimal.
+
+
 ## Installation & configuration
 
 1. Cloner le dépôt
