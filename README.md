@@ -24,6 +24,7 @@ Un jeu de devinettes quotidien basé sur Wikipédia. Chaque jour, une page Wikip
 - [Base de données & Prisma](#base-de-données--prisma)
 - [Qualité, tests et CI](#qualité-tests-et-ci)
 - [Contribuer](#contribuer)
+- [Ajouter un provider OAuth (BetterAuth)](#ajouter-un-provider-oauth-betterauth)
 - [Licence](#licence)
 
 ## Aperçu
@@ -56,32 +57,6 @@ Un jeu de devinettes quotidien basé sur Wikipédia. Chaque jour, une page Wikip
 - Node / npm non requis (Bun utilisé)
 - Docker & Docker Compose (optionnel, pour Postgres local)
 - PostgreSQL (local ou distant)
-
-## Commandes utiles
-
-```bash
-bun run dev            # serveur de développement
-bun run build          # build production
-bun run start          # serveur production
-bun run lint           # vérification Biome
-bun run format         # formatage Biome
-bun run test           # tests unitaires Bun
-bun run test:watch     # tests en mode watch
-bun run test:coverage  # couverture de tests
-bun run test:e2e       # tests e2e Playwright
-bun run db:generate    # générer le client Prisma
-bun run db:migrate     # appliquer migrations Prisma
-```
-
-## Démarrage local
-
-```bash
-docker compose up -d
-bun run db:migrate
-bun run dev
-```
-
-Puis ouvrez `http://localhost:3000`.
 
 ## Architecture et organisation du repo
 
@@ -121,7 +96,7 @@ Le projet est un monorepo Next.js avec code frontend et backend cohabitant dans 
 
 - `src/env.ts` : validation des variables d'environnement avec Zod
 - `src/instrumentation.ts` : démarrage, vérification DB et bootstrap de l'article quotidien
-- `src/proxy.ts` : injection d'en-têtes de requête et proxy interna
+- `src/proxy.ts` : injection d'en-têtes de requête côté serveur
 - `src/lib/prisma.ts` : singleton Prisma
 - `src/lib/db-check.ts` : vérification de la connexion DB
 - `src/lib/auth/` : configuration BetterAuth et clients auth
@@ -143,7 +118,7 @@ Le projet est un monorepo Next.js avec code frontend et backend cohabitant dans 
 ### Configuration et scripts
 
 - `package.json` : scripts Bun et dépendances
-- `bunfig.toml` : configuration Bun
+- `bunfig.toml` : configuration Bun pour les tests
 - `biome.json` : configuration Biome
 - `tsconfig.json` : configuration TypeScript
 - `next.config.ts` : configuration Next.js
@@ -191,58 +166,6 @@ cp .env.example .env
 - `GAME_TIMEZONE` (optionnel, défaut Europe/Paris)
 
 Compléter le `.env` à partir du `.env.example` fourni.
-
-### Ajouter un provider OAuth (BetterAuth)
-
-Exemple : ajouter Google en plus de Discord.
-
-1. Ajouter les variables dans `.env` (et dans `.env.example` pour documenter le setup) :
-
-```env
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-```
-
-2. Étendre la validation Zod dans `src/env.ts` :
-
-```ts
-const envSchema = z.object({
-    // ...
-    GOOGLE_CLIENT_ID: z.string(),
-    GOOGLE_CLIENT_SECRET: z.string(),
-});
-
-const env = envSchema.parse({
-    // ...
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-});
-```
-
-3. Déclarer le provider dans BetterAuth (`src/lib/auth/auth.ts`) :
-
-```ts
-socialProviders: {
-    discord: {
-        clientId: env.DISCORD_CLIENT_ID,
-        clientSecret: env.DISCORD_CLIENT_SECRET,
-    },
-    google: {
-        clientId: env.GOOGLE_CLIENT_ID,
-        clientSecret: env.GOOGLE_CLIENT_SECRET,
-    },
-},
-```
-
-4. Si vous voulez l'afficher dans l'UI de login, ajouter une entrée dans `src/constants/navbar.tsx` (`providers`).
-
-5. Configurer l'URL de redirection dans le dashboard OAuth du provider (obligatoire) :
-   - Base app : `BETTER_AUTH_URL` (ex: `http://localhost:3000`)
-   - Route BetterAuth : `src/app/api/auth/[...betterauth]/route.ts`
-   - Callback OAuth attendue par BetterAuth : `${BETTER_AUTH_URL}/api/auth/callback/<provider>` (ex: `/api/auth/callback/google`)
-   - Exemple Discord local : `http://localhost:3000/api/auth/callback/discord`
-
-6. Redémarrer le serveur après changement de variables d'environnement.
 
 ## Commandes utiles
 
@@ -372,6 +295,59 @@ bun run build
 2. Respecter le style (TypeScript strict, Biome).
 3. Ajouter des tests pour toute nouvelle logique métier.
 4. Ouvrir une Pull Request vers `develop`.
+
+## Ajouter un provider OAuth (BetterAuth)
+
+Exemple : ajouter Google en plus de Discord.
+
+1. Ajouter les variables dans `.env` (et dans `.env.example` pour documenter le setup) :
+
+```env
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+```
+
+2. Étendre la validation Zod dans `src/env.ts` :
+
+```ts
+const envSchema = z.object({
+    // ...
+    GOOGLE_CLIENT_ID: z.string(),
+    GOOGLE_CLIENT_SECRET: z.string(),
+});
+
+const env = envSchema.parse({
+    // ...
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+});
+```
+
+3. Déclarer le provider dans BetterAuth (`src/lib/auth/auth.ts`) :
+
+```ts
+socialProviders: {
+    discord: {
+        clientId: env.DISCORD_CLIENT_ID,
+        clientSecret: env.DISCORD_CLIENT_SECRET,
+    },
+    google: {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+    },
+},
+```
+
+4. Si vous voulez l'afficher dans l'UI de login, ajouter une entrée dans `src/constants/navbar.tsx` (`providers`).
+
+5. Configurer l'URL de redirection dans le dashboard OAuth du provider (obligatoire) :
+   - Base app : `BETTER_AUTH_URL` (ex: `http://localhost:3000`)
+   - Route BetterAuth : `src/app/api/auth/[...betterauth]/route.ts`
+   - Callback OAuth attendue par BetterAuth : `${BETTER_AUTH_URL}/api/auth/callback/<provider>` (ex: `/api/auth/callback/google`)
+   - Exemple Discord local : `http://localhost:3000/api/auth/callback/discord`
+
+6. Redémarrer le serveur après changement de variables d'environnement.
+
 
 ## Licence
 
