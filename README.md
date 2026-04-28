@@ -20,6 +20,7 @@ Un jeu de devinettes quotidien basé sur Wikipédia. Chaque jour, une page Wikip
 - [Démarrage local (Bun)](#démarrage-local-bun)
 - [Développement avec Docker](#développement-avec-docker)
 - [Architecture et organisation du repo](#architecture-et-organisation-du-repo)
+- [Similarité des mots](#similarité-des-mots)
 - [API & documentation (OpenAPI / Swagger)](#api--documentation-openapi--swagger)
 - [Base de données & Prisma](#base-de-données--prisma)
 - [Qualité, tests et CI](#qualité-tests-et-ci)
@@ -133,6 +134,45 @@ Le projet est un monorepo Next.js avec code frontend et backend cohabitant dans 
 - `prisma/schema.prisma` : modèle de données
 - `prisma/migrations/` : historique des migrations
 - `generated/prisma/` : client Prisma généré
+
+## Similarité des mots
+
+Cette section explique la logique de similarité des mots utilisée par WikiGuessr et pourquoi nous préférons l'algorithme de Levenshtein à Jaro–Winkler pour la détection de propositions proches.
+
+### Levenshtein (distance d'édition)
+
+Levenshtein calcule le nombre minimum d'opérations élémentaires nécessaires pour transformer une chaîne en une autre : insertion, suppression ou substitution d'un caractère.
+
+Exemple simple :
+
+- mot A : `chat`
+- mot B : `chats`
+
+Il suffit d'insérer le caractère `s` pour transformer `chat` en `chats` → distance = 1.
+
+Nous normalisons la distance pour obtenir un score de similarité entre 0 et 1 :
+
+$$
+	ext{similarité} = 1 - \frac{\text{distance\_Levenshtein}(A,B)}{\max(|A|,|B|)}
+$$
+
+Dans l'exemple ci‑dessus :
+
+$$
+	ext{similarité} = 1 - \frac{1}{5} = 0{,}8
+$$
+
+Un score proche de 1 signifie que les mots sont très proches ; un score proche de 0 signifie qu'ils sont très différents.
+
+### Pourquoi pas Jaro–Winkler ?
+
+Nous avons testé Jaro–Winkler mais constaté qu'il ramenait trop de bruit pour notre cas d'usage. Concrètement, Jaro–Winkler attribuait souvent des scores élevés à des paires de mots qui restaient significativement différentes dans le contexte du jeu, ce qui augmentait les faux positifs et pouvait induire en erreur les joueurs (propositions acceptées ou considérées comme « proches » alors qu'elles n'étaient pas suffisamment pertinentes).
+
+Pour ces raisons nous privilégions Levenshtein (avec normalisation) : il est simple, interprétable et nous permet d'ajuster précisément le seuil de similarité pour l'expérience de jeu.
+
+### Seuil recommandé
+
+Un seuil raisonnable pour accepter une proposition comme "similaire" peut se situer autour de 0.75–0.85 selon le niveau de tolérance souhaité ; ajuster ce seuil en fonction des retours joueurs et des tests opératifs est recommandé.
 
 ## Notes importantes
 
