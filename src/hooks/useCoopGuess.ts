@@ -3,12 +3,19 @@
 import { useCallback, useState } from "react";
 import { normalizeWord } from "@/lib/game/normalize";
 import type { GuessResult } from "@/types/game";
-import { applyPositions } from "@/utils/helper";
+import { applyPositions, posKey } from "@/utils/helper";
 import { useCoopState } from "./useCoopState";
 
 export default function useCoopGuess(code: string | null) {
     const [input, setInput] = useState("");
-    const { article, playerToken, guesses, won, setRevealed } = useCoopState();
+    const {
+        article,
+        playerToken,
+        guesses,
+        won,
+        setRevealed,
+        setLastFoundKeys,
+    } = useCoopState();
     const [guessing, setGuessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -26,36 +33,45 @@ export default function useCoopGuess(code: string | null) {
                 return;
 
             const raw = input.trim();
-            const normalized = normalizeWord(raw);
-
-            if (guesses.some((g) => g.word === normalized)) {
-                setInput("");
-                return;
-            }
+            const words = raw.split(/\s+/).filter(Boolean);
 
             setGuessing(true);
 
             try {
-                const res = await fetch(`/api/coop/${code}/guess`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ playerToken, word: raw }),
-                });
+                for (const word of words) {
+                    const normalized = normalizeWord(word);
 
-                if (!res.ok) {
-                    const data = (await res.json()) as { error: string };
-                    setError(data.error);
-                    return;
-                }
+                    if (guesses.some((g) => g.word === normalized)) {
+                        continue;
+                    }
 
-                const result = (await res.json()) as GuessResult & {
-                    won: boolean;
-                };
+                    const res = await fetch(`/api/coop/${code}/guess`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ playerToken, word }),
+                    });
 
-                if (result.found && result.positions.length > 0) {
-                    setRevealed((prev) =>
-                        applyPositions(prev, result.positions),
-                    );
+                    if (!res.ok) {
+                        const data = (await res.json()) as { error: string };
+                        setError(data.error);
+                        break;
+                    }
+
+                    const result = (await res.json()) as GuessResult & {
+                        won: boolean;
+                    };
+
+                    if (result.found && result.positions.length > 0) {
+                        setRevealed((prev) =>
+                            applyPositions(prev, result.positions),
+                        );
+                        const keys = new Set(
+                            result.positions.map((p) =>
+                                posKey(p.section, p.part, p.wordIndex),
+                            ),
+                        );
+                        setLastFoundKeys(keys);
+                    }
                 }
             } catch {
                 setError("Erreur lors de la soumission");
@@ -73,6 +89,7 @@ export default function useCoopGuess(code: string | null) {
             guessing,
             guesses,
             setRevealed,
+            setLastFoundKeys,
         ],
     );
 

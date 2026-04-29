@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { normalizeWord } from "@/lib/game/normalize";
+import { checkWinCondition } from "@/lib/game/progress";
 import { useSubmitGuess } from "@/lib/query";
 import type { StoredGuess } from "@/types/game";
 import { saveCache } from "@/utils/cache";
-import { checkWinCondition } from "@/utils/game";
-import { applyPositions } from "@/utils/helper";
+import { applyPositions, posKey } from "@/utils/helper";
 import useArticle from "./useArticle";
 import useGame from "./useGame";
 import { useGameState } from "./useGameState";
@@ -23,6 +23,7 @@ const useGuess = () => {
         won,
         setWon,
         setError,
+        setLastFoundKeys,
     } = useGameState();
 
     // TanStack Query mutation for submitting guess
@@ -36,63 +37,97 @@ const useGuess = () => {
             if (!input.trim() || !article || won || guessing) return;
 
             const raw = input.trim();
-            const normalized = normalizeWord(raw);
+            const words = raw.split(/\s+/).filter(Boolean);
 
-            if (guesses.some((g) => g.word === normalized)) {
-                setInput("");
-                return;
-            }
+            let currentFoundWords = guesses
+                .filter((g) => g.found)
+                .map((g) => g.word);
+            let currentRevealed = { ...revealed };
+            const newGuessesThisBatch: StoredGuess[] = [];
+            const newLastFoundKeys = new Set<string>();
 
             try {
-                const foundWords = guesses
-                    .filter((g) => g.found)
-                    .map((g) => g.word);
+                for (const word of words) {
+                    const normalized = normalizeWord(word);
 
-                const guessResult = await submitGuessMutation({
-                    word: raw,
-                    revealedWords: foundWords,
-                });
+                    if (
+                        guesses.some((g) => g.word === normalized) ||
+                        newGuessesThisBatch.some((g) => g.word === normalized)
+                    ) {
+                        continue;
+                    }
 
-                if (!guessResult) {
-                    throw new Error("Erreur lors de la vérification du mot");
+                    const guessResult = await submitGuessMutation({
+                        word,
+                        revealedWords: currentFoundWords,
+                    });
+
+                    if (!guessResult) continue;
+
+                    // Detect server day change — discard this guess & reload
+                    if (guessResult.serverDate !== article.date) {
+                        reloadArticle();
+                        return;
+                    }
+
+                    const newGuess: StoredGuess = {
+                        word: guessResult.word,
+                        found: guessResult.found,
+                        occurrences: guessResult.occurrences,
+                        similarity: guessResult.similarity,
+                        proximityReason: guessResult.proximityReason,
+                    };
+
+                    newGuessesThisBatch.push(newGuess);
+                    currentRevealed = applyPositions(
+                        currentRevealed,
+                        guessResult.positions,
+                    );
+
+                    if (guessResult.found && guessResult.positions.length > 0) {
+                        currentFoundWords = [
+                            ...currentFoundWords,
+                            guessResult.word,
+                        ];
+                        for (const pos of guessResult.positions) {
+                            newLastFoundKeys.add(
+                                posKey(pos.section, pos.part, pos.wordIndex),
+                            );
+                        }
+                    }
                 }
 
-                // Detect server day change — discard this guess & reload
-                if (guessResult.serverDate !== article.date) {
-                    reloadArticle();
-                    return;
-                }
+                if (newGuessesThisBatch.length > 0) {
+                    const newGuesses = [
+                        ...newGuessesThisBatch.reverse(),
+                        ...guesses,
+                    ];
+                    setGuesses(newGuesses);
+                    setRevealed(currentRevealed);
 
-                const newGuess: StoredGuess = {
-                    word: guessResult.word,
-                    found: guessResult.found,
-                    occurrences: guessResult.occurrences,
-                    similarity: guessResult.similarity,
-                    proximityReason: guessResult.proximityReason,
-                };
+                    if (newLastFoundKeys.size > 0) {
+                        setLastFoundKeys(newLastFoundKeys);
+                    }
 
-                const newGuesses = [newGuess, ...guesses];
-                const newRevealed = applyPositions(
-                    revealed,
-                    guessResult.positions,
-                );
+                    saveCache(
+                        article.date,
+                        newGuesses,
+                        currentRevealed,
+                        undefined,
+                        revealedImages,
+                    );
 
-                setGuesses(newGuesses);
-                setRevealed(newRevealed);
-
-                saveCache(
-                    article.date,
-                    newGuesses,
-                    newRevealed,
-                    undefined,
-                    revealedImages,
-                );
-
-                if (checkWinCondition(article, newRevealed)) {
-                    setWon(true);
-                    const allWords = newGuesses.map((g) => g.word);
-                    revealAllWords(article, allWords, newGuesses, newRevealed);
-                    revealAllImages(article, newGuesses);
+                    if (checkWinCondition(article, currentRevealed)) {
+                        setWon(true);
+                        const allWords = newGuesses.map((g) => g.word);
+                        revealAllWords(
+                            article,
+                            allWords,
+                            newGuesses,
+                            currentRevealed,
+                        );
+                        revealAllImages(article, newGuesses);
+                    }
                 }
             } catch {
                 setError("Erreur lors de la soumission");
@@ -116,6 +151,7 @@ const useGuess = () => {
             setError,
             setInput,
             setWon,
+            setLastFoundKeys,
             submitGuessMutation,
         ],
     );

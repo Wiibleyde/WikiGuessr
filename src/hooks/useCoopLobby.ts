@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { computeRevealPercentage } from "@/lib/game/progress";
 import type { CoopJoinResponse, CoopLobbyState } from "@/types/coop";
-import { computeRevealPercentage } from "@/utils/game";
 import { applyPositions } from "@/utils/helper";
 import { useCoopState } from "./useCoopState";
 
@@ -20,8 +20,9 @@ export default function useCoopLobby() {
         setWon,
         playerToken,
         setPlayerToken,
+        isLeader,
+        setIsLeader,
     } = useCoopState();
-    const [isLeader, setIsLeader] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +45,7 @@ export default function useCoopLobby() {
         setRevealed,
         setWon,
         setPlayerToken,
+        setIsLeader,
     ]);
 
     const percentage = computeRevealPercentage(revealed, article);
@@ -76,7 +78,7 @@ export default function useCoopLobby() {
                 setLoading(false);
             }
         },
-        [setPlayerToken],
+        [setPlayerToken, setIsLeader],
     );
 
     const joinLobby = useCallback(
@@ -97,7 +99,6 @@ export default function useCoopLobby() {
                     return null;
                 }
                 const join = data as CoopJoinResponse;
-                // setPlayerId(join.playerId);
                 setPlayerToken(join.playerToken);
                 setIsLeader(join.isLeader);
                 return join;
@@ -108,7 +109,7 @@ export default function useCoopLobby() {
                 setLoading(false);
             }
         },
-        [setPlayerToken],
+        [setPlayerToken, setIsLeader],
     );
 
     const loadState = useCallback(
@@ -190,6 +191,54 @@ export default function useCoopLobby() {
         }
     }, [lobby, playerToken, setLobby, setArticle]);
 
+    const restartGame = useCallback(async () => {
+        if (!lobby || !playerToken) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(`/api/coop/${lobby.code}/restart`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ playerToken }),
+            });
+            if (!res.ok) {
+                const data = (await res.json()) as { error: string };
+                setError(data.error);
+            }
+        } catch {
+            setError("Erreur lors du redémarrage");
+        } finally {
+            setLoading(false);
+        }
+    }, [lobby, playerToken]);
+
+    const abandonCoopGame = useCallback(async () => {
+        if (!lobby || !playerToken) return;
+        if (
+            !window.confirm(
+                "Abandonner la partie ? La réponse sera révélée pour tout le monde.",
+            )
+        )
+            return;
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(`/api/coop/${lobby.code}/abandon`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ playerToken }),
+            });
+            if (!res.ok) {
+                const data = (await res.json()) as { error: string };
+                setError(data.error);
+            }
+        } catch {
+            setError("Erreur lors de l'abandon");
+        } finally {
+            setLoading(false);
+        }
+    }, [lobby, playerToken]);
+
     return {
         lobby,
         players,
@@ -201,6 +250,8 @@ export default function useCoopLobby() {
         joinLobby,
         loadState,
         startGame,
+        restartGame,
+        abandonCoopGame,
         article,
         setPlayerToken,
         isLeader,

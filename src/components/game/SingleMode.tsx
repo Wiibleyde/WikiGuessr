@@ -20,6 +20,8 @@ const SingleMode = () => {
         input,
         setInput,
         guessing,
+        lastFoundKeys,
+        todayRank,
     } = useWikiGuessr();
 
     return (
@@ -40,6 +42,8 @@ const SingleMode = () => {
             input={input}
             setInput={setInput}
             guessing={guessing}
+            lastFoundKeys={lastFoundKeys}
+            todayRank={todayRank}
         />
     );
 };
