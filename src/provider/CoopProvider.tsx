@@ -23,6 +23,7 @@ const CoopProvider = ({ children }: CoopProviderProps) => {
     const [playerToken, setPlayerToken] = useState<string | null>(null);
     const [lastFoundKeys, setLastFoundKeys] = useState<Set<string>>(new Set());
     const [abandoned, setAbandoned] = useState(false);
+    const [isLeader, setIsLeader] = useState(false);
 
     return (
         <CoopContext.Provider
@@ -45,6 +46,8 @@ const CoopProvider = ({ children }: CoopProviderProps) => {
                 setLastFoundKeys,
                 abandoned,
                 setAbandoned,
+                isLeader,
+                setIsLeader,
             }}
         >
             {children}

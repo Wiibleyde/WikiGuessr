@@ -5,7 +5,6 @@ import {
     HintNotFoundError,
 } from "@/lib/errors/gameError";
 import {
-    abandonGame,
     completeGame,
     getArticle,
     getGameState,
@@ -130,13 +129,6 @@ export async function completeGameHandler(
         }
         throw error;
     }
-}
-
-export async function abandonGameHandler(
-    _request: NextRequest,
-): Promise<NextResponse> {
-    const positions = await abandonGame();
-    return ok({ positions });
 }
 
 export async function revealAllHandler(

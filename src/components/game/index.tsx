@@ -38,7 +38,6 @@ interface GameProps {
     onLeave?: () => void;
     lastFoundKeys?: Set<string>;
     abandoned?: boolean;
-    abandonGame?: () => void;
     todayRank?: number | null;
 }
 
@@ -64,7 +63,6 @@ export default function Game({
     onLeave,
     lastFoundKeys,
     abandoned = false,
-    abandonGame,
     todayRank,
 }: GameProps) {
     if (loading) return <Loader message="Chargement de l'article du jour…" />;
@@ -144,18 +142,6 @@ export default function Game({
                 />
                 <GuessList guesses={guesses} />
             </div>
-
-            {!won && !abandoned && !coop && abandonGame && (
-                <div className="max-w-5xl mx-auto px-4 pb-4 text-center">
-                    <button
-                        type="button"
-                        onClick={abandonGame}
-                        className="text-xs text-danger hover:underline cursor-pointer"
-                    >
-                        Abandonner la partie
-                    </button>
-                </div>
-            )}
         </div>
     );
 }

@@ -21,7 +21,6 @@ export function useWikiGuessr() {
         input,
         setInput,
         lastFoundKeys,
-        abandoned,
         todayRank,
     } = useGameState();
 
@@ -31,7 +30,7 @@ export function useWikiGuessr() {
     const displayImages =
         won && winImages.length > 0 ? winImages : revealedImages;
 
-    const { revealHint, revealingHint, abandonGame } = useGame();
+    const { revealHint, revealingHint } = useGame();
     const { submitGuess, guessing } = useGuess();
     useArticle();
     useDb();
@@ -55,8 +54,6 @@ export function useWikiGuessr() {
         setInput,
         guessing,
         lastFoundKeys,
-        abandoned,
-        abandonGame,
         todayRank,
     };
 }

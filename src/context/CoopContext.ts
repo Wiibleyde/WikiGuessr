@@ -27,6 +27,8 @@ export interface CoopContextValue {
     setLastFoundKeys: Dispatch<SetStateAction<Set<string>>>;
     abandoned: boolean;
     setAbandoned: Dispatch<SetStateAction<boolean>>;
+    isLeader: boolean;
+    setIsLeader: Dispatch<SetStateAction<boolean>>;
 }
 
 const CoopContext = createContext<CoopContextValue | null>(null);

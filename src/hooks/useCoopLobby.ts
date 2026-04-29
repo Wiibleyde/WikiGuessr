@@ -20,8 +20,9 @@ export default function useCoopLobby() {
         setWon,
         playerToken,
         setPlayerToken,
+        isLeader,
+        setIsLeader,
     } = useCoopState();
-    const [isLeader, setIsLeader] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +45,7 @@ export default function useCoopLobby() {
         setRevealed,
         setWon,
         setPlayerToken,
+        setIsLeader,
     ]);
 
     const percentage = computeRevealPercentage(revealed, article);
@@ -76,7 +78,7 @@ export default function useCoopLobby() {
                 setLoading(false);
             }
         },
-        [setPlayerToken],
+        [setPlayerToken, setIsLeader],
     );
 
     const joinLobby = useCallback(
@@ -107,7 +109,7 @@ export default function useCoopLobby() {
                 setLoading(false);
             }
         },
-        [setPlayerToken],
+        [setPlayerToken, setIsLeader],
     );
 
     const loadState = useCallback(

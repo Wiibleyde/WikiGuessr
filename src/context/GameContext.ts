@@ -30,8 +30,6 @@ export interface GameContextValue {
     setYesterday: Dispatch<SetStateAction<string | null>>;
     lastFoundKeys: Set<string>;
     setLastFoundKeys: Dispatch<SetStateAction<Set<string>>>;
-    abandoned: boolean;
-    setAbandoned: Dispatch<SetStateAction<boolean>>;
     todayRank: number | null;
     setTodayRank: Dispatch<SetStateAction<number | null>>;
 }

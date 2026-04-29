@@ -105,10 +105,6 @@ export async function completeGame(
     return { resultId: result.id, rank };
 }
 
-export async function abandonGame(): Promise<WordPosition[]> {
-    return getAllWordPositions();
-}
-
 export async function revealAll(words: string[]): Promise<WordPosition[]> {
     const won = await verifyWin(words);
     if (!won) {
