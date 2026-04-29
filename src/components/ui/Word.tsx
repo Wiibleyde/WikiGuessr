@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/utils/cn";
-import { plural } from "@/utils/helper";
 
 const VARIANTS = {
     articleTitle: "bg-warning-light text-warning-text font-bold",
@@ -15,9 +14,15 @@ interface WordProps {
     length: number;
     text?: string;
     variant?: WordVariant;
+    isLastFound?: boolean;
 }
 
-export default function Word({ length, text, variant = "default" }: WordProps) {
+export default function Word({
+    length,
+    text,
+    variant = "default",
+    isLastFound = false,
+}: WordProps) {
     const [animate, setAnimate] = useState(false);
 
     useEffect(() => {
@@ -35,6 +40,7 @@ export default function Word({ length, text, variant = "default" }: WordProps) {
                     "inline-block px-0.5 rounded",
                     VARIANTS[variant],
                     animate && "animate-reveal",
+                    isLastFound && "ring-2 ring-warning ring-offset-1",
                 )}
             >
                 {text}
@@ -43,15 +49,15 @@ export default function Word({ length, text, variant = "default" }: WordProps) {
     }
 
     return (
-        <span
-            className="inline-block bg-subtle rounded mx-px align-middle cursor-default"
-            style={{
-                width: `${length}ch`,
-                height: "1.15em",
-                backgroundSize: "200% 100%",
-            }}
-            title={plural(length, "caractère", "caractères")}
-            aria-hidden="true"
-        />
+        <span className="inline-flex flex-col items-center align-middle mx-px">
+            <span
+                className="bg-subtle rounded cursor-default"
+                style={{ width: `${length}ch`, height: "1.15em" }}
+                aria-hidden="true"
+            />
+            <span className="text-[0.55em] text-muted leading-none mt-px select-none">
+                {length}
+            </span>
+        </span>
     );
 }

@@ -23,6 +23,12 @@ export interface CoopContextValue {
     setWon: Dispatch<SetStateAction<boolean>>;
     playerToken: string | null;
     setPlayerToken: Dispatch<SetStateAction<string | null>>;
+    lastFoundKeys: Set<string>;
+    setLastFoundKeys: Dispatch<SetStateAction<Set<string>>>;
+    abandoned: boolean;
+    setAbandoned: Dispatch<SetStateAction<boolean>>;
+    isLeader: boolean;
+    setIsLeader: Dispatch<SetStateAction<boolean>>;
 }
 
 const CoopContext = createContext<CoopContextValue | null>(null);

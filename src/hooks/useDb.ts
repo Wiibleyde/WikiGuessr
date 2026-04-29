@@ -1,10 +1,10 @@
 import axios from "axios";
 import { useCallback, useEffect, useRef } from "react";
+import { checkWinCondition } from "@/lib/game/progress";
+import { fetchStateFromServer, pushStateToServer } from "@/lib/query/client";
 import type { GameCache } from "@/types/game";
 import { loadCache, saveCache } from "@/utils/cache";
-import { checkWinCondition } from "@/utils/game";
 import { normalizeHintImageUrls } from "@/utils/hintImage";
-import { fetchStateFromServer, pushStateToServer } from "@/utils/server";
 import { useAuth } from "./useAuth";
 import useGame from "./useGame";
 import { useGameState } from "./useGameState";
@@ -27,6 +27,7 @@ const useDb = () => {
         setRevealedImages,
         synced,
         setSynced,
+        setTodayRank,
     } = useGameState();
 
     /** Push current state to the DB (called on each guess when logged in). */
@@ -129,8 +130,10 @@ const useDb = () => {
                 guessedWords: guesses.map((g) => g.word),
                 hintsUsed,
             })
-            .then(() => {
+            .then((res) => {
                 setSaved(true);
+                const rank = (res.data as { rank?: number }).rank;
+                if (rank != null) setTodayRank(rank);
                 saveCache(
                     article.date,
                     guesses,
@@ -159,6 +162,7 @@ const useDb = () => {
         revealed,
         revealedImages,
         setSaved,
+        setTodayRank,
         syncToDatabase,
     ]);
 

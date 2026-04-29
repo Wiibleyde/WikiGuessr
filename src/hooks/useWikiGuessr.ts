@@ -1,6 +1,6 @@
 "use client";
 
-import { computeRevealPercentage } from "@/utils/game";
+import { computeRevealPercentage } from "@/lib/game/progress";
 import useArticle from "./useArticle";
 import useDb from "./useDb";
 import useGame from "./useGame";
@@ -20,6 +20,8 @@ export function useWikiGuessr() {
         winImages,
         input,
         setInput,
+        lastFoundKeys,
+        todayRank,
     } = useGameState();
 
     const percentage = computeRevealPercentage(revealed, article);
@@ -51,5 +53,7 @@ export function useWikiGuessr() {
         input,
         setInput,
         guessing,
+        lastFoundKeys,
+        todayRank,
     };
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import packageJson from "../../../package.json";
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
@@ -11,6 +12,10 @@ export default function Footer() {
                         WikiGuessr
                     </span>
                     <span className="text-xs text-muted">© {currentYear}</span>
+                    <span className="text-xs text-muted">-</span>
+                    <span className="text-xs text-muted">
+                        v{packageJson.version}
+                    </span>
                 </div>
 
                 <nav className="flex items-center gap-4" aria-label="Crédits">

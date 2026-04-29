@@ -21,6 +21,9 @@ const CoopProvider = ({ children }: CoopProviderProps) => {
     const [revealed, setRevealed] = useState<RevealedMap>({});
     const [won, setWon] = useState(false);
     const [playerToken, setPlayerToken] = useState<string | null>(null);
+    const [lastFoundKeys, setLastFoundKeys] = useState<Set<string>>(new Set());
+    const [abandoned, setAbandoned] = useState(false);
+    const [isLeader, setIsLeader] = useState(false);
 
     return (
         <CoopContext.Provider
@@ -39,6 +42,12 @@ const CoopProvider = ({ children }: CoopProviderProps) => {
                 setWon,
                 playerToken,
                 setPlayerToken,
+                lastFoundKeys,
+                setLastFoundKeys,
+                abandoned,
+                setAbandoned,
+                isLeader,
+                setIsLeader,
             }}
         >
             {children}

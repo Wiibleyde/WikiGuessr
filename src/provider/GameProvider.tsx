@@ -21,6 +21,8 @@ const GameProvider = ({ children }: GameProviderProps) => {
     const [revealedImages, setRevealedImages] = useState<string[]>([]);
     const [winImages, setWinImages] = useState<string[]>([]);
     const [yesterday, setYesterday] = useState<string | null>(null);
+    const [lastFoundKeys, setLastFoundKeys] = useState<Set<string>>(new Set());
+    const [todayRank, setTodayRank] = useState<number | null>(null);
 
     return (
         <GameContext.Provider
@@ -49,6 +51,10 @@ const GameProvider = ({ children }: GameProviderProps) => {
                 setWinImages,
                 yesterday,
                 setYesterday,
+                lastFoundKeys,
+                setLastFoundKeys,
+                todayRank,
+                setTodayRank,
             }}
         >
             {children}

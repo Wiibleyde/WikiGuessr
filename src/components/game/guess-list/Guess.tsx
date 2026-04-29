@@ -29,22 +29,28 @@ export default function Guess({ guess }: GuessProps) {
                       : "bg-danger-light/60",
             ].join(" ")}
         >
-            <GuessWord
-                word={guess.word}
-                player={guess.player}
-                isFound={guess.found}
-                isClose={isClose}
-            />
+            <div className="min-w-0 flex-1 truncate">
+                <GuessWord
+                    word={guess.word}
+                    player={guess.player}
+                    isFound={guess.found}
+                    isClose={isClose}
+                />
+            </div>
 
-            <GuessInfos
-                variant={guess.found ? "found" : isClose ? "close" : "notFound"}
-            >
-                {guess.found
-                    ? `x${guess.occurrences}`
-                    : isClose
-                      ? `${guess.proximityReason?.description} ${PROXIMITY_ICONS[guess.proximityReason?.type || "mixed"] || ""}`
-                      : ""}
-            </GuessInfos>
+            <div className="shrink-0 ml-2">
+                <GuessInfos
+                    variant={
+                        guess.found ? "found" : isClose ? "close" : "notFound"
+                    }
+                >
+                    {guess.found
+                        ? `x${guess.occurrences}`
+                        : isClose
+                          ? `${guess.proximityReason?.description} ${PROXIMITY_ICONS[guess.proximityReason?.type || "mixed"] || ""}`
+                          : ""}
+                </GuessInfos>
+            </div>
         </div>
     );
 }

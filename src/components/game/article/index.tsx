@@ -7,9 +7,14 @@ import TokenList from "./TokenList";
 interface ArticleViewProps {
     article: MaskedArticle;
     revealed: RevealedMap;
+    lastFoundKeys?: Set<string>;
 }
 
-export default function ArticleView({ article, revealed }: ArticleViewProps) {
+export default function ArticleView({
+    article,
+    revealed,
+    lastFoundKeys,
+}: ArticleViewProps) {
     return (
         <main className="flex-1 min-w-0 space-y-4">
             <div className="p-5 bg-surface rounded-xl shadow-sm border border-border">
@@ -19,6 +24,7 @@ export default function ArticleView({ article, revealed }: ArticleViewProps) {
                         section={0}
                         part="title"
                         revealed={revealed}
+                        lastFoundKeys={lastFoundKeys}
                     />
                 </h2>
             </div>
@@ -30,6 +36,7 @@ export default function ArticleView({ article, revealed }: ArticleViewProps) {
                     titleTokens={index === 0 ? [] : sec.titleTokens}
                     contentTokens={sec.contentTokens}
                     revealed={revealed}
+                    lastFoundKeys={lastFoundKeys}
                 />
             ))}
         </main>

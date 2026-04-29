@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { MIN_GUESSES_FOR_HINT } from "@/constants/game";
 import { useRevealAllWords } from "@/lib/query";
-import { fetchImageHint } from "@/lib/query/queries";
+import { fetchImageHint } from "@/lib/query/client";
 import type { MaskedArticle, RevealedMap, StoredGuess } from "@/types/game";
 import { saveCache } from "@/utils/cache";
 import { applyPositions } from "@/utils/helper";
@@ -103,7 +103,12 @@ const useGame = () => {
         setRevealedImages,
     ]);
 
-    return { revealAllWords, revealAllImages, revealHint, revealingHint };
+    return {
+        revealAllWords,
+        revealAllImages,
+        revealHint,
+        revealingHint,
+    };
 };
 
 export default useGame;
