@@ -16,7 +16,7 @@ export default function Button({
         secondary: "border border-danger text-danger hover:bg-danger-light",
         navbar: "text-muted hover:text-text hover:bg-primary-light/50",
         navbarActive: "bg-primary-light text-primary-text",
-        danger: "bg-danger text-white hover:bg-danger-hover",
+        danger: "bg-red-500 text-white hover:bg-red-600",
     };
 
     return (
