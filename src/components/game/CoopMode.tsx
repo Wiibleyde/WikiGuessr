@@ -40,7 +40,7 @@ const CoopMode = ({ code, onLeave }: CoopGameProps) => {
                 submitGuess={submitGuess}
                 revealedImages={[]}
                 revealingHint={false}
-                revealHint={() => {}}
+                revealHint={() => { }}
                 hintsUsed={0}
                 imageCount={article.imageCount}
                 input={input}
@@ -63,13 +63,13 @@ const CoopMode = ({ code, onLeave }: CoopGameProps) => {
 
             {!won && !abandoned && isLeader && (
                 <div className="max-w-5xl mx-auto px-4 pb-4 text-center">
-                    <button
-                        type="button"
+                    <Button
+                        variant="danger"
                         onClick={abandonCoopGame}
-                        className="text-xs text-danger hover:underline cursor-pointer"
+                        disabled={loading}
                     >
                         Abandonner la partie (hôte)
-                    </button>
+                    </Button>
                 </div>
             )}
         </>
