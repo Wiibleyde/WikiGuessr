@@ -18,6 +18,7 @@ export default function useCoopLobby() {
         revealed,
         setRevealed,
         setWon,
+        setAbandoned,
         playerToken,
         setPlayerToken,
         isLeader,
@@ -131,12 +132,20 @@ export default function useCoopLobby() {
                 setGuesses(data.guesses);
                 if (data.article) setArticle(data.article);
                 if (data.lobby.status === "finished") setWon(true);
+                if (data.lobby.status === "abandoned") setAbandoned(true);
 
-                // Rebuild revealed map from guesses
+                // Rebuild revealed map from guesses; on abandoned games use full positions from server
                 let revealed = {};
-                for (const g of data.guesses) {
-                    if (g.found) {
-                        revealed = applyPositions(revealed, g.positions);
+                if (
+                    data.lobby.status === "abandoned" &&
+                    data.abandonPositions?.length
+                ) {
+                    revealed = applyPositions(revealed, data.abandonPositions);
+                } else {
+                    for (const g of data.guesses) {
+                        if (g.found) {
+                            revealed = applyPositions(revealed, g.positions);
+                        }
                     }
                 }
                 setRevealed(revealed);
@@ -148,7 +157,15 @@ export default function useCoopLobby() {
                 }
             }
         },
-        [setLobby, setPlayers, setGuesses, setArticle, setRevealed, setWon],
+        [
+            setLobby,
+            setPlayers,
+            setGuesses,
+            setArticle,
+            setRevealed,
+            setWon,
+            setAbandoned,
+        ],
     );
 
     const startGame = useCallback(async () => {
