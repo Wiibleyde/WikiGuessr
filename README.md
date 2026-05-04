@@ -44,8 +44,8 @@ Un jeu de devinettes quotidien basé sur Wikipédia. Chaque jour, une page Wikip
 - UI: React 19
 - Langage: TypeScript 5 (strict)
 - Styling: Tailwind CSS 4
-- Client state: Jotai / React Context + hooks
-- HTTP / Fetching: SWR / fetch
+- Client state: React Context + hooks
+- HTTP / Fetching: TanStack Query / axios
 - Base de données: PostgreSQL + Prisma 7
 - Auth: BetterAuth (Prisma adapter) with Discord social provider
 - Runtime & package manager: Bun
@@ -270,11 +270,14 @@ Ci-dessous un résumé des principales routes API exposées par l'application, l
     - Exemples (JSON bodies):
         - `POST /api/coop` (create lobby): { "displayName": "string", "userId": "string" (optional) }
         - `POST /api/coop/join`: { "code": "STRING", "displayName": "string", "userId": "string" (optional) }
+        - `GET /api/coop/{code}`: état du lobby
+        - `POST /api/coop/{code}/start`: { "playerToken": "string" } (leader uniquement)
         - `POST /api/coop/{code}/guess`: { "playerToken": "string", "word": "string" }
-    - Description: Endpoints pour la création/jointure de lobby et le jeu coopératif (voir `src/lib/controllers/coopController.ts`).
+        - `POST /api/coop/{code}/leave`: { "playerToken": "string" }
+        - `POST /api/coop/{code}/restart`: { "playerToken": "string" } (leader uniquement)
+        - `POST /api/coop/{code}/abandon`: { "playerToken": "string" } (leader uniquement)
+    - Description: Endpoints pour la création/jointure de lobby et le jeu coopératif (voir `src/app/api/coop/`).
 
-Si vous souhaitez, je peux générer un schéma OpenAPI minimal à partir de ces définitions.
- 
 ### Documentation détaillée des routes API
 
 Chaque route est décrite avec une courte présentation, un exemple d'appel et un exemple de réponse (HTTP 200 ou type attendu). Les exemples utilisent `http://localhost:3000` comme base locale.
@@ -649,6 +652,44 @@ Réponse 200 :
 
 ---
 
+### POST `/api/coop/{code}/restart`
+
+Redemarre la partie coop (le body doit contenir `playerToken` ; la route vérifie que le joueur est leader).
+
+Exemple :
+```
+POST http://localhost:3000/api/coop/ABC123/restart
+Content-Type: application/json
+
+{ "playerToken": "tok.." }
+```
+
+Réponse 200 :
+```json
+{ "article": { /* MaskedArticle */ } }
+```
+
+---
+
+### POST `/api/coop/{code}/abandon`
+
+Abandonne et ferme définitivement le lobby (leader uniquement).
+
+Exemple :
+```
+POST http://localhost:3000/api/coop/ABC123/abandon
+Content-Type: application/json
+
+{ "playerToken": "tok.." }
+```
+
+Réponse 200 :
+```json
+{ "success": true }
+```
+
+---
+
 ### GET/POST `/api/auth/[...betterauth]`
 
 Routes d'authentification gérées par BetterAuth (OAuth, sessions, callbacks). Le détail dépend de l'opération BetterAuth.
@@ -662,11 +703,6 @@ POST /api/auth/callback/discord
 Réponse : variable selon l'opération BetterAuth (JSON ou redirection OAuth).
 
 ---
-
-Si vous voulez, je peux :
-- extraire ces exemples dans `docs/API.md` au format plus long;
-- ou générer un fichier OpenAPI (YAML/JSON) minimal.
-
 
 ## Installation & configuration
 
@@ -713,10 +749,10 @@ bun run db:migrate   # Appliquer les migrations
 
 ## Démarrage local (Bun)
 
-1. Démarrer PostgreSQL (Docker)
+1. Démarrer les services Supabase (PostgreSQL + Realtime)
 
 ```bash
-docker compose up -d postgres
+docker compose up -d
 ```
 
 2. Appliquer les migrations et générer le client
@@ -726,13 +762,7 @@ bun run db:migrate
 bun run db:generate
 ```
 
-3. Démarrer Supabase Realtime pour le mode coopératif en ligne
-
-```bash
-docker compose up -d
-```
-
-4. Lancer l'app
+3. Lancer l'app
 
 ```bash
 bun run dev
@@ -758,7 +788,6 @@ Structure principale (résumé)
 src/
 ├── app/                # App Router pages, metadata et routes API
 ├── components/         # Composants UI (game, navbar, profile...)
-├── atom/               # Atomes Jotai pour état global
 ├── constants/          # Constantes métier
 ├── context/            # Context providers (Coop, Game, Login)
 ├── hooks/              # Hooks client (useArticle, useGame, useGuess...)
