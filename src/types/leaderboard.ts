@@ -1,3 +1,5 @@
+import type { PaginationMeta } from "./pagination";
+
 /** Identifiant d'une catégorie de classement — extensible via union */
 export type LeaderboardCategoryId = "win-streak" | "best-guess" | "most-wins";
 
@@ -33,7 +35,8 @@ export interface LeaderboardResponse {
 }
 
 /** Alias vers le type partagé — conservé pour compatibilité */
-export type { PaginationMeta as LeaderboardPaginationMeta } from "./pagination";
+export type LeaderboardPaginationMeta = PaginationMeta;
+export type { PaginationMeta } from "./pagination";
 
 /** Réponse paginée d'une catégorie — utilisée par /api/leaderboard/category */
 export interface PaginatedLeaderboardCategoryData {
