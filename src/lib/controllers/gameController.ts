@@ -17,8 +17,13 @@ import {
 import type { AuthUser } from "@/types/auth";
 import type { GameCache } from "@/types/game";
 import { err, ok } from "@/utils/response";
-
-const MAX_GUESS_COUNT = 10_000;
+import {
+    completeGameSchema,
+    getHintSchema,
+    revealAllSchema,
+    saveStateSchema,
+    submitGuessSchema,
+} from "./gameSchemas";
 
 export async function getArticleHandler(
     _request: NextRequest,
@@ -32,25 +37,12 @@ export async function getArticleHandler(
 export async function submitGuessHandler(
     request: NextRequest,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as {
-        word?: unknown;
-        revealedWords?: unknown;
-    };
-    const { word } = body;
-
-    if (!word || typeof word !== "string") {
-        return err("Mot manquant", 400);
+    const parsed = submitGuessSchema.safeParse(await request.json());
+    if (!parsed.success) {
+        return err(parsed.error.issues[0]?.message ?? "Données invalides", 400);
     }
-    const trimmed = word.trim();
-    if (trimmed.length === 0 || trimmed.length > 100) {
-        return err("Mot invalide", 400);
-    }
-
-    const revealedWords = Array.isArray(body.revealedWords)
-        ? body.revealedWords.filter((w): w is string => typeof w === "string")
-        : undefined;
-
-    const result = await submitGuess(trimmed, revealedWords);
+    const { word, revealedWords } = parsed.data;
+    const result = await submitGuess(word, revealedWords);
     return ok(result);
 }
 
@@ -66,13 +58,11 @@ export async function saveStateHandler(
     request: NextRequest,
     user: AuthUser,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as GameCache;
-
-    if (!Array.isArray(body.guesses) || typeof body.revealed !== "object") {
+    const parsed = saveStateSchema.safeParse(await request.json());
+    if (!parsed.success) {
         return err("Données invalides", 400);
     }
-
-    await saveGameState(user, body);
+    await saveGameState(user, parsed.data as GameCache);
     return ok({ success: true });
 }
 
@@ -80,42 +70,18 @@ export async function completeGameHandler(
     request: NextRequest,
     user: AuthUser,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as {
-        guessCount?: unknown;
-        guessedWords?: unknown;
-        hintsUsed?: unknown;
-    };
-    const { guessCount, guessedWords, hintsUsed } = body;
-
-    if (
-        typeof guessCount !== "number" ||
-        guessCount < 1 ||
-        guessCount > MAX_GUESS_COUNT
-    ) {
-        return err("Nombre d'essais invalide", 400);
+    const parsed = completeGameSchema.safeParse(await request.json());
+    if (!parsed.success) {
+        return err(parsed.error.issues[0]?.message ?? "Données invalides", 400);
     }
-
-    if (!Array.isArray(guessedWords) || guessedWords.length === 0) {
-        return err("Liste de mots manquante", 400);
-    }
-
-    const safeGuessedWords = guessedWords.filter(
-        (word): word is string => typeof word === "string" && word.length > 0,
-    );
-    if (safeGuessedWords.length !== guessedWords.length) {
-        return err("Liste de mots invalide", 400);
-    }
-
-    const safeHintsUsed =
-        typeof hintsUsed === "number" && hintsUsed >= 0
-            ? Math.floor(hintsUsed)
-            : 0;
+    const { guessCount, guessedWords, hintsUsed } = parsed.data;
+    const safeHintsUsed = Math.floor(hintsUsed ?? 0);
 
     try {
         const result = await completeGame(
             user,
             guessCount,
-            safeGuessedWords,
+            guessedWords,
             safeHintsUsed,
         );
         return ok({
@@ -134,22 +100,12 @@ export async function completeGameHandler(
 export async function revealAllHandler(
     request: NextRequest,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as { words?: unknown };
-    const { words } = body;
-
-    if (!Array.isArray(words) || words.length === 0) {
-        return err("Liste de mots requise", 400);
+    const parsed = revealAllSchema.safeParse(await request.json());
+    if (!parsed.success) {
+        return err(parsed.error.issues[0]?.message ?? "Données invalides", 400);
     }
-
-    const safeWords = words.filter(
-        (word): word is string => typeof word === "string" && word.length > 0,
-    );
-    if (safeWords.length !== words.length) {
-        return err("Liste de mots invalide", 400);
-    }
-
     try {
-        const positions = await revealAll(safeWords);
+        const positions = await revealAll(parsed.data.words);
         return ok({ positions });
     } catch (error) {
         if (error instanceof GameVerificationError) {
@@ -170,28 +126,13 @@ export async function getHintHandler(
     request: NextRequest,
     user: AuthUser | null,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as {
-        hintIndex?: unknown;
-        guesses?: unknown;
-        won?: unknown;
-    };
-    const { hintIndex, guesses, won } = body;
-
-    if (typeof hintIndex !== "number" || hintIndex < 0) {
-        return err("Index d'indice invalide", 400);
+    const parsed = getHintSchema.safeParse(await request.json());
+    if (!parsed.success) {
+        return err(parsed.error.issues[0]?.message ?? "Données invalides", 400);
     }
-
-    const clientGuesses = Array.isArray(guesses)
-        ? guesses.filter((g): g is string => typeof g === "string")
-        : undefined;
-
+    const { hintIndex, guesses, won } = parsed.data;
     try {
-        const result = await getHint(
-            hintIndex,
-            user,
-            clientGuesses,
-            won === true,
-        );
+        const result = await getHint(hintIndex, user, guesses, won === true);
         return ok(result);
     } catch (error) {
         if (error instanceof HintLockedError) return err(error.message, 403);

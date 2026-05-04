@@ -18,39 +18,24 @@ import {
     submitCoopGuess,
 } from "@/lib/services/coopService";
 import { err, ok } from "@/utils/response";
-
-function validateDisplayName(
-    name: unknown,
-): { valid: true; trimmed: string } | { valid: false; response: NextResponse } {
-    if (!name || typeof name !== "string") {
-        return { valid: false, response: err("Nom d'affichage requis", 400) };
-    }
-    const trimmed = name.trim();
-    if (trimmed.length === 0 || trimmed.length > 30) {
-        return {
-            valid: false,
-            response: err("Nom invalide (1-30 caractères)", 400),
-        };
-    }
-    return { valid: true, trimmed };
-}
+import {
+    createLobbySchema,
+    joinLobbySchema,
+    playerTokenSchema,
+    submitCoopGuessSchema,
+} from "./coopSchemas";
 
 export async function createLobbyHandler(
     request: NextRequest,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as {
-        displayName?: unknown;
-        userId?: unknown;
-    };
-
-    const nameResult = validateDisplayName(body.displayName);
-    if (!nameResult.valid) return nameResult.response;
-    const { trimmed } = nameResult;
-
-    const userId = typeof body.userId === "string" ? body.userId : undefined;
+    const parsed = createLobbySchema.safeParse(await request.json());
+    if (!parsed.success) {
+        return err(parsed.error.issues[0]?.message ?? "Données invalides", 400);
+    }
+    const { displayName, userId } = parsed.data;
 
     const { lobby, player, playerToken } = await createCoopLobby(
-        trimmed,
+        displayName,
         userId,
     );
 
@@ -65,31 +50,16 @@ export async function createLobbyHandler(
 export async function joinLobbyHandler(
     request: NextRequest,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as {
-        code?: unknown;
-        displayName?: unknown;
-        userId?: unknown;
-    };
-
-    if (!body.code || typeof body.code !== "string") {
-        return err("Code du lobby requis", 400);
+    const parsed = joinLobbySchema.safeParse(await request.json());
+    if (!parsed.success) {
+        return err(parsed.error.issues[0]?.message ?? "Données invalides", 400);
     }
-
-    const nameResult = validateDisplayName(body.displayName);
-    if (!nameResult.valid) return nameResult.response;
-
-    const code = body.code.trim().toUpperCase();
-    if (!/^[A-Z2-9]{6}$/.test(code)) {
-        return err("Code invalide (6 caractères attendus)", 400);
-    }
-    const { trimmed } = nameResult;
-
-    const userId = typeof body.userId === "string" ? body.userId : undefined;
+    const { code, displayName, userId } = parsed.data;
 
     try {
         const { lobby, player, playerToken } = await joinCoopLobby(
             code,
-            trimmed,
+            displayName,
             userId,
         );
 
@@ -124,14 +94,15 @@ export async function startGameHandler(
     request: NextRequest,
     code: string,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as { playerToken?: unknown };
-
-    if (!body.playerToken || typeof body.playerToken !== "string") {
-        return err("Token joueur requis", 400);
+    const parsed = playerTokenSchema.safeParse(await request.json());
+    if (!parsed.success) {
+        return err(
+            parsed.error.issues[0]?.message ?? "Token joueur requis",
+            400,
+        );
     }
-
     try {
-        const article = await startCoopGame(code, body.playerToken);
+        const article = await startCoopGame(code, parsed.data.playerToken);
         return ok({ article });
     } catch (error) {
         if (error instanceof LobbyNotFoundError) return err(error.message, 404);
@@ -146,28 +117,17 @@ export async function submitCoopGuessHandler(
     request: NextRequest,
     code: string,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as {
-        playerToken?: unknown;
-        word?: unknown;
-    };
-
-    if (!body.playerToken || typeof body.playerToken !== "string") {
-        return err("Token joueur requis", 400);
+    const parsed = submitCoopGuessSchema.safeParse(await request.json());
+    if (!parsed.success) {
+        return err(parsed.error.issues[0]?.message ?? "Données invalides", 400);
     }
-    if (!body.word || typeof body.word !== "string") {
-        return err("Mot manquant", 400);
-    }
-
-    const trimmed = (body.word as string).trim();
-    if (trimmed.length === 0 || trimmed.length > 100) {
-        return err("Mot invalide", 400);
-    }
+    const { playerToken, word } = parsed.data;
 
     try {
         const { guessResult, won } = await submitCoopGuess(
             code,
-            body.playerToken,
-            trimmed,
+            playerToken,
+            word,
         );
         return ok({ ...guessResult, won });
     } catch (error) {
@@ -182,14 +142,16 @@ export async function leaveLobbyHandler(
     request: NextRequest,
     code: string,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as { playerToken?: unknown };
-
-    if (!body.playerToken || typeof body.playerToken !== "string") {
-        return err("Token joueur requis", 400);
+    const parsed = playerTokenSchema.safeParse(await request.json());
+    if (!parsed.success) {
+        return err(
+            parsed.error.issues[0]?.message ?? "Token joueur requis",
+            400,
+        );
     }
 
     try {
-        const result = await leaveLobby(code, body.playerToken);
+        const result = await leaveLobby(code, parsed.data.playerToken);
         return ok(result);
     } catch (error) {
         if (error instanceof LobbyNotFoundError) return err(error.message, 404);
@@ -201,14 +163,16 @@ export async function restartCoopGameHandler(
     request: NextRequest,
     code: string,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as { playerToken?: unknown };
-
-    if (!body.playerToken || typeof body.playerToken !== "string") {
-        return err("Token joueur manquant", 400);
+    const parsed = playerTokenSchema.safeParse(await request.json());
+    if (!parsed.success) {
+        return err(
+            parsed.error.issues[0]?.message ?? "Token joueur manquant",
+            400,
+        );
     }
 
     try {
-        await restartCoopGame(code, body.playerToken);
+        await restartCoopGame(code, parsed.data.playerToken);
         return ok({ success: true });
     } catch (error) {
         if (error instanceof LobbyNotFoundError) return err(error.message, 404);
@@ -223,14 +187,16 @@ export async function abandonCoopGameHandler(
     request: NextRequest,
     code: string,
 ): Promise<NextResponse> {
-    const body = (await request.json()) as { playerToken?: unknown };
-
-    if (!body.playerToken || typeof body.playerToken !== "string") {
-        return err("Token joueur manquant", 400);
+    const parsed = playerTokenSchema.safeParse(await request.json());
+    if (!parsed.success) {
+        return err(
+            parsed.error.issues[0]?.message ?? "Token joueur manquant",
+            400,
+        );
     }
 
     try {
-        await abandonCoopGame(code, body.playerToken);
+        await abandonCoopGame(code, parsed.data.playerToken);
         return ok({ success: true });
     } catch (error) {
         if (error instanceof LobbyNotFoundError) return err(error.message, 404);
