@@ -118,7 +118,7 @@ model GameState {
 model CoopLobby {
   id           Int          @id @default(autoincrement())
   code         String       @unique
-  status       String       @default("waiting") // waiting | playing | finished
+  status       String       @default("waiting") // waiting | playing | finished | abandoned
   maxPlayers   Int          @default(4)
   wikiTitle    String?
   wikiSections Json? // WikiSection[]

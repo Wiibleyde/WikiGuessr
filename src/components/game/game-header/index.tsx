@@ -24,6 +24,7 @@ interface GameHeaderProps {
     guessing: boolean;
     datas: string[];
     todayRank?: number | null;
+    abandoned?: boolean;
 }
 
 export default function GameHeader({
@@ -38,10 +39,26 @@ export default function GameHeader({
     datas,
     guessing,
     todayRank,
+    abandoned = false,
 }: GameHeaderProps) {
     const onInputChange = (value: string) => {
         setInput(value);
     };
+
+    if (abandoned) {
+        return (
+            <div className="max-w-5xl mx-auto px-4 pt-4">
+                <div
+                    className="bg-danger-light/60 border border-danger/30 rounded-xl p-3 text-center"
+                    aria-live="polite"
+                >
+                    <p className="text-danger font-bold text-lg font-(family-name:--font-heading)">
+                        Partie abandonnée — réponse révélée
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-surface border-b border-border">

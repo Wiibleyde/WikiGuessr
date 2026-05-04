@@ -2,7 +2,7 @@ import type { MaskedArticle, ProximityReason, WordPosition } from "./game";
 
 export interface CoopLobbyInfo {
     code: string;
-    status: "waiting" | "playing" | "finished";
+    status: "waiting" | "playing" | "finished" | "abandoned";
     maxPlayers: number;
     createdAt: string;
 }
@@ -34,6 +34,7 @@ export interface CoopLobbyState {
     players: CoopPlayerInfo[];
     guesses: CoopGuessEntry[];
     article: MaskedArticle | null;
+    abandonPositions?: WordPosition[];
 }
 
 export interface CoopJoinResponse {

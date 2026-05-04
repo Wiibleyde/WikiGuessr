@@ -95,20 +95,8 @@ export default function Game({
                     plural(hintsUsed, "indice", "indices"),
                     plural(percentage, "% révélé", "% révélés"),
                 ]}
+                abandoned={abandoned}
             />
-
-            {abandoned && (
-                <div className="max-w-5xl mx-auto px-4 pt-4">
-                    <div
-                        className="bg-danger-light/60 border border-danger/30 rounded-xl p-3 text-center"
-                        aria-live="polite"
-                    >
-                        <p className="text-danger font-bold text-lg font-(family-name:--font-heading)">
-                            Partie abandonnée — réponse révélée
-                        </p>
-                    </div>
-                </div>
-            )}
 
             <ImageHint
                 imageCount={imageCount}

@@ -324,6 +324,9 @@ export async function getCoopLobbyState(
             createdAt: g.createdAt.toISOString(),
         })),
         article,
+        ...(lobby.status === "abandoned" && {
+            abandonPositions: getAllCoopWordPositions(code),
+        }),
     };
 }
 
@@ -337,7 +340,8 @@ export async function restartCoopGame(
 
     const lobby = await getLobbyByCode(code);
     if (!lobby) throw new LobbyNotFoundError();
-    if (lobby.status !== "finished") throw new GameNotStartedError();
+    if (lobby.status !== "finished" && lobby.status !== "abandoned")
+        throw new GameNotStartedError();
 
     await clearLobbyGuesses(lobby.id);
     await resetLobbyForRestart(code);
@@ -358,7 +362,7 @@ export async function abandonCoopGame(
     if (!lobby) throw new LobbyNotFoundError();
     if (lobby.status !== "playing") throw new GameNotStartedError();
 
-    await updateLobbyStatus(code, "finished");
+    await updateLobbyStatus(code, "abandoned");
     const positions = getAllCoopWordPositions(code);
     await broadcastToLobby(code, "game_abandoned", { positions });
     removeCoopCache(code);

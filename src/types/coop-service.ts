@@ -1,4 +1,4 @@
-import type { GuessResult, MaskedArticle } from "@/types/game";
+import type { GuessResult, MaskedArticle, WordPosition } from "@/types/game";
 import type {
     CoopLobbyWithPlayers,
     CoopLobbyWithState,
@@ -55,4 +55,5 @@ export interface CoopLobbyStateResult {
         createdAt: string;
     }>;
     article: MaskedArticle | null;
+    abandonPositions?: WordPosition[];
 }
