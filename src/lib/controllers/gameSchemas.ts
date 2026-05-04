@@ -27,9 +27,12 @@ export const completeGameSchema = z.object({
 });
 
 export const revealAllSchema = z.object({
-    words: z
-        .array(z.string().min(1, "Liste de mots invalide"))
-        .min(1, "Liste de mots requise"),
+    words: z.preprocess(
+        (val) => (val === undefined || val === null ? [] : val),
+        z
+            .array(z.string().min(1, "Liste de mots invalide"))
+            .min(1, "Liste de mots requise"),
+    ),
 });
 
 export const getHintSchema = z.object({

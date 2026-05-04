@@ -1,11 +1,15 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type { LeaderboardCategoryId } from "@/types/leaderboard";
 import {
     checkGameGuess,
     fetchGame,
     fetchGameReveal,
     fetchHistoric,
+    fetchHistoricDates,
+    fetchHistoricPaginated,
     fetchImageHint,
     fetchLeaderboard,
+    fetchLeaderboardCategory,
     fetchProfileStats,
     fetchYesterdayWord,
 } from "./client";
@@ -77,6 +81,20 @@ export const useFetchLeaderboard = (enabled = true) => {
     });
 };
 
+/** Fetch a single paginated leaderboard category */
+export const useFetchLeaderboardCategory = (
+    category: LeaderboardCategoryId,
+    page: number,
+    perPage = 5,
+) => {
+    return useQuery({
+        queryKey: ["leaderboard", "category", category, page, perPage],
+        queryFn: () => fetchLeaderboardCategory(category, page, perPage),
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        gcTime: 1000 * 60 * 10, // 10 minutes
+    });
+};
+
 /** Fetch historic pages */
 export const useFetchHistoric = (enabled = true) => {
     return useQuery({
@@ -85,6 +103,30 @@ export const useFetchHistoric = (enabled = true) => {
         enabled,
         staleTime: 1000 * 60 * 5, // 5 minutes
         gcTime: 1000 * 60 * 10, // 10 minutes
+    });
+};
+
+/** Fetch paginated historic pages */
+export const useFetchHistoricPaginated = (
+    page: number,
+    perPage = 5,
+    filterDate?: string,
+) => {
+    return useQuery({
+        queryKey: ["historic", "paginated", page, perPage, filterDate ?? null],
+        queryFn: () => fetchHistoricPaginated(page, perPage, filterDate),
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        gcTime: 1000 * 60 * 10, // 10 minutes
+    });
+};
+
+/** Fetch all available historic dates (for calendar highlighting) */
+export const useFetchHistoricDates = () => {
+    return useQuery({
+        queryKey: ["historic", "dates"],
+        queryFn: () => fetchHistoricDates(),
+        staleTime: 1000 * 60 * 60, // 1 hour — dates rarely change mid-session
+        gcTime: 1000 * 60 * 60 * 2, // 2 hours
     });
 };
 
