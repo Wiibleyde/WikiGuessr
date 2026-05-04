@@ -57,7 +57,6 @@ export const getMostWins = async (): Promise<MostWinsRow[]> => {
         where: { won: true },
         _count: { id: true },
         orderBy: { _count: { id: "desc" } },
-        take: 20,
     });
     return results;
 };

@@ -7,11 +7,15 @@ import {
 import { getUserWhereIdIn } from "@/lib/repositories/userRepository";
 import type {
     LeaderboardCategoryData,
+    LeaderboardCategoryId,
     LeaderboardCategoryMeta,
     LeaderboardEntry,
+    PaginatedLeaderboardCategoryData,
 } from "@/types/leaderboard";
 
 const LEADERBOARD_LIMIT = 20;
+
+export const LEADERBOARD_DEFAULT_PER_PAGE = 5;
 
 const CATEGORIES: LeaderboardCategoryMeta[] = [
     {
@@ -130,7 +134,7 @@ async function computeWinStreak(): Promise<LeaderboardEntry[]> {
 
     streaks.sort((a, b) => b.streak - a.streak);
 
-    return streaks.slice(0, LEADERBOARD_LIMIT).map((s, i) => ({
+    return streaks.map((s, i) => ({
         rank: i + 1,
         userId: s.userId,
         name: s.name,
@@ -172,7 +176,7 @@ async function computeBestGuess(): Promise<LeaderboardEntry[]> {
 
     const sorted = [...best.values()].sort((a, b) => a.rawValue - b.rawValue);
 
-    return sorted.slice(0, LEADERBOARD_LIMIT).map((e, i) => ({
+    return sorted.map((e, i) => ({
         rank: i + 1,
         userId: e.userId,
         name: e.name,
@@ -200,6 +204,35 @@ async function computeMostWins(): Promise<LeaderboardEntry[]> {
     });
 }
 
+export async function computeLeaderboardCategory(
+    categoryId: LeaderboardCategoryId,
+    page: number,
+    perPage: number,
+): Promise<PaginatedLeaderboardCategoryData> {
+    const meta = CATEGORIES.find((c) => c.id === categoryId);
+    if (!meta) {
+        throw new Error(`Unknown leaderboard category: ${categoryId}`);
+    }
+
+    const compute = COMPUTERS[categoryId];
+    const allEntries = await compute();
+    const total = allEntries.length;
+    const totalPages = Math.max(1, Math.ceil(total / perPage));
+    const safePage = Math.min(page, totalPages);
+    const start = (safePage - 1) * perPage;
+    const sliced = allEntries.slice(start, start + perPage);
+    const entries = sliced.map((e, i) => ({
+        ...e,
+        rank: start + i + 1,
+    }));
+
+    return {
+        meta,
+        entries,
+        pagination: { total, page: safePage, perPage, totalPages },
+    };
+}
+
 const COMPUTERS: Record<string, CategoryComputer> = {
     "win-streak": computeWinStreak,
     "best-guess": computeBestGuess,
@@ -212,7 +245,8 @@ export async function computeLeaderboard(): Promise<LeaderboardCategoryData[]> {
     for (const meta of CATEGORIES) {
         const compute = COMPUTERS[meta.id];
         if (!compute) continue;
-        const entries = await compute();
+        const allEntries = await compute();
+        const entries = allEntries.slice(0, LEADERBOARD_LIMIT);
         results.push({ meta, entries });
     }
 

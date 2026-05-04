@@ -8,8 +8,11 @@ import type {
     MaskedArticle,
     RevealResponse,
 } from "@/types/game";
-import type { PageEntry } from "@/types/historic";
-import type { LeaderboardCategoryData } from "@/types/leaderboard";
+import type { PageEntry, PaginatedHistoricResponse } from "@/types/historic";
+import type {
+    LeaderboardCategoryData,
+    PaginatedLeaderboardCategoryData,
+} from "@/types/leaderboard";
 import { fetcher } from "@/utils/fetcher";
 
 export const fetchImageHint = async (
@@ -97,12 +100,64 @@ export const fetchLeaderboard = async (): Promise<
     }
 };
 
+export const fetchLeaderboardCategory = async (
+    category: string,
+    page: number,
+    perPage: number,
+): Promise<PaginatedLeaderboardCategoryData | null> => {
+    try {
+        const params = new URLSearchParams({
+            category,
+            page: String(page),
+            perPage: String(perPage),
+        });
+        const data = await fetcher<PaginatedLeaderboardCategoryData>(
+            `/api/leaderboard/category?${params.toString()}`,
+        );
+        return data;
+    } catch (err) {
+        console.error("[fetchLeaderboardCategory]", err);
+        return null;
+    }
+};
+
 export const fetchHistoric = async (): Promise<PageEntry[] | null> => {
     try {
         const data = await fetcher<PageEntry[]>("/api/historic");
         return data;
     } catch (err) {
         console.error("[fetchHistoric]", err);
+        return null;
+    }
+};
+
+export const fetchHistoricPaginated = async (
+    page: number,
+    perPage: number,
+    filterDate?: string,
+): Promise<PaginatedHistoricResponse | null> => {
+    try {
+        const params = new URLSearchParams({
+            page: String(page),
+            perPage: String(perPage),
+        });
+        if (filterDate) params.set("date", filterDate);
+        const data = await fetcher<PaginatedHistoricResponse>(
+            `/api/historic/paginated?${params.toString()}`,
+        );
+        return data;
+    } catch (err) {
+        console.error("[fetchHistoricPaginated]", err);
+        return null;
+    }
+};
+
+export const fetchHistoricDates = async (): Promise<string[] | null> => {
+    try {
+        const data = await fetcher<{ dates: string[] }>("/api/historic/dates");
+        return data.dates;
+    } catch (err) {
+        console.error("[fetchHistoricDates]", err);
         return null;
     }
 };
