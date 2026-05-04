@@ -31,3 +31,13 @@ export interface LeaderboardCategoryData {
 export interface LeaderboardResponse {
     categories: LeaderboardCategoryData[];
 }
+
+/** Alias vers le type partagé — conservé pour compatibilité */
+export type { PaginationMeta as LeaderboardPaginationMeta } from "./pagination";
+
+/** Réponse paginée d'une catégorie — utilisée par /api/leaderboard/category */
+export interface PaginatedLeaderboardCategoryData {
+    meta: LeaderboardCategoryMeta;
+    entries: LeaderboardEntry[];
+    pagination: LeaderboardPaginationMeta;
+}

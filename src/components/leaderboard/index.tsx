@@ -1,24 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useFetchLeaderboard } from "@/lib/query";
+import { useState } from "react";
+import type { LeaderboardCategoryId } from "@/types/leaderboard";
 import Layout from "../ui/Layout";
 import LeaderboardCategory from "./LeaderboardCategory";
 
+const CATEGORY_IDS: LeaderboardCategoryId[] = [
+    "win-streak",
+    "best-guess",
+    "most-wins",
+];
+
 export default function LeaderboardContent() {
     const [openCategories, setOpenCategories] = useState<Set<string>>(
-        new Set(),
+        new Set(CATEGORY_IDS),
     );
-
-    const { data, error, isLoading } = useFetchLeaderboard();
-    const categories = Array.isArray(data) ? data : [];
-
-    // Set open categories when data loads
-    useEffect(() => {
-        if (data && data.length > 0) {
-            setOpenCategories(new Set(data.map((c) => c.meta.id)));
-        }
-    }, [data]);
 
     function toggleCategory(id: string): void {
         setOpenCategories((prev) => {
@@ -36,24 +32,15 @@ export default function LeaderboardContent() {
         <Layout
             title="🏅 Classement"
             subtitle="Les meilleurs joueurs de WikiGuessr"
-            error={error ? "Impossible de charger le classement." : undefined}
-            loadingMessage={"Chargement du classement…"}
-            isLoading={isLoading}
         >
-            {categories.length === 0 ? (
-                <p className="text-center text-muted text-sm">
-                    Aucun classement disponible pour le moment.
-                </p>
-            ) : (
-                categories.map((cat) => (
-                    <LeaderboardCategory
-                        key={cat.meta.id}
-                        data={cat}
-                        isOpen={openCategories.has(cat.meta.id)}
-                        onToggle={() => toggleCategory(cat.meta.id)}
-                    />
-                ))
-            )}
+            {CATEGORY_IDS.map((categoryId) => (
+                <LeaderboardCategory
+                    key={categoryId}
+                    categoryId={categoryId}
+                    isOpen={openCategories.has(categoryId)}
+                    onToggle={() => toggleCategory(categoryId)}
+                />
+            ))}
         </Layout>
     );
 }

@@ -64,3 +64,40 @@ export const getArticleLtDate = async (
         },
     });
 };
+
+export const getArticleLtDatePaginated = async (
+    before: Date,
+    skip: number,
+    take: number,
+    filterDate?: Date,
+): Promise<{ rows: HistoricDailyWikiPage[]; total: number }> => {
+    const where = filterDate ? { date: filterDate } : { date: { lt: before } };
+
+    const [rows, total] = await prisma.$transaction([
+        prisma.dailyWikiPage.findMany({
+            where,
+            orderBy: { date: "desc" },
+            skip,
+            take,
+            include: {
+                _count: {
+                    select: { gameResults: { where: { won: true } } },
+                },
+            },
+        }),
+        prisma.dailyWikiPage.count({ where }),
+    ]);
+
+    return { rows, total };
+};
+
+export const getHistoricAvailableDates = async (
+    before: Date,
+): Promise<Date[]> => {
+    const results = await prisma.dailyWikiPage.findMany({
+        where: { date: { lt: before } },
+        select: { date: true },
+        orderBy: { date: "desc" },
+    });
+    return results.map((r) => r.date);
+};
