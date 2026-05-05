@@ -26,7 +26,7 @@ export default function Pagination({
                 type="button"
                 disabled={page <= 1}
                 onClick={() => onPageChange(page - 1)}
-                className="p-1 rounded hover:bg-page disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="cursor-pointer p-1 rounded hover:bg-page disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 aria-label="Page précédente"
             >
                 <IoIosArrowBack className="w-4 h-4 text-muted" />
@@ -38,7 +38,7 @@ export default function Pagination({
                     type="button"
                     onClick={() => onPageChange(n)}
                     className={cn(
-                        "w-7 h-7 rounded text-xs font-medium transition-colors",
+                        "cursor-pointer w-7 h-7 rounded text-xs font-medium transition-colors",
                         n === page
                             ? "bg-primary text-white"
                             : "hover:bg-page text-muted",
@@ -52,7 +52,7 @@ export default function Pagination({
                 type="button"
                 disabled={page >= totalPages}
                 onClick={() => onPageChange(page + 1)}
-                className="p-1 rounded hover:bg-page disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="cursor-pointer p-1 rounded hover:bg-page disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 aria-label="Page suivante"
             >
                 <IoIosArrowForward className="w-4 h-4 text-muted" />
