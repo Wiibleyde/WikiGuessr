@@ -20,8 +20,8 @@ export default function GuessList({ guesses }: GuessListProps) {
                             Aucun essai
                         </p>
                     ) : (
-                        guesses.map((guess, i) => (
-                            <Guess key={`${guess.word}-${i}`} guess={guess} />
+                        guesses.map((guess) => (
+                            <Guess key={guess.word} guess={guess} />
                         ))
                     )}
                 </div>

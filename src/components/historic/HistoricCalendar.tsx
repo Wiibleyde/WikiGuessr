@@ -81,7 +81,7 @@ export default function HistoricCalendar({
                 <button
                     type="button"
                     onClick={prevMonth}
-                    className="p-1 rounded hover:bg-page transition-colors"
+                    className="cursor-pointer p-1 rounded hover:bg-page transition-colors"
                     aria-label="Mois précédent"
                 >
                     <IoIosArrowBack className="w-4 h-4 text-muted" />
@@ -93,7 +93,7 @@ export default function HistoricCalendar({
                     type="button"
                     onClick={nextMonth}
                     disabled={isAtCurrentMonth}
-                    className="p-1 rounded hover:bg-page disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="cursor-pointer p-1 rounded hover:bg-page disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     aria-label="Mois suivant"
                 >
                     <IoIosArrowForward className="w-4 h-4 text-muted" />
@@ -132,7 +132,7 @@ export default function HistoricCalendar({
                             disabled={!available}
                             onClick={() => onSelect(isSelected ? null : key)}
                             className={cn(
-                                "mx-auto flex w-7 h-7 items-center justify-center rounded text-xs transition-colors",
+                                "cursor-pointer mx-auto flex w-7 h-7 items-center justify-center rounded text-xs transition-colors",
                                 isSelected &&
                                     "bg-primary text-white font-semibold",
                                 !isSelected &&
@@ -154,7 +154,7 @@ export default function HistoricCalendar({
                 <button
                     type="button"
                     onClick={() => onSelect(null)}
-                    className="mt-3 w-full text-xs text-muted hover:text-text transition-colors text-center"
+                    className="cursor-pointer mt-3 w-full text-xs text-muted hover:text-text transition-colors text-center"
                 >
                     Effacer la sélection
                 </button>
