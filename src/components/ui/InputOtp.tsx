@@ -22,8 +22,10 @@ export default function InputOtp({
         inputsRef.current[index] = el;
     };
 
-    const handleChange = (index: number, value: string) => {
-        const sanitizedValue = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const handleChange = (index: number, inputValue: string) => {
+        const sanitizedValue = inputValue
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, "");
         const newCode = [...value];
         newCode[index] = sanitizedValue;
         setCode(newCode);
@@ -76,7 +78,7 @@ export default function InputOtp({
                     onKeyDown={(e) => handleKeyDown(i, e)}
                     onPaste={(e) => handlePaste(e)}
                     type="text"
-                    inputMode="numeric"
+                    inputMode="text"
                     maxLength={1}
                     className="w-12 h-12 text-center text-lg rounded-md border border-border text-text focus:border-primary focus:ring-1 focus:ring-ring focus:outline-none transition-colors duration-200"
                 />
