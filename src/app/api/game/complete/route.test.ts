@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "bun:test";
 import { NextRequest } from "next/server";
 import "@/test/mocks/articleRepoModule";
 import { getSessionMock } from "@/test/mocks/authModule";
+import "@/test/mocks/secretModule";
 import { ensureDailyWikiPageMock } from "@/test/mocks/dailyWikiModule";
 import { verifyWinMock } from "@/test/mocks/gameModule";
 import {

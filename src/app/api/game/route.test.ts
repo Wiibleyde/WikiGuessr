@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { NextRequest } from "next/server";
 import "@/test/mocks/articleRepoModule";
+import "@/test/mocks/authModule";
+import "@/test/mocks/secretModule";
 import { getMaskedArticleMock } from "@/test/mocks/gameModule";
 
 const { GET } = await import("./route");

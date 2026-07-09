@@ -1,6 +1,6 @@
 import { getArticleHandler } from "@/lib/controllers/gameController";
-import { withErrorHandler } from "@/utils/handler";
+import { withErrorHandler, withOptionalAuth } from "@/utils/handler";
 
 export const dynamic = "force-dynamic";
 
-export const GET = withErrorHandler(getArticleHandler);
+export const GET = withErrorHandler(withOptionalAuth(getArticleHandler));

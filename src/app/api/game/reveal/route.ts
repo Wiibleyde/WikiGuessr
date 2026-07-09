@@ -1,6 +1,6 @@
 import { revealAllHandler } from "@/lib/controllers/gameController";
-import { withErrorHandler } from "@/utils/handler";
+import { withErrorHandler, withOptionalAuth } from "@/utils/handler";
 
 export const dynamic = "force-dynamic";
 
-export const POST = withErrorHandler(revealAllHandler);
+export const POST = withErrorHandler(withOptionalAuth(revealAllHandler));

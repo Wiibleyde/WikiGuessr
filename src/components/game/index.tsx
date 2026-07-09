@@ -15,6 +15,7 @@ import Loader from "../ui/Loader";
 import NoDataMessage from "../ui/NoDataMessage";
 import ArticleView from "./article";
 import GuessList from "./guess-list";
+import SecretReveal from "./SecretReveal";
 
 interface GameProps {
     article: MaskedArticle | null;
@@ -130,6 +131,8 @@ export default function Game({
                 />
                 <GuessList guesses={guesses} />
             </div>
+
+            {won && article.secret && <SecretReveal />}
         </div>
     );
 }
