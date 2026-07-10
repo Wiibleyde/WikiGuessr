@@ -20,18 +20,20 @@ export default function GuessWord({
     };
 
     return (
-        <div className="flex items-center gap-1 text-sm font-medium">
+        <div className="flex items-center gap-1 text-sm font-medium min-w-0">
             {player && (
-                <span className="text-muted">{player.displayName}:</span>
+                <span className="text-muted shrink-0 max-w-24 truncate">
+                    {player.displayName}:
+                </span>
             )}
             <span
-                className={
+                className={`truncate ${
                     isFound
                         ? wordClass.found
                         : isClose
                           ? wordClass.close
                           : wordClass.notFound
-                }
+                }`}
             >
                 {word}
             </span>

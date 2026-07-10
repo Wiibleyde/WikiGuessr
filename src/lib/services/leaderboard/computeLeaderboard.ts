@@ -1,7 +1,9 @@
 import { HINT_PENALTY } from "@/constants/game";
+import { ensureDailyWikiPage } from "@/lib/game/daily-wiki";
 import {
     getBestScoreByUser,
     getMostWins,
+    getTodayWinners,
     getVictoriesGroupedByUser,
 } from "@/lib/repositories/gameResultRepository";
 import { getUserWhereIdIn } from "@/lib/repositories/userRepository";
@@ -18,6 +20,14 @@ const LEADERBOARD_LIMIT = 20;
 export const LEADERBOARD_DEFAULT_PER_PAGE = 5;
 
 const CATEGORIES: LeaderboardCategoryMeta[] = [
+    {
+        id: "daily",
+        label: "Classement du jour",
+        description: "Les premiers à avoir trouvé l'article du jour",
+        icon: "📅",
+        valueLabel: "essais",
+        sortOrder: "asc",
+    },
     {
         id: "win-streak",
         label: "Meilleure série",
@@ -46,6 +56,25 @@ const CATEGORIES: LeaderboardCategoryMeta[] = [
 ];
 
 type CategoryComputer = () => Promise<LeaderboardEntry[]>;
+
+// Classement du jour : ordre d'arrivée (createdAt), cohérent avec le rang
+// affiché dans la bannière de victoire (getTodayRankForUser).
+async function computeDaily(): Promise<LeaderboardEntry[]> {
+    const page = await ensureDailyWikiPage();
+    const results = await getTodayWinners(page.id);
+
+    return results.map((r, i) => ({
+        rank: i + 1,
+        userId: r.userId,
+        name: r.user.name,
+        image: r.user.image,
+        value: r.guessCount,
+        detail:
+            r.hintsUsed > 0
+                ? `${r.hintsUsed} indice${r.hintsUsed !== 1 ? "s" : ""}`
+                : undefined,
+    }));
+}
 
 async function computeWinStreak(): Promise<LeaderboardEntry[]> {
     const results = await getVictoriesGroupedByUser();
@@ -234,6 +263,7 @@ export async function computeLeaderboardCategory(
 }
 
 const COMPUTERS: Record<string, CategoryComputer> = {
+    daily: computeDaily,
     "win-streak": computeWinStreak,
     "best-guess": computeBestGuess,
     "most-wins": computeMostWins,

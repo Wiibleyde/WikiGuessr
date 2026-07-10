@@ -1,7 +1,11 @@
 import type { PaginationMeta } from "./pagination";
 
 /** Identifiant d'une catégorie de classement — extensible via union */
-export type LeaderboardCategoryId = "win-streak" | "best-guess" | "most-wins";
+export type LeaderboardCategoryId =
+    | "daily"
+    | "win-streak"
+    | "best-guess"
+    | "most-wins";
 
 /** Métadonnées décrivant une catégorie de classement */
 export interface LeaderboardCategoryMeta {

@@ -53,7 +53,7 @@ const CoopMode = ({ code, onLeave }: CoopGameProps) => {
                 abandoned={abandoned}
             />
 
-            {won && isLeader && (
+            {(won || abandoned) && isLeader && (
                 <div className="max-w-5xl mx-auto px-4 pb-4 text-center">
                     <Button onClick={restartGame} disabled={loading}>
                         Nouvelle partie

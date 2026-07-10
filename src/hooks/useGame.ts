@@ -38,7 +38,9 @@ const useGame = () => {
                     reveal.positions,
                 );
                 setRevealed(fullRevealed);
-                saveCache(art.date, currentGuesses, fullRevealed);
+                if (!art.secret) {
+                    saveCache(art.date, currentGuesses, fullRevealed);
+                }
                 return;
             }
         },
@@ -47,6 +49,8 @@ const useGame = () => {
 
     const revealAllImages = useCallback(
         async (art: MaskedArticle, currentGuesses: StoredGuess[]) => {
+            // Secret run has no hint UI — skip image reveal entirely.
+            if (art.secret) return;
             const total = art.imageCount ?? 0;
             if (total === 0) return;
             const allImages: string[] = [];

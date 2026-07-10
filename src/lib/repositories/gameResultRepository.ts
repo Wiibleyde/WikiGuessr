@@ -3,6 +3,7 @@ import type {
     BestScoreRow,
     GameResultWithDailyPage,
     MostWinsRow,
+    TodayWinnerRow,
     VictoryRow,
 } from "@/types/repository";
 import type { DailyWikiPage, Prisma } from "../../../generated/prisma/client";
@@ -21,6 +22,22 @@ export const getTodayRankForUser = async (
         },
     });
     return count;
+};
+
+export const getTodayWinners = async (
+    dailyWikiPageId: number,
+): Promise<TodayWinnerRow[]> => {
+    return prisma.gameResult.findMany({
+        where: { dailyWikiPageId, won: true },
+        select: {
+            userId: true,
+            guessCount: true,
+            hintsUsed: true,
+            createdAt: true,
+            user: { select: { name: true, image: true } },
+        },
+        orderBy: { createdAt: "asc" },
+    });
 };
 
 export const getVictoriesGroupedByUser = async (): Promise<VictoryRow[]> => {

@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useCallback, useEffect, useRef } from "react";
 import { checkWinCondition } from "@/lib/game/progress";
@@ -10,6 +11,7 @@ import useGame from "./useGame";
 import { useGameState } from "./useGameState";
 
 const useDb = () => {
+    const queryClient = useQueryClient();
     const { user, loading: authLoading } = useAuth();
     const { revealAllWords, revealAllImages } = useGame();
     const {
@@ -108,20 +110,23 @@ const useDb = () => {
 
     // Sync once after auth and game are both ready
     useEffect(() => {
-        if (authLoading || loading || !article || !user) return;
+        if (authLoading || loading || !article || !user || article.secret)
+            return;
         syncWithDatabase();
     }, [authLoading, loading, article, user, syncWithDatabase]);
 
     // Sync to DB after each new guess (guesses only grow, so any length change = new guess)
     useEffect(() => {
-        if (!user || !synced || guesses.length === 0) return;
+        if (!user || !synced || guesses.length === 0 || article?.secret) return;
         syncToDatabase();
-    }, [guesses.length, user, synced, syncToDatabase]);
+    }, [guesses.length, user, synced, article?.secret, syncToDatabase]);
 
     // Save game result when the user wins
     const savingRef = useRef(false);
     useEffect(() => {
         if (!won || !user || saved || savingRef.current || !article) return;
+        // Secret run is never scored or persisted.
+        if (article.secret) return;
         savingRef.current = true;
         const hintsUsed = revealedImages.length;
         axios
@@ -134,6 +139,9 @@ const useDb = () => {
                 setSaved(true);
                 const rank = (res.data as { rank?: number }).rank;
                 if (rank != null) setTodayRank(rank);
+                // Le résultat vient d'être enregistré : rafraîchit le
+                // classement du jour affiché sur l'écran de victoire.
+                queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
                 saveCache(
                     article.date,
                     guesses,
@@ -164,6 +172,7 @@ const useDb = () => {
         setSaved,
         setTodayRank,
         syncToDatabase,
+        queryClient,
     ]);
 
     return { syncToDatabase };

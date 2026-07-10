@@ -89,6 +89,23 @@ function indexWords(
     }
 }
 
+// Suffixes d'accord français (féminin/pluriel) : permettent à un mot court
+// comme "né" de révéler "née" alors que les seuils de longueur excluent le
+// matching flou pour ces mots.
+const INFLECTION_SUFFIXES = ["e", "s", "es", "x"] as const;
+
+export function inflectionVariants(word: string): string[] {
+    const variants = new Set<string>();
+    for (const suffix of INFLECTION_SUFFIXES) {
+        variants.add(word + suffix);
+        if (word.endsWith(suffix) && word.length - suffix.length >= 2) {
+            variants.add(word.slice(0, -suffix.length));
+        }
+    }
+    variants.delete(word);
+    return [...variants];
+}
+
 let articleCache: ArticleCache | null = null;
 
 export function buildArticleCache(
@@ -200,6 +217,29 @@ export function checkGuessAgainstCache(
         };
     }
 
+    // Accords français : "né" révèle "née"/"nés", "née" révèle "né", etc.
+    // Indépendant des seuils de longueur du matching flou.
+    let variantPositions: WordPosition[] | null = null;
+    let variantWord = "";
+    for (const variant of inflectionVariants(normalizedGuess)) {
+        if (revealedSet?.has(variant)) continue;
+        const positions = wordGroups.get(variant);
+        if (positions && positions.length > (variantPositions?.length ?? 0)) {
+            variantPositions = positions;
+            variantWord = variant;
+        }
+    }
+    if (variantPositions) {
+        return {
+            found: true,
+            word: variantWord,
+            positions: variantPositions,
+            occurrences: variantPositions.length,
+            similarity: 1,
+            serverDate: cache.date,
+        };
+    }
+
     let bestSimilarity = 0;
     let bestMatchWord = "";
 
@@ -278,8 +318,7 @@ export function checkGuessAgainstCache(
     };
 }
 
-export async function getAllWordPositions(): Promise<WordPosition[]> {
-    const cache = await getArticleCache();
+export function allPositionsFromCache(cache: ArticleCache): WordPosition[] {
     const allPositions: WordPosition[] = [];
     for (const positions of cache.wordGroups.values()) {
         for (const pos of positions) {
@@ -287,6 +326,10 @@ export async function getAllWordPositions(): Promise<WordPosition[]> {
         }
     }
     return allPositions;
+}
+
+export async function getAllWordPositions(): Promise<WordPosition[]> {
+    return allPositionsFromCache(await getArticleCache());
 }
 
 export async function getHintImage(hintIndex: number): Promise<{

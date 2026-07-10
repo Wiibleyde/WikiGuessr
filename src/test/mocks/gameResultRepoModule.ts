@@ -6,6 +6,7 @@ export const getMostWinsMock = mock();
 export const createOrUpdateGameResultMock = mock();
 export const getGameResultsByUserIdMock = mock();
 export const getTodayRankForUserMock = mock();
+export const getTodayWinnersMock = mock();
 
 mock.module("@/lib/repositories/gameResultRepository", () => ({
     getVictoriesGroupedByUser: getVictoriesGroupedByUserMock,
@@ -14,4 +15,5 @@ mock.module("@/lib/repositories/gameResultRepository", () => ({
     createOrUpdateGameResult: createOrUpdateGameResultMock,
     getGameResultsByUserId: getGameResultsByUserIdMock,
     getTodayRankForUser: getTodayRankForUserMock,
+    getTodayWinners: getTodayWinnersMock,
 }));

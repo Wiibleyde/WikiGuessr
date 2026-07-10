@@ -29,7 +29,7 @@ export default function Guess({ guess }: GuessProps) {
                       : "bg-danger-light/60",
             ].join(" ")}
         >
-            <div className="min-w-0 flex-1 truncate">
+            <div className="min-w-0 flex-1">
                 <GuessWord
                     word={guess.word}
                     player={guess.player}
