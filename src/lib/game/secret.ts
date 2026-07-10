@@ -9,7 +9,7 @@ import { fetchWikiPageByTitle } from "./wiki";
  * the "The Horne Section" article and, on win, gets a full-screen secret page.
  * The account may not exist yet — it is resolved lazily the first time it signs in.
  */
-export const SECRET_DISCORD_ID = "461807010086780930";
+export const SECRET_DISCORD_ID = "668161865045639242";
 export const SECRET_WIKI_TITLE = "The Horne Section";
 
 // Resolved User.id for the secret Discord account. Only positive results are
