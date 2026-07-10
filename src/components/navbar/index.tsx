@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import ButtonProvider from "../ui/ButtonProvider";
 import Modal from "../ui/Modal";
 import NavbarLink from "../ui/NavbarLink";
+import ThemeToggle from "../ui/ThemeToggle";
 import NavbarAuth from "./NavbarAuth";
 import NavbarButton from "./NavbarButton";
 
@@ -68,7 +69,8 @@ export default function Navbar() {
                         })}
                     </nav>
 
-                    <div className="mt-3 border-t border-subtle px-0 pt-3 md:mt-0 md:border-t-0 md:pt-0 md:flex md:items-center sm:gap-3">
+                    <div className="mt-3 border-t border-subtle px-0 pt-3 md:mt-0 md:border-t-0 md:pt-0 flex items-center gap-2 sm:gap-3">
+                        <ThemeToggle />
                         <NavbarAuth
                             user={user}
                             loading={loading}

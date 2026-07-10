@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useCallback, useEffect, useRef } from "react";
 import { checkWinCondition } from "@/lib/game/progress";
@@ -10,6 +11,7 @@ import useGame from "./useGame";
 import { useGameState } from "./useGameState";
 
 const useDb = () => {
+    const queryClient = useQueryClient();
     const { user, loading: authLoading } = useAuth();
     const { revealAllWords, revealAllImages } = useGame();
     const {
@@ -137,6 +139,9 @@ const useDb = () => {
                 setSaved(true);
                 const rank = (res.data as { rank?: number }).rank;
                 if (rank != null) setTodayRank(rank);
+                // Le résultat vient d'être enregistré : rafraîchit le
+                // classement du jour affiché sur l'écran de victoire.
+                queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
                 saveCache(
                     article.date,
                     guesses,
@@ -167,6 +172,7 @@ const useDb = () => {
         setSaved,
         setTodayRank,
         syncToDatabase,
+        queryClient,
     ]);
 
     return { syncToDatabase };

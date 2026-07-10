@@ -1,4 +1,5 @@
 export const STORAGE_KEY_PREFIX = "wikiguessr-";
+export const THEME_STORAGE_KEY = `${STORAGE_KEY_PREFIX}theme`;
 export const TOKEN_REGEX = /([\p{L}0-9]+)|(\n)|(\s+)|([^\s\p{L}0-9]+)/gu;
 
 export const REVEAL_THRESHOLD = 0.85;

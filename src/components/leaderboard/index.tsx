@@ -6,6 +6,7 @@ import Layout from "../ui/Layout";
 import LeaderboardCategory from "./LeaderboardCategory";
 
 const CATEGORY_IDS: LeaderboardCategoryId[] = [
+    "daily",
     "win-streak",
     "best-guess",
     "most-wins",

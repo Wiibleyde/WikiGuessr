@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Le mode sombre est piloté par la classe .dark sur <html> (pas par
+   prefers-color-scheme seul) pour permettre le toggle de la navbar. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
     /* ── Primary (main actions, links, accents) ── */
     --color-primary: #7c3aed;
@@ -155,6 +159,51 @@
             opacity: 0.92;
         }
     }
+}
+
+:root {
+    color-scheme: light;
+}
+
+/* ── Mode sombre : surcharge des tokens sémantiques ── */
+.dark {
+    color-scheme: dark;
+
+    /* Primary */
+    --color-primary: #8b5cf6;
+    --color-primary-hover: #a78bfa;
+    --color-primary-light: #2e1065;
+    --color-primary-text: #c4b5fd;
+
+    /* Success */
+    --color-success: #2dd4bf;
+    --color-success-hover: #5eead4;
+    --color-success-light: #134e4a;
+    --color-success-text: #99f6e4;
+
+    /* Warning */
+    --color-warning: #fbbf24;
+    --color-warning-hover: #fcd34d;
+    --color-warning-light: #78350f;
+    --color-warning-text: #fde68a;
+
+    /* Danger */
+    --color-danger: #fb7185;
+    --color-danger-hover: #fda4af;
+    --color-danger-light: #881337;
+    --color-danger-text: #fecdd3;
+
+    /* Surfaces & neutrals */
+    --color-surface: #1e293b;
+    --color-page: #0f172a;
+    --color-muted: #94a3b8;
+    --color-subtle: #334155;
+    --color-border: #334155;
+    --color-text: #f1f5f9;
+    --color-text-secondary: #cbd5e1;
+
+    /* Focus ring */
+    --color-ring: #8b5cf6;
 }
 
 /* ── Skip navigation ── */

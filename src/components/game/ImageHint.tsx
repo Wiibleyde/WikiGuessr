@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import ImageLightbox from "@/components/ui/ImageLightbox";
 import { HINT_PENALTY, MIN_GUESSES_FOR_HINT } from "@/constants/game";
 import { normalizeHintImageUrls } from "@/utils/hintImage";
 
@@ -23,6 +24,7 @@ export default function ImageHint({
     guessCount,
 }: ImageHintProps) {
     const [expanded, setExpanded] = useState(true);
+    const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
 
     if (imageCount === 0) return null;
 
@@ -79,9 +81,13 @@ export default function ImageHint({
                 {hintsUsed > 0 && expanded && (
                     <div className="p-4 flex flex-wrap gap-4">
                         {displayUrls.map((url, i) => (
-                            <div
+                            <button
                                 key={url}
-                                className="relative rounded-lg overflow-hidden shadow-sm border border-subtle max-h-48"
+                                type="button"
+                                onClick={() => setZoomedIndex(i)}
+                                aria-label={`Agrandir l'indice ${i + 1}`}
+                                title="Cliquer pour agrandir"
+                                className="relative rounded-lg overflow-hidden shadow-sm border border-subtle max-h-48 cursor-zoom-in focus-visible:ring-2 focus-visible:ring-ring"
                             >
                                 <Image
                                     src={url}
@@ -92,9 +98,17 @@ export default function ImageHint({
                                     draggable={false}
                                     unoptimized
                                 />
-                            </div>
+                            </button>
                         ))}
                     </div>
+                )}
+
+                {zoomedIndex !== null && displayUrls[zoomedIndex] && (
+                    <ImageLightbox
+                        url={displayUrls[zoomedIndex]}
+                        alt={`Indice ${zoomedIndex + 1}`}
+                        onClose={() => setZoomedIndex(null)}
+                    />
                 )}
 
                 {hintsUsed === 0 && (

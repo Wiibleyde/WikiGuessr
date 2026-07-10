@@ -29,13 +29,16 @@ export default function LeaderBoardEntry({
             {/* Avatar + nom */}
             <User name={entry.name} image={entry.image} pictureWidth={28} />
 
-            {/* Valeur + détail */}
-            <div className="ml-auto text-right shrink-0">
-                <span className="text-sm font-semibold text-text">
+            {/* Valeur + détail — min-w-0 + break-words pour ne pas déborder
+                sur mobile quand le détail (titre d'article…) est long */}
+            <div className="ml-auto text-right min-w-0">
+                <span className="text-sm font-semibold text-text whitespace-nowrap">
                     {`${entry.value} ${meta.valueLabel}`}
                 </span>
                 {entry.detail && (
-                    <p className="text-xs text-muted mt-0.5">{entry.detail}</p>
+                    <p className="text-xs text-muted mt-0.5 break-words">
+                        {entry.detail}
+                    </p>
                 )}
             </div>
         </div>

@@ -20,7 +20,7 @@ export async function getLeaderboardHandler(
 }
 
 const categoryQuerySchema = z.object({
-    category: z.enum(["win-streak", "best-guess", "most-wins"]),
+    category: z.enum(["daily", "win-streak", "best-guess", "most-wins"]),
     page: z.coerce.number().int().min(1).default(1),
     perPage: z.coerce.number().int().min(1).max(50).default(5),
 });

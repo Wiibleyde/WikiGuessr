@@ -147,7 +147,7 @@ export default function useCoopRealtime(code: string | null) {
             .on("broadcast", { event: "game_abandoned" }, ({ payload }) => {
                 const { positions } = payload as { positions: WordPosition[] };
                 setLobby((prev) =>
-                    prev ? { ...prev, status: "finished" } : prev,
+                    prev ? { ...prev, status: "abandoned" } : prev,
                 );
                 if (positions.length > 0) {
                     setRevealed((prev) => applyPositions(prev, positions));

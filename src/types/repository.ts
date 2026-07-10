@@ -53,3 +53,13 @@ export interface MostWinsRow {
 export type GameResultWithDailyPage = Prisma.GameResultGetPayload<{
     include: { dailyWikiPage: { select: { date: true; title: true } } };
 }>;
+
+export type TodayWinnerRow = Prisma.GameResultGetPayload<{
+    select: {
+        userId: true;
+        guessCount: true;
+        hintsUsed: true;
+        createdAt: true;
+        user: { select: { name: true; image: true } };
+    };
+}>;

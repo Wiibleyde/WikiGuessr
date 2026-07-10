@@ -40,7 +40,8 @@ export default function Word({
                     "inline-block px-0.5 rounded",
                     VARIANTS[variant],
                     animate && "animate-reveal",
-                    isLastFound && "ring-2 ring-warning ring-offset-1",
+                    isLastFound &&
+                        "ring-2 ring-warning ring-offset-1 ring-offset-page",
                 )}
             >
                 {text}

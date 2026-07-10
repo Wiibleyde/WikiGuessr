@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
+import "@/test/mocks/dailyWikiModule";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -13,6 +14,7 @@ mock.module("@/lib/repositories/gameResultRepository", () => ({
     createOrUpdateGameResult: mock(),
     getGameResultsByUserId: mock(),
     getTodayRankForUser: mock(),
+    getTodayWinners: mock(),
 }));
 
 const getUserWhereIdInMock = mock();

@@ -12,7 +12,7 @@ interface MockPage {
     images: string[];
 }
 
-function createMockPage(dateIso: string): MockPage {
+function createMockPage(dateIso: string, content?: string): MockPage {
     return {
         id: "page-1",
         date: new Date(dateIso),
@@ -20,7 +20,7 @@ function createMockPage(dateIso: string): MockPage {
         sections: [
             {
                 title: "Présentation",
-                content: "La tour domine Paris.",
+                content: content ?? "La tour domine Paris.",
             },
         ],
         images: ["https://example.com/img.jpg"],
@@ -66,6 +66,51 @@ describe("game core", () => {
 
         expect(result.found).toBe(false);
         expect(result.positions).toHaveLength(0);
+    });
+
+    it('révèle "née" quand on propose "né" (accord féminin)', async () => {
+        ensureDailyWikiPageMock.mockResolvedValue(
+            createMockPage(
+                "2026-03-11T00:00:00.000Z",
+                "Elle est née dans la capitale.",
+            ),
+        );
+
+        const result = await checkGuess("né");
+
+        expect(result.found).toBe(true);
+        expect(result.word).toBe("nee");
+        expect(result.similarity).toBe(1);
+    });
+
+    it('révèle "né" quand on propose "née" (accord inverse)', async () => {
+        ensureDailyWikiPageMock.mockResolvedValue(
+            createMockPage(
+                "2026-03-12T00:00:00.000Z",
+                "Il est né dans la capitale.",
+            ),
+        );
+
+        const result = await checkGuess("née");
+
+        expect(result.found).toBe(true);
+        expect(result.word).toBe("ne");
+        expect(result.similarity).toBe(1);
+    });
+
+    it("révèle le pluriel en x quand on propose le singulier", async () => {
+        ensureDailyWikiPageMock.mockResolvedValue(
+            createMockPage(
+                "2026-03-13T00:00:00.000Z",
+                "Les châteaux dominent la vallée.",
+            ),
+        );
+
+        const result = await checkGuess("château");
+
+        expect(result.found).toBe(true);
+        expect(result.word).toBe("chateaux");
+        expect(result.similarity).toBe(1);
     });
 
     it("valide une victoire quand tous les mots du titre sont trouvés", async () => {

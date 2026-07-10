@@ -14,6 +14,7 @@ import ErrorMessage from "../ui/Error";
 import Loader from "../ui/Loader";
 import NoDataMessage from "../ui/NoDataMessage";
 import ArticleView from "./article";
+import DailyLeaderboard from "./DailyLeaderboard";
 import GuessList from "./guess-list";
 import SecretReveal from "./SecretReveal";
 
@@ -108,6 +109,8 @@ export default function Game({
                 guessCount={guesses.length}
             />
 
+            {won && !coop && <DailyLeaderboard />}
+
             {coop && players && (
                 <div className="flex items-center justify-between max-w-5xl mx-auto px-4">
                     <CoopPlayerList players={players} />
@@ -123,13 +126,18 @@ export default function Game({
                 </div>
             )}
 
-            <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
+            <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-4 lg:gap-6">
                 <ArticleView
                     article={article}
                     revealed={revealed}
                     lastFoundKeys={lastFoundKeys}
                 />
-                <GuessList guesses={guesses} />
+                {/* order-first : sur mobile la liste des essais passe au-dessus
+                    de l'article pour éviter de scroller jusqu'en bas */}
+                <GuessList
+                    guesses={guesses}
+                    className="order-first lg:order-none"
+                />
             </div>
 
             {won && article.secret && <SecretReveal />}
