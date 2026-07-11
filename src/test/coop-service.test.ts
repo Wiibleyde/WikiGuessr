@@ -47,11 +47,9 @@ mock.module("@/lib/supabase/broadcast", () => ({
 }));
 
 const fetchRandomWikiPageMock = mock();
-const fetchWikiPageByTitleMock = mock();
 
 mock.module("@/lib/game/wiki", () => ({
     fetchRandomWikiPage: fetchRandomWikiPageMock,
-    fetchWikiPageByTitle: fetchWikiPageByTitleMock,
 }));
 
 const {

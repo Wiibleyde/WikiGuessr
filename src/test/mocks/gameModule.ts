@@ -10,7 +10,6 @@ export const addToWordsGroupMock = mock();
 export const buildArticleCacheMock = mock();
 export const checkGuessAgainstCacheMock = mock();
 export const verifyWinAgainstCacheMock = mock();
-export const allPositionsFromCacheMock = mock();
 
 mock.module("@/lib/game/game", () => ({
     getMaskedArticle: getMaskedArticleMock,
@@ -23,5 +22,4 @@ mock.module("@/lib/game/game", () => ({
     buildArticleCache: buildArticleCacheMock,
     checkGuessAgainstCache: checkGuessAgainstCacheMock,
     verifyWinAgainstCache: verifyWinAgainstCacheMock,
-    allPositionsFromCache: allPositionsFromCacheMock,
 }));
