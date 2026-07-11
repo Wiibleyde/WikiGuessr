@@ -36,6 +36,7 @@ const CoopMode = ({ code, onLeave }: CoopGameProps) => {
                 error={error}
                 loading={false}
                 won={won}
+                code={code}
                 percentage={percentage}
                 submitGuess={submitGuess}
                 revealedImages={[]}

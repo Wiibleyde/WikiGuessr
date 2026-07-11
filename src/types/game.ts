@@ -23,8 +23,6 @@ export interface MaskedArticle {
     totalWords: number;
     date: string;
     imageCount: number;
-    /** Secret easter-egg run — client skips all persistence and shows the takeover. */
-    secret?: boolean;
 }
 
 export interface WordPosition {

@@ -109,15 +109,13 @@ const useGuess = () => {
                         setLastFoundKeys(newLastFoundKeys);
                     }
 
-                    if (!article.secret) {
-                        saveCache(
-                            article.date,
-                            newGuesses,
-                            currentRevealed,
-                            undefined,
-                            revealedImages,
-                        );
-                    }
+                    saveCache(
+                        article.date,
+                        newGuesses,
+                        currentRevealed,
+                        undefined,
+                        revealedImages,
+                    );
 
                     if (checkWinCondition(article, currentRevealed)) {
                         setWon(true);

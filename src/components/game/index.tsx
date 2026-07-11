@@ -16,7 +16,6 @@ import NoDataMessage from "../ui/NoDataMessage";
 import ArticleView from "./article";
 import DailyLeaderboard from "./DailyLeaderboard";
 import GuessList from "./guess-list";
-import SecretReveal from "./SecretReveal";
 
 interface GameProps {
     article: MaskedArticle | null;
@@ -24,6 +23,7 @@ interface GameProps {
     revealed: RevealedMap;
     loading: boolean;
     won: boolean;
+    code: string;
     error: string | null;
     percentage: number;
     submitGuess: (e?: FormEvent<Element> | undefined) => Promise<void>;
@@ -66,6 +66,7 @@ export default function Game({
     lastFoundKeys,
     abandoned = false,
     todayRank,
+    code,
 }: GameProps) {
     if (loading) return <Loader message="Chargement de l'article du jour…" />;
 
@@ -113,7 +114,7 @@ export default function Game({
 
             {coop && players && (
                 <div className="flex items-center justify-between max-w-5xl mx-auto px-4">
-                    <CoopPlayerList players={players} />
+                    <CoopPlayerList players={players} code={code} />
                     {onLeave && (
                         <Button
                             variant="secondary"
@@ -139,8 +140,6 @@ export default function Game({
                     className="order-first lg:order-none"
                 />
             </div>
-
-            {won && article.secret && <SecretReveal />}
         </div>
     );
 }

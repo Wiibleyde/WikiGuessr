@@ -27,9 +27,8 @@ import {
 
 export async function getArticleHandler(
     _request: NextRequest,
-    user: AuthUser | null,
 ): Promise<NextResponse> {
-    const article = await getArticle(user);
+    const article = await getArticle();
     return ok(article, 200, {
         "Cache-Control": "no-store, no-cache, must-revalidate",
     });
@@ -37,14 +36,13 @@ export async function getArticleHandler(
 
 export async function submitGuessHandler(
     request: NextRequest,
-    user: AuthUser | null,
 ): Promise<NextResponse> {
     const parsed = submitGuessSchema.safeParse(await request.json());
     if (!parsed.success) {
         return err(parsed.error.issues[0]?.message ?? "Données invalides", 400);
     }
     const { word, revealedWords } = parsed.data;
-    const result = await submitGuess(word, revealedWords, user);
+    const result = await submitGuess(word, revealedWords);
     return ok(result);
 }
 
@@ -101,14 +99,13 @@ export async function completeGameHandler(
 
 export async function revealAllHandler(
     request: NextRequest,
-    user: AuthUser | null,
 ): Promise<NextResponse> {
     const parsed = revealAllSchema.safeParse(await request.json());
     if (!parsed.success) {
         return err(parsed.error.issues[0]?.message ?? "Données invalides", 400);
     }
     try {
-        const positions = await revealAll(parsed.data.words, user);
+        const positions = await revealAll(parsed.data.words);
         return ok({ positions });
     } catch (error) {
         if (error instanceof GameVerificationError) {

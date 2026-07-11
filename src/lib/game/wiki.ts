@@ -22,22 +22,6 @@ function createWikiPage(
     };
 }
 
-/**
- * Fetch a specific Wikipedia article by its exact title (used by the secret run).
- * Same shaping pipeline as {@link fetchRandomWikiPage} but with a fixed title.
- */
-export async function fetchWikiPageByTitle(title: string): Promise<WikiPage> {
-    const page = await fetchPageData(title);
-    if (!page) {
-        throw new Error(`Page Wikipédia introuvable : ${title}`);
-    }
-    const content = page.extract ?? "";
-    const imageTitles =
-        page.images?.map((img: { title: string }) => img.title) ?? [];
-    const imageUrls = await fetchImageUrls(imageTitles);
-    return createWikiPage(title, content, page, imageUrls);
-}
-
 export async function fetchRandomWikiPage(
     minContentLength = 1000,
     maxAttempts = 25,

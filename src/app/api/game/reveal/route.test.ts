@@ -1,8 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { NextRequest } from "next/server";
 import "@/test/mocks/articleRepoModule";
-import "@/test/mocks/authModule";
-import "@/test/mocks/secretModule";
 import {
     getAllWordPositionsMock,
     verifyWinMock,

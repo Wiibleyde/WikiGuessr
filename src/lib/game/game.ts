@@ -318,7 +318,8 @@ export function checkGuessAgainstCache(
     };
 }
 
-export function allPositionsFromCache(cache: ArticleCache): WordPosition[] {
+export async function getAllWordPositions(): Promise<WordPosition[]> {
+    const cache = await getArticleCache();
     const allPositions: WordPosition[] = [];
     for (const positions of cache.wordGroups.values()) {
         for (const pos of positions) {
@@ -326,10 +327,6 @@ export function allPositionsFromCache(cache: ArticleCache): WordPosition[] {
         }
     }
     return allPositions;
-}
-
-export async function getAllWordPositions(): Promise<WordPosition[]> {
-    return allPositionsFromCache(await getArticleCache());
 }
 
 export async function getHintImage(hintIndex: number): Promise<{

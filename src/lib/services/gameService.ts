@@ -1,16 +1,12 @@
 import { MIN_GUESSES_FOR_HINT } from "@/constants/game";
 import { ensureDailyWikiPage } from "@/lib/game/daily-wiki";
 import {
-    allPositionsFromCache,
     checkGuess,
-    checkGuessAgainstCache,
     getAllWordPositions,
     getHintImage,
     getMaskedArticle,
     verifyWin,
-    verifyWinAgainstCache,
 } from "@/lib/game/game";
-import { getSecretArticleCache, isSecretUser } from "@/lib/game/secret";
 import { getCachedYesterdayTitle } from "@/lib/game/yesterday";
 import {
     createOrUpdateGameResult,
@@ -36,30 +32,18 @@ import {
     HintNotFoundError,
 } from "../errors/gameError";
 
-export async function getArticle(
-    user: AuthUser | null,
-): Promise<MaskedArticle> {
-    if (await isSecretUser(user)) {
-        return (await getSecretArticleCache()).maskedArticle;
-    }
+export async function getArticle(): Promise<MaskedArticle> {
     return getMaskedArticle();
 }
 
 export async function submitGuess(
     word: string,
-    revealedWords: string[] | undefined,
-    user: AuthUser | null,
+    revealedWords?: string[],
 ): Promise<Awaited<ReturnType<typeof checkGuess>>> {
-    if (await isSecretUser(user)) {
-        const cache = await getSecretArticleCache();
-        return checkGuessAgainstCache(cache, word, revealedWords);
-    }
     return checkGuess(word, revealedWords);
 }
 
 export async function getGameState(user: AuthUser): Promise<GameCache | null> {
-    // Secret run never persists — no stored state to hand back.
-    if (await isSecretUser(user)) return null;
     const dailyPage = await ensureDailyWikiPage();
     const gameState = await getGameStateByUserAndDailyPage(user, dailyPage);
 
@@ -77,8 +61,6 @@ export async function saveGameState(
     user: AuthUser,
     body: GameCache,
 ): Promise<void> {
-    // Secret run never persists to the DB.
-    if (await isSecretUser(user)) return;
     const dailyPage = await ensureDailyWikiPage();
     const guessesJson = JSON.parse(JSON.stringify(body.guesses));
     const revealedJson = JSON.parse(JSON.stringify(body.revealed));
@@ -101,10 +83,6 @@ export async function completeGame(
     guessedWords: string[],
     hintsUsed: number,
 ): Promise<{ resultId: number; rank: number }> {
-    // Secret run is never scored or written to leaderboard.
-    if (await isSecretUser(user)) {
-        return { resultId: 0, rank: 0 };
-    }
     const won = await verifyWin(guessedWords);
     if (!won) {
         throw new GameVerificationError(
@@ -127,17 +105,7 @@ export async function completeGame(
     return { resultId: result.id, rank };
 }
 
-export async function revealAll(
-    words: string[],
-    user: AuthUser | null,
-): Promise<WordPosition[]> {
-    if (await isSecretUser(user)) {
-        const cache = await getSecretArticleCache();
-        if (!verifyWinAgainstCache(cache, words)) {
-            throw new GameVerificationError("Victoire non vérifiée");
-        }
-        return allPositionsFromCache(cache);
-    }
+export async function revealAll(words: string[]): Promise<WordPosition[]> {
     const won = await verifyWin(words);
     if (!won) {
         throw new GameVerificationError("Victoire non vérifiée");

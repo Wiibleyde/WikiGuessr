@@ -50,12 +50,6 @@ const useArticle = () => {
         if (gameData) {
             setArticle(gameData);
 
-            // Secret run: no localStorage — show a fresh game every time.
-            if (gameData.secret) {
-                setLoading(false);
-                return;
-            }
-
             clearOldCaches(gameData.date);
 
             const cache = loadCache(gameData.date);
