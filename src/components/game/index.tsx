@@ -23,7 +23,7 @@ interface GameProps {
     revealed: RevealedMap;
     loading: boolean;
     won: boolean;
-    code: string;
+    code?: string;
     error: string | null;
     percentage: number;
     submitGuess: (e?: FormEvent<Element> | undefined) => Promise<void>;
@@ -112,7 +112,7 @@ export default function Game({
 
             {won && !coop && <DailyLeaderboard />}
 
-            {coop && players && (
+            {coop && players && code && (
                 <div className="flex items-center justify-between max-w-5xl mx-auto px-4">
                     <CoopPlayerList players={players} code={code} />
                     {onLeave && (
